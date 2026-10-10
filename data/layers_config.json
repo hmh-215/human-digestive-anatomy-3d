@@ -1,0 +1,39 @@
+{
+  "layers": [
+    {
+      "level": 1,
+      "name": "Tầng 1: Tấm Rèm Che Phủ & Mạc Nối Lớn",
+      "description": "Lá thành phúc mạc, Mạc nối lớn (Greater Omentum) buông rủ che phủ ruột non và mặt trước dạ dày, Thực quản đoạn bụng.",
+      "defaultOpacity": 1.0,
+      "includedOrgans": ["peritoneum_omentum", "esophagus"]
+    },
+    {
+      "level": 2,
+      "name": "Tầng 2: Tạng Nông Tầng Trên Mạc Treo",
+      "description": "Các tạng lớn chiếm ưu thế ở mặt trước ổ bụng: Gan (Mặt hoành & Mặt tạng), Dạ dày (Mặt trước), Đại tràng khung chữ U.",
+      "defaultOpacity": 1.0,
+      "includedOrgans": ["liver", "stomach", "large_intestine"]
+    },
+    {
+      "level": 3,
+      "name": "Tầng 3: Tạng Sâu & Sau Phúc Mạc",
+      "description": "Lộ ra khi bóc tách mạc nối và dạ dày: Khối Tá Tràng - Tụy Tạng (Duodenopancreatic complex), Cây đường mật, Quai ruột non.",
+      "defaultOpacity": 1.0,
+      "includedOrgans": ["pancreas", "duodenum", "gallbladder_tree", "small_intestine"]
+    },
+    {
+      "level": 4,
+      "name": "Tầng 4: Cây Mạch Máu & Thần Kinh Tạng",
+      "description": "Động mạch thân tạng, ĐM mạc treo tràng trên/dưới, Hệ thống tĩnh mạch cửa thu nhận máu về gan, Đám rối thần kinh tạng (Celiac plexus).",
+      "defaultOpacity": 1.0,
+      "includedOrgans": ["vasculature_tree", "portal_system"]
+    },
+    {
+      "level": 5,
+      "name": "Tầng 5: Khung Xương Định Vị & Cột Sống",
+      "description": "Khung xương sườn ức, vòm cơ hoành, cột sống thắt lưng và khung xương chậu làm mốc đối chiếu không gian tọa độ giải phẫu.",
+      "defaultOpacity": 0.15,
+      "includedOrgans": ["skeletal_landmarks"]
+    }
+  ]
+}

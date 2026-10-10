@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Human Digestive System Anatomy — Giải Phẫu Hệ Tiêu Hóa ĐHYHN</title>
+  <link rel="stylesheet" href="./assets/css/theme.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
+
+  <!-- ES Module Import Map (Three.js 100% Offline Local Bundle) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./assets/libs/three/build/three.module.js",
+      "three/addons/": "./assets/libs/three/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app-container">
+    <!-- 3D WEBGL VIEWPORT -->
+    <div id="canvas-container"></div>
+
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+      <div class="brand-badge">
+        <span style="font-size: 20px;">🫁</span>
+        <div>
+          <h1>3D HỆ TIÊU HÓA NGƯỜI</h1>
+          <div class="sub">Giải Phẫu Bóc Tách ĐHYHN</div>
+        </div>
+      </div>
+
+      <!-- MODE PILLS -->
+      <nav class="mode-switcher">
+        <button class="mode-pill active" data-mode="dissection">🔬 Bóc Tách Giải Phẫu</button>
+        <button class="mode-pill" data-mode="pathology">🩺 Điểm Mốc Lâm Sàng</button>
+      </nav>
+
+      <!-- SEARCH & CONTROLS -->
+      <div class="nav-actions">
+        <div class="search-box-wrapper">
+          <input type="text" id="organ-search" class="search-input" placeholder="🔍 Tìm gan, dạ dày, tá tràng..." autocomplete="off">
+          <div id="search-results" class="search-results-dropdown hidden"></div>
+        </div>
+        <button id="btn-reset-camera" class="action-btn" title="Căn lại góc nhìn tiêu chuẩn">🎯 Căn Lại</button>
+        <button id="btn-theme-toggle" class="action-btn">🌙 Dark Mode</button>
+      </div>
+    </header>
+
+    <!-- CLINICAL LANDMARKS PANEL (HIỆN Ở CHẾ ĐỘ LÂM SÀNG) -->
+    <aside id="landmarks-panel" class="landmarks-panel hidden">
+      <div class="landmarks-panel-header">
+        <h4>🚨 Điểm Mốc Ngoại Khoa & Bệnh Học</h4>
+      </div>
+      <div id="landmarks-list" class="landmarks-list-scroll"></div>
+    </aside>
+
+    <!-- FLOATING DISSECTION DOCK -->
+    <section class="dissection-dock">
+      <div class="dock-header">
+        <h3>Bóc Tách Tầng Sâu (Peeling)</h3>
+        <span id="depth-value" style="font-size: 12px; font-weight: 700; color: var(--primary);">Tầng 1 (Toàn thể)</span>
+      </div>
+
+      <!-- MASTER DEPTH SLIDER -->
+      <div class="slider-group">
+        <div class="slider-label-row">
+          <span>Tầng 1 (Toàn thể)</span>
+          <span>Tầng 5 (Sâu nhất)</span>
+        </div>
+        <input type="range" id="depth-slider" min="1" max="5" step="1" value="1">
+      </div>
+
+      <!-- LOCALIZED SUB-ASSEMBLY EXPLODE BOX -->
+      <div id="local-explode-box" class="local-explode-box hidden">
+        <div class="slider-label-row">
+          <span style="font-weight: 700; color: var(--text-main);">💥 Phân Rã: <span id="local-explode-organ-name" style="color: var(--primary);">Gan</span></span>
+          <span id="local-explode-value">0%</span>
+        </div>
+        <input type="range" id="local-explode-slider" min="0" max="1" step="0.01" value="0">
+        <small style="font-size: 10px; color: var(--text-muted);">Kéo để tách rời các hạ phân thùy / cấu trúc con</small>
+      </div>
+
+      <!-- TOGGLE BUTTONS -->
+      <div class="dock-button-row">
+        <button id="btn-isolate" class="action-btn">🔒 Cô Lập</button>
+        <button id="btn-xray" class="action-btn">🔲 X-Ray Thấu Quang</button>
+      </div>
+    </section>
+
+    <!-- ORGAN MEDICAL INFO DRAWER -->
+    <aside id="organ-drawer" class="organ-drawer">
+      <div class="drawer-header">
+        <div>
+          <h2 id="drawer-title">Tên Cơ Quan</h2>
+          <div id="drawer-latin" class="drawer-latin">Latin Name</div>
+        </div>
+        <button id="drawer-close" class="drawer-close-btn" title="Đóng">✕</button>
+      </div>
+      <div id="drawer-content" class="drawer-scroll-body"></div>
+    </aside>
+
+    <!-- INTERACTION HINT -->
+    <div class="interaction-hint">
+      💡 <strong>Thao tác:</strong> Chuột trái để xoay • Chuột phải để di chuyển • Lăn chuột để zoom • Bấm vào cơ quan để xem bóc tách chi tiết
+    </div>
+  </div>
+
+  <!-- SCRIPT BOOTSTRAP -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

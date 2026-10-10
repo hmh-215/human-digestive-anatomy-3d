@@ -1,0 +1,70 @@
+{
+  "landmarks": [
+    {
+      "id": "mcburney_point",
+      "name": "Điểm Đau McBurney & Ruột Thừa",
+      "category": "Cấp cứu Bụng Ngoại khoa",
+      "organId": "large_intestine",
+      "targetSubId": "colon_appendix",
+      "coordinates": [2.8, -3.2, 2.2],
+      "description": "Điểm đối chiếu gốc ruột thừa lên thành bụng, nằm ở 1/3 ngoài trên đường nối từ Gai chậu trước trên phải đến Rốn.",
+      "clinicalSignificance": "Dấu hiệu ấn đau chói điểm McBurney và nghiệm pháp thả tay Blumberg (phản ứng dội) là tiêu chuẩn vàng chẩn đoán Viêm ruột thừa cấp. Khi ruột thừa vỡ mủ, phản ứng viêm lan tỏa gây viêm phúc mạc toàn thể đe dọa tính mạng.",
+      "cameraFocus": [2.8, -3.2, 5.0]
+    },
+    {
+      "id": "calot_triangle",
+      "name": "Tam Giác Gan Mật Calot",
+      "category": "Phẫu thuật Nội soi Gan Mật",
+      "organId": "gallbladder_tree",
+      "targetSubId": "gb_neck",
+      "coordinates": [1.2, 0.2, 1.4],
+      "description": "Tam giác giải phẫu giới hạn bởi: Ống túi mật (phía dưới), Ống gan chung (phía trong), và Bờ dưới gan (phía trên).",
+      "clinicalSignificance": "Mốc giải phẫu sống còn trong phẫu thuật cắt túi mật nội soi. Trong tam giác Calot có Động mạch túi mật đi qua. Phẫu thuật viên bắt buộc phải bộc lộ rõ cấu trúc 'Critical View of Safety' để thắt đúng ĐM túi mật và ống túi mật, tuyệt đối tránh kẹp nhầm vào Ống mật chủ hoặc ĐM gan riêng.",
+      "cameraFocus": [1.2, 0.2, 3.5]
+    },
+    {
+      "id": "ampulla_vater",
+      "name": "Bóng Gan Tụy (Vater) & Nhú Tá Lớn",
+      "category": "Nội soi Mật Tụy Can thiệp (ERCP)",
+      "organId": "duodenum",
+      "targetSubId": "duodenum_papilla",
+      "coordinates": [0.8, -0.6, 1.1],
+      "description": "Nằm ở thành trong đoạn D2 tá tràng, nơi hợp lưu của Ống mật chủ và Ống tụy chính (Wirsung) đổ vào tá tràng, bao quanh bởi Cơ vòng Oddi.",
+      "clinicalSignificance": "Đích đến của kỹ thuật Nội soi mật tụy ngược dòng (ERCP). Sỏi túi mật rơi xuống kẹt tại cơ vòng Oddi làm tắc đồng thời cả dòng mật và dịch tụy, gây ứ đọng enzym tiêu hóa làm bùng phát Viêm tụy cấp hoại tử và Nhiễm trùng đường mật tối cấp.",
+      "cameraFocus": [0.8, -0.6, 3.0]
+    },
+    {
+      "id": "treitz_ligament",
+      "name": "Góc Tá Hỗng Tràng & Dây Chằng Treitz",
+      "category": "Xuất huyết Tiêu hóa",
+      "organId": "duodenum",
+      "targetSubId": "duodenum_d4",
+      "coordinates": [-0.6, -0.8, 0.5],
+      "description": "Dải cơ sợi treo góc tá hỗng tràng (nơi tiếp nối giữa D4 tá tràng và hỗng tràng) vào trụ phải cơ hoành.",
+      "clinicalSignificance": "Ranh giới giải phẫu và lâm sàng quyết định để phân định Xuất huyết tiêu hóa trên (từ dây chằng Treitz trở lên miệng: nôn ra máu, đi ngoài phân đen hôi tanh) và Xuất huyết tiêu hóa dưới (từ dây chằng Treitz xuống hậu môn: đi ngoài phân máu đỏ tươi hoặc máu bầm).",
+      "cameraFocus": [-0.6, -0.8, 3.0]
+    },
+    {
+      "id": "portocaval_anastomoses",
+      "name": "Các Vòng Nối Gánh - Chủ (Portocaval Anastomoses)",
+      "category": "Xơ gan & Tăng áp Cửa",
+      "organId": "liver",
+      "targetSubId": "liver_seg_1",
+      "coordinates": [0, 0.8, -0.5],
+      "description": "Hệ thống các nhánh thông nối tự nhiên giữa Tĩnh mạch cửa và Tĩnh mạch chủ tại 3 vị trí then chốt: Đoạn dưới Thực quản, Vùng Quanh Rốn, và Trực tràng.",
+      "clinicalSignificance": "Khi xơ gan làm tăng áp lực tĩnh mạch cửa (>10-12 mmHg), máu bị cản trở qua gan sẽ dồn ngược qua các vòng nối này: Gây Giãn vỡ tĩnh mạch thực quản (nôn máu ồ ạt tỷ lệ tử vong cao), Búi trĩ nội/ngoại ở trực tràng, và Tuần hoàn bàng hệ kiểu 'Đầu sứa' (Caput Medusae) ngoằn ngoèo quanh rốn.",
+      "cameraFocus": [0, 0.8, 3.5]
+    },
+    {
+      "id": "couinaud_segments",
+      "name": "8 Hạ Phân Thùy Gan Theo Couinaud",
+      "category": "Phẫu thuật Cắt Gan Ung thư",
+      "organId": "liver",
+      "targetSubId": "liver_seg_8",
+      "coordinates": [0.8, 1.2, 0.5],
+      "description": "Phân chia gan thành 8 hạ phân thùy độc lập (I đến VIII) dựa trên sự phân nhánh trong lòng gan của bộ ba cuống Glisson (ĐM gan, TM cửa, Đường mật) và ba tĩnh mạch trên gan.",
+      "clinicalSignificance": "Mỗi phân thùy có cuống mạch dinh dưỡng và đường dẫn mật riêng biệt, hoạt động như một lá gan thu nhỏ. Nhờ đó phẫu thuật viên có thể cắt bỏ chính xác 1 hoặc 2 hạ phân thùy chứa khối u ung thư (HCC) mà bảo tồn tối đa nhu mô gan lành còn lại.",
+      "cameraFocus": [0.8, 1.2, 4.0]
+    }
+  ]
+}

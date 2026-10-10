@@ -1,0 +1,13 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Scratch & test scripts
+scratch/
+__pycache__/
+
+# Non-digestive large models
+assets/models/SkeletalSystem.fbx

@@ -1,0 +1,201 @@
+{
+  "organs": [
+    {
+      "id": "stomach",
+      "vietnameseName": "Dạ Dày (Bao Tử)",
+      "latinName": "Gaster / Ventriculus",
+      "englishName": "Stomach",
+      "system": "hollow_gi",
+      "layer": 2,
+      "color": "#e06c75",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "stomach_cardia", "name": "Tâm vị & Lỗ tâm vị", "explodeVector": [0, 0.4, 0] },
+        { "id": "stomach_fundus", "name": "Đáy vị (Túi hơi dạ dày)", "explodeVector": [-0.3, 0.5, 0.1] },
+        { "id": "stomach_body", "name": "Thân vị & Bờ cong lớn/nhỏ", "explodeVector": [-0.3, 0, 0.3] },
+        { "id": "stomach_antrum", "name": "Hang môn vị & Ống môn vị", "explodeVector": [0.4, -0.2, 0.2] },
+        { "id": "stomach_pylorus", "name": "Môn vị & Cơ thắt môn vị", "explodeVector": [0.5, -0.4, 0] },
+        { "id": "stomach_mucosa", "name": "Lớp niêm mạc & Nếp gấp Rugae", "explodeVector": [0, 0, 0.6] }
+      ],
+      "location": "Nằm ở ô dưới hoành trái và vùng thượng vị, hình chữ J. Phía trên nối với thực quản qua lỗ tâm vị (ngang T11), phía dưới nối với tá tràng qua lỗ môn vị (ngang L1).",
+      "structure": "Gồm 2 mặt (trước, sau), 2 bờ (bờ cong nhỏ có khuyết góc, bờ cong lớn), 4 phần chính: Tâm vị, Đáy vị (chứa túi hơi trên X-quang), Thân vị, và Phần môn vị (hang môn vị + ống môn vị + lỗ môn vị có cơ thắt môn vị dày chắc). Thành dạ dày dày 4 lớp: Thanh mạc, Lớp cơ (3 tầng: cơ dọc nông, cơ vòng giữa, cơ chéo sâu), Tầng dưới niêm mạc, và Lớp niêm mạc có các nếp gấp rugae dày đặc.",
+      "vasculature": "Cấp máu bởi 2 vòng mạch dọc 2 bờ cong: Vòng bờ cong nhỏ (ĐM vị trái từ ĐM thân tạng nối ĐM vị phải từ ĐM gan riêng) và Vòng bờ cong lớn (ĐM vị mạc nối trái từ ĐM lách nối ĐM vị mạc nối phải từ ĐM vị tá tràng). Máu tĩnh mạch đổ về Tĩnh mạch cửa. Thần kinh chi phối bởi 2 thân thần kinh lang thang (CN X) trước và sau.",
+      "physiology": "Chứa đựng thức ăn (dung tích 1 - 1.5 lít). Tiết dịch vị (axit HCl pH 1.5 - 2.5 tiêu diệt vi khuẩn, hoạt hóa men Pepsinogen thành Pepsin tiêu hóa protein; chất nhầy Mucin bảo vệ niêm mạc; yếu tố nội Castle giúp hấp thu vitamin B12). Co bóp nhào trộn nghiền nát thức ăn thành dưỡng trấp (chyme) rồi tống từng đợt qua môn vị vào tá tràng (2 - 4 giờ).",
+      "clinicalNotes": "Vùng thượng vị (Huyệt Trung Quản CV-12). Loét dạ dày tá tràng thường gặp ở bờ cong nhỏ và hang vị do vi khuẩn Helicobacter pylori hoặc dùng thuốc NSAIDs. Thủng ổ loét mặt trước gây viêm phúc mạc cấp, ổ loét mặt sau có thể ăn thủng vào ĐM lách gây xuất huyết tiêu hóa ồ ạt nguy kịch. Cắt dạ dày nạo vét hạch ung thư cần nắm vững các chặng hạch dọc 2 vòng mạch bờ cong."
+    },
+    {
+      "id": "liver",
+      "vietnameseName": "Gan",
+      "latinName": "Hepar",
+      "englishName": "Liver",
+      "system": "parenchyma",
+      "layer": 2,
+      "color": "#a0522d",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "liver_seg_1", "name": "Hạ phân thùy I (Thùy đuôi Spigel)", "explodeVector": [0, 0.4, -0.5] },
+        { "id": "liver_seg_2", "name": "Hạ phân thùy II (Bên sau trái)", "explodeVector": [-0.6, 0.4, -0.1] },
+        { "id": "liver_seg_3", "name": "Hạ phân thùy III (Bên trước trái)", "explodeVector": [-0.6, 0.1, 0.3] },
+        { "id": "liver_seg_4", "name": "Hạ phân thùy IV (Thùy vuông / Giữa trái)", "explodeVector": [-0.2, -0.1, 0.4] },
+        { "id": "liver_seg_5", "name": "Hạ phân thùy V (Trước dưới phải)", "explodeVector": [0.4, -0.3, 0.4] },
+        { "id": "liver_seg_6", "name": "Hạ phân thùy VI (Sau dưới phải)", "explodeVector": [0.7, -0.3, -0.2] },
+        { "id": "liver_seg_7", "name": "Hạ phân thùy VII (Sau trên phải)", "explodeVector": [0.7, 0.3, -0.4] },
+        { "id": "liver_seg_8", "name": "Hạ phân thùy VIII (Trước trên phải)", "explodeVector": [0.3, 0.4, 0.2] },
+        { "id": "liver_gallbladder_embed", "name": "Giường túi mật & Túi mật", "explodeVector": [0.2, -0.5, 0.1] }
+      ],
+      "location": "Nằm ở ô dưới hoành phải, chiếm toàn bộ hạ sườn phải, thượng vị và lấn sang một phần hạ sườn trái. Tuyến lớn nhất cơ thể, nặng 1.4 - 1.8 kg ở người sống (chứa gần 1 lít máu).",
+      "structure": "Gồm 2 mặt: Mặt hoành (lồi, áp sát vòm hoành, chia thành thùy phải và thùy trái bởi Dây chằng liềm; phía sau có vùng trần không có phúc mạc); Mặt tạng (phẳng lõm, nhìn xuống dưới ra sau, có 2 rãnh dọc và 1 rãnh ngang tạo hình chữ H). Rãnh ngang là Cửa gan (Porta hepatis) chứa Cuống gan. Phân chia chức năng theo Couinaud dựa trên phân nhánh tĩnh mạch cửa và tĩnh mạch trên gan thành 8 hạ phân thùy độc lập (I đến VIII), cho phép phẫu thuật cắt gan phân thùy an toàn.",
+      "vasculature": "Nhận 2 nguồn máu: Máu dinh dưỡng từ ĐM gan riêng (nhánh của ĐM thân tạng, chiếm 20 - 25% lưu lượng) và Máu chức phận từ Tĩnh mạch cửa (thu nhận toàn bộ dưỡng chất từ ống tiêu hóa và lách, chiếm 75 - 80% lưu lượng). Máu qua xoang tĩnh mạch gan rồi theo 3 tĩnh mạch trên gan (phải, giữa, trái) đổ về Tĩnh mạch chủ dưới.",
+      "physiology": "Nhà máy hóa chất sinh học trung tâm: Tiết mật (0.5 - 1 lít/ngày) nhũ hóa chất béo; Chuyển hóa carbohydrate (tổng hợp và dự trữ glycogen, tân tạo đường); Chuyển hóa lipid (tổng hợp cholesterol, lipoprotein, thể ceton); Chuyển hóa protein (tổng hợp albumin, các yếu tố đông máu I, II, V, VII, IX, X); Khử độc (chuyển amoniac $NH_3$ độc thành urê đào thải qua thận, bất hoạt thuốc và độc tố).",
+      "clinicalNotes": "Vùng hạ sườn phải (Huyệt Kỳ Môn LR-14, Nhật Nguyệt GB-24). Xơ gan làm tăng áp lực tĩnh mạch cửa dẫn đến mở các vòng nối gánh - chủ (gây trĩ, giãn vỡ tĩnh mạch thực quản, tuần hoàn bàng hệ đầu sứa quanh rốn). Ung thư biểu mô tế bào gan (HCC) thường phát triển trên nền xơ gan/viêm gan B, C; phẫu thuật cắt hạ phân thùy gan theo giải phẫu Couinaud là phương pháp điều trị triệt căn hàng đầu."
+    },
+    {
+      "id": "gallbladder_tree",
+      "vietnameseName": "Túi Mật & Cây Đường Dẫn Mật",
+      "latinName": "Vesica Biliaris & Ductus Biliares",
+      "englishName": "Gallbladder & Biliary Tree",
+      "system": "biliary",
+      "layer": 3,
+      "color": "#22c55e",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "gb_fundus", "name": "Đáy túi mật (Điểm Murphy)", "explodeVector": [0.4, -0.4, 0.4] },
+        { "id": "gb_body", "name": "Thân & Phễu túi mật (Túi Hartmann)", "explodeVector": [0.3, -0.2, 0.2] },
+        { "id": "gb_neck", "name": "Cổ túi mật & Ống túi mật (Van xoắn Heister)", "explodeVector": [0.2, 0, 0.1] },
+        { "id": "biliary_hepatic_ducts", "name": "Ống gan phải & Ống gan trái", "explodeVector": [0, 0.3, 0] },
+        { "id": "biliary_common_hepatic", "name": "Ống gan chung", "explodeVector": [0, 0.1, 0] },
+        { "id": "biliary_choledochus", "name": "Ống mật chủ (Common Bile Duct)", "explodeVector": [-0.1, -0.3, -0.1] },
+        { "id": "biliary_sphincter_oddi", "name": "Bóng Vater & Cơ vòng Oddi", "explodeVector": [-0.2, -0.5, 0] }
+      ],
+      "location": "Túi mật hình quả lê dài 7 - 10 cm, dung tích 30 - 50 ml, nằm trong hố túi mật ở mặt dưới gan. Ống mật chủ dài 7 - 8 cm chạy trong cuống gan sau D1 tá tràng và đầu tụy đổ vào D2 tá tràng.",
+      "structure": "Túi mật gồm 4 phần: Đáy (nhô ra khỏi bờ dưới gan tại điểm giao giữa bờ ngoài cơ thẳng bụng phải và bờ sườn phải - Điểm Murphy), Thân, Phễu (nơi hay kẹt sỏi tạo túi Hartmann) và Cổ. Ống túi mật dài 3 - 4 cm có nếp van xoắn Heister. Đường mật ngoài gan: Ống gan phải + Ống gan trái $\\rightarrow$ Ống gan chung. Ống gan chung + Ống túi mật $\\rightarrow$ Ống mật chủ (Ductus choledochus). Ống mật chủ hợp lưu với Ống tụy chính tạo thành Bóng gan tụy (Ampulla of Vater), bao quanh bởi Cơ thắt Oddi tại Nhú tá lớn.",
+      "vasculature": "Động mạch túi mật thường tách từ nhánh phải của ĐM gan riêng trong Tam giác gan mật Calot (giới hạn bởi Ống túi mật, Ống gan chung và Bờ dưới gan). Máu tĩnh mạch đổ về tĩnh mạch cửa.",
+      "physiology": "Dự trữ và cô đặc dịch mật gấp 5 - 10 lần (hấp thu bớt nước và ion). Khi thức ăn giàu chất béo vào tá tràng, tá tràng tiết hormone Cholecystokinin (CCK) kích thích túi mật co bóp tống mật vào tá tràng để nhũ hóa lipid và tạo micelle giúp hấp thu vitamin tan trong dầu (A, D, E, K).",
+      "clinicalNotes": "Sỏi túi mật rất phổ biến. Sỏi kẹt ở cổ túi mật gây cơn đau quặn mật và viêm túi mật cấp (dấu hiệu Murphy dương tính). Tam giác Calot là mốc phẫu thuật sống còn trong cắt túi mật nội soi để phẫu tích an toàn ĐM túi mật và tránh cắt nhầm vào Ống mật chủ. Sỏi ống mật chủ rơi xuống kẹt tại cơ vòng Oddi gây Tam chứng Charcot (Đau - Sốt - Vàng da) và Viêm tụy cấp do trào ngược dịch mật vào ống tụy."
+    },
+    {
+      "id": "pancreas",
+      "vietnameseName": "Tụy Tạng (Tụy)",
+      "latinName": "Pancreas",
+      "englishName": "Pancreas",
+      "system": "parenchyma",
+      "layer": 3,
+      "color": "#f59e0b",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "pancreas_head", "name": "Đầu tụy & Mỏm móc (Processus uncinatus)", "explodeVector": [0.4, -0.1, 0.1] },
+        { "id": "pancreas_neck", "name": "Cổ tụy & Khuyết tụy (Mạch mạc treo)", "explodeVector": [0.2, 0.1, 0] },
+        { "id": "pancreas_body", "name": "Thân tụy (Băng ngang cột sống)", "explodeVector": [-0.2, 0.2, 0] },
+        { "id": "pancreas_tail", "name": "Đuôi tụy (Chạm rốn lách)", "explodeVector": [-0.6, 0.3, -0.1] },
+        { "id": "pancreas_duct_wirsung", "name": "Ống tụy chính (Wirsung)", "explodeVector": [0, 0, 0.3] },
+        { "id": "pancreas_duct_santorini", "name": "Ống tụy phụ (Santorini)", "explodeVector": [0.3, 0.2, 0.3] }
+      ],
+      "location": "Tạng nằm sau phúc mạc vắt ngang thành bụng sau từ quai tá tràng đến rốn lách (ngang mức L1 - L2), nằm sau dạ dày và trước cột sống thắt lưng. Dài 12 - 15 cm, nặng khoảng 80 g.",
+      "structure": "Gồm 4 phần: Đầu tụy (hình dẹt, nằm lọt trong vòng chữ C tá tràng, phía dưới có mỏm móc kẹp bó mạch mạc treo tràng trên); Cổ tụy (chỗ thắt hẹp nằm ngay trước tĩnh mạch cửa); Thân tụy (chạy chếch lên trên sang trái); Đuôi tụy (di động, đi trong dây chằng lách - thận chạm vào rốn lách). Hệ thống ống dẫn: Ống tụy chính (Wirsung) chạy dọc suốt chiều dài tụy đổ vào Nhú tá lớn; Ống tụy phụ (Santorini) tách từ ống chính ở đầu tụy đổ vào Nhú tá bé (nằm trên nhú lớn 2 cm).",
+      "vasculature": "Được cấp máu phong phú từ nhiều nguồn: Các ĐM tụy tá tràng trên (từ ĐM vị tá tràng), ĐM tụy tá tràng dưới (từ ĐM mạc treo tràng trên), và các nhánh tụy của ĐM lách (chạy uốn lượn ở bờ trên tụy). Thần kinh tự chủ từ đám rối tạng (Celiac plexus).",
+      "physiology": "Tuyến pha đặc biệt: Ngoại tiết (chiếm 98% thể tích, tiết 1.2 - 1.5 lít/ngày dịch tụy giàu enzyme: Trypsinogen/Chymotrypsinogen tiêu đạm, Amylase tiêu tinh bột, Lipase tiêu mỡ; nồng độ kiềm cao $NaHCO_3$ trung hòa axit vị); Nội tiết (chiếm 1-2%, gồm 1 triệu đảo tụy Langerhans: tế bào Beta tiết Insulin hạ đường huyết, tế bào Alpha tiết Glucagon nâng đường huyết, tế bào Delta tiết Somatostatin).",
+      "clinicalNotes": "Viêm tụy cấp là bệnh cấp cứu nội ngoại khoa nặng nề (enzym tụy tự tiêu hủy mô tụy, gây đau xuyên lưng kinh hoàng). Ung thư đầu tụy gây chèn ép sớm ống mật chủ dẫn đến vàng da tắc mật không đau (dấu hiệu Courvoisier: túi mật to căng không đau kèm vàng da tăng dần). Đám rối tạng nằm ngay sau tụy nên phong bế đám rối tạng bằng cồn là phương pháp giảm đau then chốt trong ung thư tụy giai đoạn cuối."
+    },
+    {
+      "id": "duodenum",
+      "vietnameseName": "Tá Tràng",
+      "latinName": "Duodenum",
+      "englishName": "Duodenum",
+      "system": "hollow_gi",
+      "layer": 3,
+      "color": "#fb923c",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "duodenum_d1", "name": "Đoạn trên (D1 / Hành tá tràng)", "explodeVector": [0.1, 0.4, 0.1] },
+        { "id": "duodenum_d2", "name": "Đoạn xuống (D2 - Có Nhú tá lớn/bé)", "explodeVector": [0.5, 0, 0.1] },
+        { "id": "duodenum_d3", "name": "Đoạn ngang (D3 - Dưới mạch mạc treo)", "explodeVector": [0.2, -0.4, 0] },
+        { "id": "duodenum_d4", "name": "Đoạn lên (D4 - Góc tá hỗng tràng Treitz)", "explodeVector": [-0.3, -0.1, -0.1] },
+        { "id": "duodenum_papilla", "name": "Nhú tá tràng lớn (Papilla Vater)", "explodeVector": [0.4, 0, 0.4] }
+      ],
+      "location": "Đoạn đầu tiên của ruột non, dài khoảng 25 cm (12 khoanh ngón tay), uốn hình chữ C ôm lấy đầu tụy. Cố định chặt vào thành bụng sau bởi Mạc dính Treitz.",
+      "structure": "Chia làm 4 phần: Đoạn trên (D1 - 2/3 đầu phình to gọi là Hành tá tràng / Bulbus duodeni, di động, dễ loét); Đoạn xuống (D2 - dài 8 cm, chạy dọc bờ phải đốt sống L1-L3, thành trong có Nhú tá lớn và Nhú tá bé); Đoạn ngang (D3 - dài 10 cm, bắt chéo trước TM chủ dưới và ĐM chủ bụng, bị kẹp giữa ĐM chủ bụng và ĐM mạc treo tràng trên); Đoạn lên (D4 - dài 2-3 cm, tận cùng ở Góc tá hỗng tràng được treo bởi Dây chằng Treitz).",
+      "vasculature": "Nhận máu từ các vòng cung động mạch tụy tá tràng trước và sau (sự tiếp nối giữa ĐM thân tạng qua ĐM vị tá tràng và ĐM mạc treo tràng trên qua ĐM tụy tá tràng dưới).",
+      "physiology": "Trung tâm trung hòa dưỡng trấp và tiêu hóa hóa học: Nhận dưỡng trấp giàu axit từ dạ dày, lập tức kích thích tiết dịch kiềm tá tràng (tuyến Brunner) cùng dịch tụy và dịch mật. Hầu hết các quá trình thủy phân đại phân tử (protein, lipid, glucid) thành các đơn phân diễn ra mạnh mẽ tại lòng tá tràng.",
+      "clinicalNotes": "Loét hành tá tràng là bệnh lý đường tiêu hóa rất hay gặp (đau lúc đói, ăn vào đỡ đau). Hội chứng kẹp động mạch mạc treo tràng trên (Wilkie syndrome): D3 tá tràng bị chèn ép giữa góc tạo bởi ĐM chủ bụng và ĐM mạc treo tràng trên gây tắc tá tràng bán phần. Góc tá hỗng tràng (Dây chằng Treitz) là ranh giới phân định xuất huyết tiêu hóa trên (nôn máu, đi ngoài phân đen) và xuất huyết tiêu hóa dưới."
+    },
+    {
+      "id": "small_intestine",
+      "vietnameseName": "Hỗng Tràng & Hồi Tràng (Ruột Non)",
+      "latinName": "Jejunum & Ileum",
+      "englishName": "Small Intestine",
+      "system": "hollow_gi",
+      "layer": 3,
+      "color": "#f87171",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "si_jejunum", "name": "Hỗng tràng (Quai nằm ngang, thành dày)", "explodeVector": [-0.3, 0.2, 0.3] },
+        { "id": "si_ileum", "name": "Hồi tràng (Quai nằm dọc, mảng Peyer)", "explodeVector": [0.3, -0.3, 0.2] },
+        { "id": "si_mesentery", "name": "Rễ mạc treo ruột non & Cung mạch", "explodeVector": [0, 0, -0.3] }
+      ],
+      "location": "Chiếm phần lớn tầng dưới mạc treo đại tràng ngang và khoang chậu hông, dài 6 - 7 mét, xếp thành 14 - 16 quai ruột hình chữ U.",
+      "structure": "Tiếp nối từ góc tá hỗng tràng đến van hồi manh tràng. Hỗng tràng chiếm 2/5 trên (thành dày, khẩu kính lớn, nhiều nếp vòng van nhung mao, mạng mạch máu ít cung nhưng nhánh thẳng dài); Hồi tràng chiếm 3/5 dưới (thành mỏng hơn, có nhiều nang bạch huyết chùm - Mảng Peyer, mạng mạch nhiều tầng cung nhánh thẳng ngắn). Toàn bộ ruột non được treo vào thành bụng sau bởi Mạc treo ruột non (rễ mạc treo dài chỉ 15 cm nhưng bờ tự do dài tới 6 mét bám vào quai ruột).",
+      "vasculature": "Được cấp máu độc quyền bởi Động mạch mạc treo tràng trên (SMA) qua 12 - 18 nhánh ĐM hỗng - hồi tràng; các nhánh nối nhau tạo thành các cung mạch bậc 1, bậc 2, bậc 3 rồi cho các nhánh thẳng cắm vào thành ruột. Tĩnh mạch mạc treo tràng trên dẫn máu về tĩnh mạch cửa.",
+      "physiology": "Cơ quan hấp thu dưỡng chất chính của cơ thể (khoảng 90% chất dinh dưỡng và 8 lít dịch mỗi ngày). Niêm mạc có diện tích hấp thu khổng lồ (~250 $m^2$ nhờ các nếp gấp van Kerckring, vi nhung mao microvilli). Nhu động ruột (sóng co bóp đẩy tới và co thắt từng đoạn nhào trộn) đẩy dưỡng chất với tốc độ 1 cm/phút (thời gian lưu 3 - 5 giờ).",
+      "clinicalNotes": "Tắc ruột cơ học do xoắn ruột quanh rễ mạc treo hoặc dây chằng dính sau mổ. Lồng ruột cấp hay gặp ở trẻ nhỏ (quai ruột lộn chui vào quai ruột kế cận). Viêm ruột hoại tử do tắc động mạch mạc treo tràng trên gây thiếu máu toàn bộ ruột non dẫn đến tử vong nhanh chóng nếu không mổ kịp thời. Túi thừa Meckel: di tích ống noãn hoàng ở bờ tự do hồi tràng (cách van Bauhin khoảng 60-100 cm), có thể gây viêm hoặc xuất huyết tiêu hóa giống viêm ruột thừa."
+    },
+    {
+      "id": "large_intestine",
+      "vietnameseName": "Ruột Già (Đại Tràng)",
+      "latinName": "Colon / Intestinum Crassum",
+      "englishName": "Large Intestine",
+      "system": "hollow_gi",
+      "layer": 2,
+      "color": "#a3e635",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "colon_cecum", "name": "Manh tràng & Van Bauhin", "explodeVector": [0.6, -0.4, 0.3] },
+        { "id": "colon_appendix", "name": "Ruột thừa (Vermiform Appendix)", "explodeVector": [0.7, -0.6, 0.4] },
+        { "id": "colon_ascending", "name": "Đại tràng lên & Góc gan", "explodeVector": [0.5, 0.1, 0.1] },
+        { "id": "colon_transverse", "name": "Đại tràng ngang & Mạc treo", "explodeVector": [0, 0.4, 0.4] },
+        { "id": "colon_descending", "name": "Góc lách & Đại tràng xuống", "explodeVector": [-0.5, 0.1, 0.1] },
+        { "id": "colon_sigmoid", "name": "Đại tràng sigma (Xích-ma)", "explodeVector": [-0.4, -0.4, 0.3] },
+        { "id": "colon_rectum", "name": "Trực tràng & Ống hậu môn", "explodeVector": [0, -0.7, -0.1] }
+      ],
+      "location": "Dài khoảng 1.5 mét, hình khung chữ U ngược vây quanh các quai ruột non. Bắt đầu từ hố chậu phải (manh tràng) và kết thúc tại hậu môn.",
+      "structure": "3 đặc điểm nhận dạng đặc trưng ngoài mắt thường (ruột non không có): 1. Ba dải cơ dọc (Taeniae coli - dải mạc treo, dải mạc nối, dải tự do; hội tụ tại gốc ruột thừa); 2. Các bướu phình đại tràng (Haustra); 3. Các túi thừa mạc nối (bọng mỡ phúc mạc). Các đoạn: Manh tràng (kèm ruột thừa), Đại tràng lên (dính vào thành bụng sau), Góc đại tràng phải (góc gan), Đại tràng ngang (di động, có mạc treo đại tràng ngang), Góc đại tràng trái (góc lách - cao hơn góc gan), Đại tràng xuống (dính), Đại tràng sigma (di động hình chữ S), Trực tràng (dài 12-15 cm, mất dải cơ dọc, phình bóng trực tràng) và Ống hậu môn.",
+      "vasculature": "Nửa phải đại tràng (manh tràng, ruột thừa, đại tràng lên, 2/3 phải đại tràng ngang) do ĐM mạc treo tràng trên (SMA) cấp máu. Nửa trái đại tràng (1/3 trái đại tràng ngang, đại tràng xuống, sigma, phần trên trực tràng) do ĐM mạc treo tràng dưới (IMA) cấp máu. Tiếp nối giữa 2 nguồn qua Cung động mạch Riolan và Cung viền Drummond.",
+      "physiology": "Tái hấp thu nước và điện giải (khoảng 1.5 lít nước/ngày được cô đặc thành 150g phân). Hệ vi sinh đường ruột khổng lồ (hơn 100 nghìn tỷ lợi khuẩn) lên men chất xơ tạo axit béo chuỗi ngắn (SCFA), tổng hợp vitamin K, vitamin nhóm B (B12, Biotin). Nhu động khối đẩy phân xuống trực tràng; phản xạ đại tiện do trung tâm tủy cùng S2-S4 điều hòa cùng cơ thắt hậu môn trong (tự chủ) và ngoài (chủ động).",
+      "clinicalNotes": "Viêm ruột thừa cấp: cấp cứu bụng ngoại khoa phổ biến nhất; điểm đau chói McBurney (1/3 ngoài đường nối gai chậu trước trên phải đến rốn). Ung thư đại trực tràng rất phổ biến (đại tràng phải hay gây thiếu máu âm thầm, đại tràng trái hay gây tắc ruột thay đổi thói quen đại tiện). Trĩ nội/ngoại là sự giãn búi tĩnh mạch trực tràng (liên quan vòng nối cửa - chủ). Viêm túi thừa đại tràng hay gặp ở đại tràng sigma."
+    },
+    {
+      "id": "esophagus",
+      "vietnameseName": "Thực Quản",
+      "latinName": "Oesophagus",
+      "englishName": "Esophagus",
+      "system": "hollow_gi",
+      "layer": 1,
+      "color": "#e2e8f0",
+      "canLocalExplode": false,
+      "location": "Ống cơ dài khoảng 25 cm nối tiếp hầu (tương ứng bờ dưới sụn nhẫn C6) chạy qua trung thất sau và chui qua cơ hoành (ngang T10) đổ vào tâm vị dạ dày (T11).",
+      "structure": "Chia làm 3 đoạn: Đoạn cổ (dài 5 cm, sau khí quản), Đoạn ngực (dài 16-18 cm, trong trung thất sau), Đoạn bụng (ngắn 2-3 cm, dưới cơ hoành). Có 3 chỗ hẹp sinh lý quan trọng: 1. Chỗ bắt đầu nối với hầu (cách cung răng 15 cm); 2. Chỗ bắt chéo cung ĐM chủ và phế quản gốc trái (cách cung răng 25 cm); 3. Chỗ chui qua lỗ cơ hoành (cách cung răng 40 cm). Thành gồm lớp cơ (1/3 trên cơ vân, 1/3 giữa hỗn hợp, 1/3 dưới cơ trơn) và lớp niêm mạc lót biểu mô lát tầng không sừng hóa.",
+      "vasculature": "Đoạn cổ nhận máu từ ĐM giáp dưới; Đoạn ngực nhận từ các nhánh phế quản và nhánh thực quản của ĐM chủ ngực; Đoạn bụng nhận từ ĐM vị trái và ĐM hoành dưới. Tĩnh mạch thực quản đổ về cả TM đơn (hệ chủ) và TM vị trái (hệ cửa) tạo nên vòng nối cửa - chủ ngực bụng.",
+      "physiology": "Dẫn truyền thức ăn và đồ uống từ hầu xuống dạ dày nhờ trọng lực và các sóng nhu động thực quản (sóng nguyên phát và thứ phát) nhịp nhàng trong 5 - 9 giây. Cơ thắt thực quản dưới (LES) duy trì trương lực đóng kín ngăn axit dạ dày trào ngược lên thực quản.",
+      "clinicalNotes": "Chỗ hẹp sinh lý thực quản là nơi dị vật đường ăn (xương cá, đồng xu) hay bị mắc kẹt và là vị trí hay gặp của ung thư thực quản. Bệnh trào ngược dạ dày thực quản (GERD) lâu ngày gây viêm loét và chuyển sản biểu mô Barrett thực quản (tiền ung thư). Tăng áp lực tĩnh mạch cửa trong xơ gan gây giãn vỡ các búi tĩnh mạch thực quản đoạn dưới dẫn đến nôn ra máu ồ ạt đe dọa tính mạng."
+    },
+    {
+      "id": "peritoneum_omentum",
+      "vietnameseName": "Phúc Mạc & Mạc Nối Lớn",
+      "latinName": "Peritoneum & Omentum Majus",
+      "englishName": "Peritoneum & Greater Omentum",
+      "system": "peritoneum",
+      "layer": 1,
+      "color": "#fef08a",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "omentum_greater", "name": "Mạc nối lớn (Tấm tạp dề bảo vệ ổ bụng)", "explodeVector": [0, -0.4, 0.6] },
+        { "id": "omentum_lesser", "name": "Mạc nối nhỏ (D/c gan - vị & gan - tá tràng)", "explodeVector": [0, 0.3, 0.2] },
+        { "id": "peritoneum_parietal", "name": "Lá thành phúc mạc", "explodeVector": [0, 0, 0.8] }
+      ],
+      "location": "Màng thanh mạc lớn nhất cơ thể lót mặt trong ổ bụng và bọc ngoài hầu hết các tạng tiêu hóa. Mạc nối lớn phủ như tấm rèm từ bờ cong lớn dạ dày xuống tận xương mu rồi quặt ngược lên bám vào đại tràng ngang.",
+      "structure": "Gồm 2 lá liên tiếp nhau: Lá thành (lót thành bụng, có cảm giác đau soma nhạy cảm bởi thần kinh hoành và TK gian sườn) và Lá tạng (bọc ngoài bề mặt các tạng tiêu hóa). Khoang giữa 2 lá là Ổ phúc mạc (khoang ảo chứa một lớp dịch thanh mạc mỏng 50ml giúp các tạng trượt lên nhau không dính). Ổ phúc mạc chia thành Đại phúc mạc và Tiểu phúc mạc (Hậu cung mạc nối / Omental bursa nằm sau dạ dày).",
+      "vasculature": "Được cấp máu bởi các nhánh động mạch vị mạc nối và động mạch thành bụng; mạng lưới mạch máu và bạch huyết cực kỳ phong phú có khả năng tái hấp thu dịch ổ bụng rất nhanh.",
+      "physiology": "Bảo vệ và chống nhiễm trùng: Mạc nối lớn được mệnh danh là 'Người cảnh sát của ổ bụng' (The Policeman of the Abdomen) vì giàu tế bào mỡ, mạch máu và đại thực bào; có khả năng tự động di chuyển đến bọc kín và cô lập các ổ viêm nhiễm (như ổ viêm ruột thừa, thủng dạ dày) để ngăn viêm phúc mạc toàn thể.",
+      "clinicalNotes": "Viêm phúc mạc toàn thể là tối cấp cứu ngoại khoa bụng (dấu hiệu bụng cứng như gỗ, co cứng thành bụng và cảm ứng phúc mạc - Blumberg dương tính). Dính ruột sau phẫu thuật là biến chứng do phúc mạc phản ứng xơ hóa. Túi cùng Douglas (túi cùng trực tràng - tử cung ở nữ / trực tràng - bàng quang ở nam) là điểm thấp nhất của ổ phúc mạc, nơi đọng dịch/mủ đầu tiên; thăm khám trực tràng/âm đạo thấy túi cùng Douglas phồng và đau nhói ('tiếng kêu Douglas')."
+    }
+  ]
+}
