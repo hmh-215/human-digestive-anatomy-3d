@@ -549,3 +549,208 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: var(--text-muted);
   z-index: 5;
 }
+
+/* ========================================================
+   STOMACH 4-LAYER WALL CONTROLS & HISTOLOGY DRAWER
+   ======================================================== */
+.stomach-wall-box {
+  background: rgba(225, 29, 72, 0.05);
+  border: 1px solid rgba(225, 29, 72, 0.25);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wall-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wall-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e11d48;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mini-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-elevated);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mini-btn:hover {
+  border-color: #e11d48;
+  color: #e11d48;
+}
+
+.wall-preset-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.wall-preset-pill {
+  padding: 5px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface-elevated);
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.wall-preset-pill:hover {
+  border-color: #e11d48;
+  color: #e11d48;
+}
+
+.wall-preset-pill.active {
+  background: #e11d48;
+  color: #fff;
+  border-color: #e11d48;
+}
+
+.wall-layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.wall-layer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-color);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wall-layer-item:hover {
+  border-color: #e11d48;
+  transform: translateX(2px);
+}
+
+.wall-layer-item.active-layer {
+  border-color: #e11d48;
+  background: rgba(225, 29, 72, 0.08);
+}
+
+.wall-layer-item input[type="checkbox"] {
+  accent-color: #e11d48;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}
+
+.wall-layer-item label {
+  cursor: pointer;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-main);
+}
+
+.layer-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0,0,0,0.2);
+}
+
+/* DRAWER HISTOLOGY CARDS */
+.wall-layer-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-surface-elevated);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.wall-layer-card:hover {
+  border-color: #e11d48;
+}
+
+.wall-layer-card.highlight {
+  border-color: #e11d48;
+  background: rgba(225, 29, 72, 0.04);
+  box-shadow: 0 0 10px rgba(225, 29, 72, 0.15);
+}
+
+.wall-layer-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+}
+
+.wall-layer-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wall-layer-thickness-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.wall-sub-block {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.wall-sub-block strong {
+  color: var(--text-main);
+}
+
+.wall-clinical-sub {
+  background: rgba(239, 68, 68, 0.05);
+  border-left: 2px solid var(--danger);
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 11.5px;
+  color: var(--danger);
+  line-height: 1.45;
+}

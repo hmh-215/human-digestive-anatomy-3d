@@ -39,6 +39,14 @@ export class UIView {
     this.modePills = document.querySelectorAll('.mode-pill');
     this.landmarksPanel = document.getElementById('landmarks-panel');
 
+    // Stomach 4-layer wall controls
+    this.stomachWallBox = document.getElementById('stomach-wall-box');
+    this.stomachWallExplodeSlider = document.getElementById('stomach-wall-explode-slider');
+    this.stomachWallExplodeValue = document.getElementById('stomach-wall-explode-value');
+    this.stomachFocusBtn = document.getElementById('btn-stomach-focus');
+    this.stomachPresetPills = document.querySelectorAll('.wall-preset-pill');
+    this.stomachLayerItems = document.querySelectorAll('.wall-layer-item');
+
     this._bindDOMEvents();
     this._bindViewModelEvents();
     this._renderLandmarksList();
@@ -102,6 +110,58 @@ export class UIView {
       pill.addEventListener('click', () => {
         const mode = pill.dataset.mode;
         this.appVM.setMode(mode);
+      });
+    });
+
+    // 10. Thanh trượt Bóc Tách 4 Lớp Thành Dạ Dày
+    if (this.stomachWallExplodeSlider) {
+      this.stomachWallExplodeSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        this.dissectionVM.setStomachWallExplodeFactor(val);
+        if (this.stomachWallExplodeValue) {
+          this.stomachWallExplodeValue.textContent = `${Math.round(val * 100)}%`;
+        }
+      });
+    }
+
+    // 11. Nút Phóng to Dạ Dày
+    if (this.stomachFocusBtn) {
+      this.stomachFocusBtn.addEventListener('click', () => {
+        if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView) {
+          window.__DIGESTIVE_APP__.sceneView.focusStomach();
+        }
+      });
+    }
+
+    // 12. Nút Preset Bóc Lớp Nhanh
+    this.stomachPresetPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const preset = pill.dataset.preset;
+        this.dissectionVM.peelToLayer(preset);
+        this.stomachPresetPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+      });
+    });
+
+    // 13. Toggles 4 Lớp Thành Dạ Dày
+    this.stomachLayerItems.forEach(item => {
+      const layerId = item.dataset.layerId;
+      const chk = item.querySelector('input[type="checkbox"]');
+      if (chk) {
+        chk.addEventListener('change', () => {
+          this.dissectionVM.setStomachWallLayerVisibility(layerId, chk.checked);
+        });
+      }
+      item.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') {
+          this.dissectionVM.setActiveWallLayer(layerId);
+          const targetCard = document.getElementById(`card-${layerId}`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.querySelectorAll('.wall-layer-card').forEach(c => c.classList.remove('highlight'));
+            targetCard.classList.add('highlight');
+          }
+        }
       });
     });
   }
@@ -195,6 +255,49 @@ export class UIView {
         this.landmarksPanel.classList.add('hidden');
       }
     });
+
+    // 7. Hiện / Ẩn Stomach Wall Dissection Dock khi chọn Dạ Dày
+    this.sceneVM.subscribe('selectedOrganId', (organId) => {
+      if (this.stomachWallBox) {
+        if (organId === 'stomach') {
+          this.stomachWallBox.classList.remove('hidden');
+        } else {
+          this.stomachWallBox.classList.add('hidden');
+        }
+      }
+    });
+
+    // 8. Đồng bộ Checkbox & Active state của 4 Lớp
+    this.dissectionVM.subscribe('stomachWallLayers', (layers) => {
+      if (!layers) return;
+      this.stomachLayerItems.forEach(item => {
+        const layerId = item.dataset.layerId;
+        const chk = item.querySelector('input[type="checkbox"]');
+        if (chk && layers[layerId] !== undefined) {
+          chk.checked = layers[layerId];
+        }
+      });
+    });
+
+    // 9. Đồng bộ thanh trượt Wall Explode
+    this.dissectionVM.subscribe('stomachWallExplodeFactor', (factor) => {
+      if (this.stomachWallExplodeSlider) {
+        this.stomachWallExplodeSlider.value = factor;
+      }
+      if (this.stomachWallExplodeValue) {
+        this.stomachWallExplodeValue.textContent = `${Math.round(factor * 100)}%`;
+      }
+    });
+
+    // 10. Đồng bộ Active Layer Highlight
+    this.dissectionVM.subscribe('activeWallLayerId', (layerId) => {
+      this.stomachLayerItems.forEach(item => {
+        item.classList.toggle('active-layer', item.dataset.layerId === layerId);
+      });
+      document.querySelectorAll('.wall-layer-card').forEach(card => {
+        card.classList.toggle('highlight', card.id === `card-${layerId}`);
+      });
+    });
   }
 
   _showOrganDrawer(organ) {
@@ -213,6 +316,45 @@ export class UIView {
       `;
     }
 
+    let wallLayersHtml = '';
+    if (organ.wallLayers && organ.wallLayers.length > 0) {
+      wallLayersHtml = `
+        <div class="drawer-section">
+          <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
+            🔬 Cấu Tạo Mô Học 4 Tầng Thành Dạ Dày:
+          </h4>
+          <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
+            Bấm vào từng tầng để xem mô tả cấu trúc vi thể và ý nghĩa phẫu thuật tương ứng:
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${organ.wallLayers.map(l => `
+              <div class="wall-layer-card" id="card-${l.id}" data-layer-id="${l.id}">
+                <div class="wall-layer-card-header">
+                  <span class="wall-layer-card-title">
+                    <span class="layer-dot" style="background: ${l.color};"></span>
+                    ${l.name}
+                  </span>
+                  <span class="wall-layer-thickness-badge">${l.thickness}</span>
+                </div>
+                <div class="wall-sub-block">
+                  <strong>📍 Đại thể:</strong> ${l.description}
+                </div>
+                <div class="wall-sub-block">
+                  <strong>🔬 Mô học vi thể:</strong> ${l.histology}
+                </div>
+                <div class="wall-sub-block">
+                  <strong>⚡ Sinh lý:</strong> ${l.physiology}
+                </div>
+                <div class="wall-clinical-sub">
+                  <strong>⚠️ Lâm sàng ĐHYHN:</strong> ${l.clinicalNotes}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     this.drawerContentEl.innerHTML = `
       <div class="drawer-badge">Tầng Bóc Tách: ${organ.layer}</div>
       <div class="drawer-section">
@@ -223,6 +365,7 @@ export class UIView {
         <h4>🔬 Hình Thể Ngoài & Cấu Trúc Trong:</h4>
         <p>${organ.structure}</p>
       </div>
+      ${wallLayersHtml}
       ${subListHtml}
       <div class="drawer-section">
         <h4>🩸 Mạch Máu & Thần Kinh Chi Phối:</h4>
@@ -237,6 +380,14 @@ export class UIView {
         <p>${organ.clinicalNotes}</p>
       </div>
     `;
+
+    // Gán sự kiện click vào các thẻ lớp mô học trong Drawer
+    this.drawerContentEl.querySelectorAll('.wall-layer-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const layerId = card.dataset.layerId;
+        this.dissectionVM.setActiveWallLayer(layerId);
+      });
+    });
 
     this.drawerEl.classList.add('open');
   }

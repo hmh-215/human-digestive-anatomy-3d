@@ -15,7 +15,16 @@ export class DissectionViewModel extends Observable {
       isIsolateMode: false,
       isXRayMode: false,
       globalExplodeFactor: 0.0,
-      isWindowingOpen: false
+      isWindowingOpen: false,
+      // Bóc tách 4 tầng mô học thành dạ dày (Stomach Wall Dissection)
+      stomachWallLayers: {
+        stomach_serosa: true,
+        stomach_muscularis: true,
+        stomach_submucosa: true,
+        stomach_mucosa: true
+      },
+      stomachWallExplodeFactor: 0.0,
+      activeWallLayerId: null
     });
     this.appVM = appVM;
   }
@@ -72,9 +81,54 @@ export class DissectionViewModel extends Observable {
     this.state.isWindowingOpen = !this.state.isWindowingOpen;
   }
 
+  toggleStomachWallLayer(layerId) {
+    const updated = { ...this.state.stomachWallLayers };
+    updated[layerId] = !updated[layerId];
+    this.state.stomachWallLayers = updated;
+  }
+
+  setStomachWallLayerVisibility(layerId, isVisible) {
+    const updated = { ...this.state.stomachWallLayers };
+    updated[layerId] = isVisible;
+    this.state.stomachWallLayers = updated;
+  }
+
+  setStomachWallExplodeFactor(factor) {
+    this.state.stomachWallExplodeFactor = Math.max(0, Math.min(1, factor));
+  }
+
+  setActiveWallLayer(layerId) {
+    this.state.activeWallLayerId = layerId;
+  }
+
+  peelToLayer(targetLayerId) {
+    const updated = {
+      stomach_serosa: false,
+      stomach_muscularis: false,
+      stomach_submucosa: false,
+      stomach_mucosa: false
+    };
+    if (targetLayerId === 'all' || targetLayerId === 'stomach_serosa') {
+      updated.stomach_serosa = true;
+      updated.stomach_muscularis = true;
+      updated.stomach_submucosa = true;
+      updated.stomach_mucosa = true;
+    } else if (targetLayerId === 'stomach_muscularis') {
+      updated.stomach_muscularis = true;
+      updated.stomach_submucosa = true;
+      updated.stomach_mucosa = true;
+    } else if (targetLayerId === 'stomach_submucosa') {
+      updated.stomach_submucosa = true;
+      updated.stomach_mucosa = true;
+    } else if (targetLayerId === 'stomach_mucosa') {
+      updated.stomach_mucosa = true;
+    }
+    this.state.stomachWallLayers = updated;
+  }
+
   resetAll() {
     this.batch(() => {
-      this.state.depthLevel = 3;
+      this.state.depthLevel = 1;
       this.state.visibleLayers = [1, 2, 3, 4, 5];
       this.state.localExplodeOrganId = null;
       this.state.localExplodeFactor = 0.0;
@@ -82,6 +136,14 @@ export class DissectionViewModel extends Observable {
       this.state.isXRayMode = false;
       this.state.globalExplodeFactor = 0.0;
       this.state.isWindowingOpen = false;
+      this.state.stomachWallLayers = {
+        stomach_serosa: true,
+        stomach_muscularis: true,
+        stomach_submucosa: true,
+        stomach_mucosa: true
+      };
+      this.state.stomachWallExplodeFactor = 0.0;
+      this.state.activeWallLayerId = null;
     });
   }
 }

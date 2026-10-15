@@ -59,6 +59,16 @@ export class SceneView {
     this.landmarkMarkers = new Map();
     this.clickableMeshes = [];
     this.allVisceralMeshes = [];
+    this.stomachWallMeshes = [];
+
+    // Procedural PBR Textures for Hollow GI Wall Layers
+    this.serosaTexture = null;
+    this.muscularisTexture = null;
+    this.muscularisBump = null;
+    this.submucosaTexture = null;
+    this.submucosaBump = null;
+    this.mucosaTexture = null;
+    this.mucosaBump = null;
 
     this._setupLoadingOverlay();
     this._setupLights();
@@ -142,9 +152,302 @@ export class SceneView {
     this.scene.add(rimLight);
   }
 
+  _generateProceduralTextures() {
+    const createCanvas = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      return canvas;
+    };
+
+    // 1. LỚP 1: THANH MẠC (TUNICA SEROSA)
+    // Mặt màng bụng óng ánh (peritoneal sheen) với vi mạch thanh mạc mỏng
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#e11d48');
+      grad.addColorStop(0.5, '#f43f5e');
+      grad.addColorStop(1, '#db2777');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Mạng vi mạch thanh mạc nhẹ nhàng
+      ctx.strokeStyle = 'rgba(159, 18, 57, 0.25)';
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < 40; i++) {
+        ctx.beginPath();
+        let x = Math.random() * 512;
+        let y = Math.random() * 512;
+        ctx.moveTo(x, y);
+        for (let j = 0; j < 4; j++) {
+          x += (Math.random() - 0.5) * 60;
+          y += (Math.random() - 0.5) * 60;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // Đốm phản chiếu thanh dịch óng ánh (peritoneal fluid glistening)
+      for (let i = 0; i < 60; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random() * 6 + 2;
+        const dotGrad = ctx.createRadialGradient(x, y, 0, x, y, r);
+        dotGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+        dotGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = dotGrad;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      this.serosaTexture = new THREE.CanvasTexture(canvas);
+      this.serosaTexture.wrapS = THREE.RepeatWrapping;
+      this.serosaTexture.wrapT = THREE.RepeatWrapping;
+    }
+
+    // 2. LỚP 2: TẦNG CƠ (TUNICA MUSCULARIS)
+    // Màu đỏ nâu sẫm myoglobin, 3 hướng thớ cơ trơn (dọc, vòng, chéo)
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#7f1d1d';
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Thớ cơ dọc
+      ctx.strokeStyle = 'rgba(153, 27, 27, 0.6)';
+      ctx.lineWidth = 2.5;
+      for (let x = 0; x < 512; x += 4) {
+        ctx.beginPath();
+        ctx.moveTo(x + (Math.random() - 0.5) * 2, 0);
+        ctx.lineTo(x + (Math.random() - 0.5) * 4, 512);
+        ctx.stroke();
+      }
+
+      // Thớ cơ vòng
+      ctx.fillStyle = 'rgba(185, 28, 28, 0.25)';
+      for (let y = 0; y < 512; y += 12) {
+        ctx.fillRect(0, y, 512, 6);
+      }
+
+      // Thớ cơ chéo
+      ctx.strokeStyle = 'rgba(220, 38, 38, 0.35)';
+      ctx.lineWidth = 1.5;
+      for (let i = -512; i < 512; i += 8) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + 512, 512);
+        ctx.stroke();
+      }
+
+      // Đám rối thần kinh Auerbach (hạt nhỏ màu hổ phách giữa các bó cơ)
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
+      for (let i = 0; i < 120; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      this.muscularisTexture = new THREE.CanvasTexture(canvas);
+      this.muscularisTexture.wrapS = THREE.RepeatWrapping;
+      this.muscularisTexture.wrapT = THREE.RepeatWrapping;
+
+      // Bump Map
+      const bumpCanvas = createCanvas();
+      const bCtx = bumpCanvas.getContext('2d');
+      bCtx.fillStyle = '#808080';
+      bCtx.fillRect(0, 0, 512, 512);
+      bCtx.strokeStyle = '#f0f0f0';
+      bCtx.lineWidth = 2;
+      for (let x = 0; x < 512; x += 5) {
+        bCtx.beginPath();
+        bCtx.moveTo(x, 0);
+        bCtx.lineTo(x, 512);
+        bCtx.stroke();
+      }
+      bCtx.strokeStyle = '#202020';
+      bCtx.lineWidth = 1.5;
+      for (let y = 0; y < 512; y += 10) {
+        bCtx.beginPath();
+        bCtx.moveTo(0, y);
+        bCtx.lineTo(512, y);
+        bCtx.stroke();
+      }
+      this.muscularisBump = new THREE.CanvasTexture(bumpCanvas);
+      this.muscularisBump.wrapS = THREE.RepeatWrapping;
+      this.muscularisBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // 3. LỚP 3: TẦNG DƯỚI NIÊM MẠC (TELA SUBMUCOSA)
+    // Màu trắng ngà / hồng phấn nhạt collagen + Đám rối vi mạch Meissner
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#fdf2f8');
+      grad.addColorStop(0.5, '#fce7f3');
+      grad.addColorStop(1, '#fed7aa');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Lưới sợi chun liên kết lỏng lẻo
+      ctx.strokeStyle = 'rgba(219, 39, 119, 0.12)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 80; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 40 + 10, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Đám rối vi mạch phân nhánh
+      const drawVascularBranch = (x0, y0, length, angle, depth, strokeColor, width) => {
+        if (depth <= 0) return;
+        const x1 = x0 + Math.cos(angle) * length;
+        const y1 = y0 + Math.sin(angle) * length;
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.quadraticCurveTo(
+          (x0 + x1) / 2 + (Math.random() - 0.5) * 15,
+          (y0 + y1) / 2 + (Math.random() - 0.5) * 15,
+          x1, y1
+        );
+        ctx.stroke();
+
+        const spread = 0.5 + Math.random() * 0.3;
+        drawVascularBranch(x1, y1, length * 0.72, angle + spread, depth - 1, strokeColor, width * 0.7);
+        drawVascularBranch(x1, y1, length * 0.72, angle - spread, depth - 1, strokeColor, width * 0.7);
+      };
+
+      for (let i = 0; i < 12; i++) {
+        const rx = Math.random() * 450 + 30;
+        const ry = Math.random() * 450 + 30;
+        drawVascularBranch(rx, ry, 35, Math.random() * Math.PI * 2, 4, '#dc2626', 2.8);
+      }
+      for (let i = 0; i < 8; i++) {
+        const rx = Math.random() * 450 + 30;
+        const ry = Math.random() * 450 + 30;
+        drawVascularBranch(rx, ry, 30, Math.random() * Math.PI * 2, 3, '#2563eb', 2.2);
+      }
+
+      // Hạch thần kinh Meissner
+      ctx.fillStyle = '#d97706';
+      for (let i = 0; i < 50; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      this.submucosaTexture = new THREE.CanvasTexture(canvas);
+      this.submucosaTexture.wrapS = THREE.RepeatWrapping;
+      this.submucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpCanvas = createCanvas();
+      const bCtx = bumpCanvas.getContext('2d');
+      bCtx.fillStyle = '#808080';
+      bCtx.fillRect(0, 0, 512, 512);
+      for (let i = 0; i < 300; i++) {
+        bCtx.fillStyle = Math.random() > 0.5 ? '#a0a0a0' : '#606060';
+        bCtx.beginPath();
+        bCtx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 3 + 1, 0, Math.PI * 2);
+        bCtx.fill();
+      }
+      this.submucosaBump = new THREE.CanvasTexture(bumpCanvas);
+      this.submucosaBump.wrapS = THREE.RepeatWrapping;
+      this.submucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // 4. LỚP 4: LỚP NIÊM MẠC (TUNICA MUCOSA)
+    // Nếp gấp vị Rugae uốn lượn rõ rệt, lỗ hố tuyến vị (gastric pits)
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#be123c');
+      grad.addColorStop(0.5, '#e11d48');
+      grad.addColorStop(1, '#f43f5e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Nếp Gấp Vị Rugae
+      for (let y = 30; y < 512; y += 45) {
+        ctx.strokeStyle = 'rgba(76, 5, 25, 0.65)';
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.moveTo(0, y + 6);
+        for (let x = 0; x <= 512; x += 30) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
+          ctx.lineTo(x, y + 6 + offset);
+        }
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(253, 164, 175, 0.85)';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        for (let x = 0; x <= 512; x += 30) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
+          ctx.lineTo(x, y + offset);
+        }
+        ctx.stroke();
+      }
+
+      // Lỗ hố vị (Gastric Pits)
+      ctx.fillStyle = 'rgba(76, 5, 25, 0.45)';
+      for (let i = 0; i < 400; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 1.5 + 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      this.mucosaTexture = new THREE.CanvasTexture(canvas);
+      this.mucosaTexture.wrapS = THREE.RepeatWrapping;
+      this.mucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // Bump Map
+      const bumpCanvas = createCanvas();
+      const bCtx = bumpCanvas.getContext('2d');
+      bCtx.fillStyle = '#808080';
+      bCtx.fillRect(0, 0, 512, 512);
+      for (let y = 30; y < 512; y += 45) {
+        bCtx.strokeStyle = '#202020';
+        bCtx.lineWidth = 16;
+        bCtx.beginPath();
+        bCtx.moveTo(0, y + 6);
+        for (let x = 0; x <= 512; x += 30) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
+          bCtx.lineTo(x, y + 6 + offset);
+        }
+        bCtx.stroke();
+
+        bCtx.strokeStyle = '#f0f0f0';
+        bCtx.lineWidth = 8;
+        bCtx.beginPath();
+        bCtx.moveTo(0, y);
+        for (let x = 0; x <= 512; x += 30) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
+          bCtx.lineTo(x, y + offset);
+        }
+        bCtx.stroke();
+      }
+      this.mucosaBump = new THREE.CanvasTexture(bumpCanvas);
+      this.mucosaBump.wrapS = THREE.RepeatWrapping;
+      this.mucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+  }
+
   _loadZAnatomyVisceralFBX() {
     const loader = new FBXLoader();
     this._updateLoadingProgress(20, 'Đang tải tệp VisceralSystem.fbx (17.5 MB)...');
+
+    // Khởi tạo các bộ texture PBR cho các tầng mô học
+    this._generateProceduralTextures();
 
     loader.load(
       './assets/models/VisceralSystem.fbx',
@@ -338,6 +641,12 @@ export class SceneView {
         return;
       }
 
+      // ĐẶC BIỆT: Đối với Dạ Dày (Stomach), tạo 4 tầng mô học đồng tâm chuẩn ĐHYHN
+      if (child.name === 'Stomach') {
+        this._createStomachWallLayers(child);
+        return;
+      }
+
       // Là cơ quan tiêu hóa thật!
       child.visible = true;
       child.userData = {
@@ -404,6 +713,116 @@ export class SceneView {
     this._updateLayerVisibility(this.dissectionVM.state.visibleLayers);
     this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
     console.info(`[Z-Anatomy] Hoàn tất nạp mô hình thật 100% vào Scene!`);
+  }
+
+  _createStomachWallLayers(stomachMesh) {
+    this.stomachWallMeshes = [];
+    const origGeo = stomachMesh.geometry;
+    if (!origGeo.attributes.normal) {
+      origGeo.computeVertexNormals();
+    }
+    origGeo.computeBoundingSphere();
+    const radius = (origGeo.boundingSphere && origGeo.boundingSphere.radius) ? origGeo.boundingSphere.radius : 0.081;
+
+    const organData = this.appVM.organsData.find(o => o.id === 'stomach');
+    const wallLayersDef = (organData && organData.wallLayers) || [
+      { id: 'stomach_serosa', name: 'Lớp 1: Thanh Mạc (Tunica Serosa)', layerOrder: 1 },
+      { id: 'stomach_muscularis', name: 'Lớp 2: Tầng Cơ (Tunica Muscularis)', layerOrder: 2 },
+      { id: 'stomach_submucosa', name: 'Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)', layerOrder: 3 },
+      { id: 'stomach_mucosa', name: 'Lớp 4: Lớp Niêm Mạc (Tunica Mucosa)', layerOrder: 4 }
+    ];
+
+    // Inset distances:
+    // Serosa: d = 0.0
+    // Muscularis: d = 0.022 * radius (dịch vào ~1.8mm)
+    // Submucosa: d = 0.044 * radius (dịch vào ~3.6mm)
+    // Mucosa: d = 0.066 * radius (dịch vào ~5.4mm)
+    const insets = [0.0, 0.022 * radius, 0.044 * radius, 0.066 * radius];
+
+    const materials = [
+      new THREE.MeshStandardMaterial({
+        map: this.serosaTexture,
+        roughness: 0.22,
+        metalness: 0.08,
+        side: THREE.DoubleSide
+      }),
+      new THREE.MeshStandardMaterial({
+        map: this.muscularisTexture,
+        bumpMap: this.muscularisBump,
+        bumpScale: 0.002,
+        roughness: 0.55,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      }),
+      new THREE.MeshStandardMaterial({
+        map: this.submucosaTexture,
+        bumpMap: this.submucosaBump,
+        bumpScale: 0.0015,
+        roughness: 0.45,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      }),
+      new THREE.MeshStandardMaterial({
+        map: this.mucosaTexture,
+        bumpMap: this.mucosaBump,
+        bumpScale: 0.004,
+        roughness: 0.35,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      })
+    ];
+
+    // Hướng bóc tách mở rộng ra trước-bên (anterior-lateral)
+    const baseExplodeDir = new THREE.Vector3(-0.09, 0.02, 0.07);
+
+    wallLayersDef.forEach((layerDef, idx) => {
+      const d = insets[idx];
+      const geo = origGeo.clone();
+      if (d > 0) {
+        const posAttr = geo.attributes.position;
+        const normAttr = geo.attributes.normal;
+        for (let i = 0; i < posAttr.count; i++) {
+          const px = posAttr.getX(i) - normAttr.getX(i) * d;
+          const py = posAttr.getY(i) - normAttr.getY(i) * d;
+          const pz = posAttr.getZ(i) - normAttr.getZ(i) * d;
+          posAttr.setXYZ(i, px, py, pz);
+        }
+        posAttr.needsUpdate = true;
+        geo.computeVertexNormals();
+      }
+
+      const mesh = new THREE.Mesh(geo, materials[idx]);
+      mesh.name = layerDef.id;
+      mesh.position.copy(stomachMesh.position);
+      mesh.rotation.copy(stomachMesh.rotation);
+      mesh.scale.copy(stomachMesh.scale);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      // Serosa (idx=0) di chuyển xa nhất (factor 1.0), Muscularis 0.67, Submucosa 0.33, Mucosa 0.0
+      const offsetFactor = (3 - idx) / 3;
+      const wallExplodeOffset = baseExplodeDir.clone().multiplyScalar(offsetFactor);
+
+      mesh.userData = {
+        organId: 'stomach',
+        isStomachWallLayer: true,
+        wallLayerId: layerDef.id,
+        wallLayerOrder: layerDef.layerOrder,
+        wallLayerName: layerDef.name,
+        rawName: layerDef.name,
+        initialPos: stomachMesh.position.clone(),
+        wallExplodeOffset: wallExplodeOffset,
+        explodeVector: new THREE.Vector3(-0.06, 0.03, 0.05)
+      };
+
+      stomachMesh.parent.add(mesh);
+      this.stomachWallMeshes.push(mesh);
+      this.clickableMeshes.push(mesh);
+      this.allVisceralMeshes.push(mesh);
+    });
+
+    stomachMesh.visible = false;
+    console.info(`[Stomach 4-Layers] Đã tạo thành công 4 tầng mô học đồng tâm (Serosa, Muscularis, Submucosa, Mucosa)`);
   }
 
   _buildClinicalLandmarks() {
@@ -474,7 +893,12 @@ export class SceneView {
       const hits = this.raycaster.intersectObjects(this.clickableMeshes, true);
       if (hits.length > 0) {
         const topHit = hits[0].object;
-        this.sceneVM.selectOrgan(topHit.userData.organId);
+        if (topHit.userData.isStomachWallLayer) {
+          this.sceneVM.selectOrgan('stomach');
+          this.dissectionVM.setActiveWallLayer(topHit.userData.wallLayerId);
+        } else {
+          this.sceneVM.selectOrgan(topHit.userData.organId);
+        }
       }
     });
   }
@@ -490,6 +914,19 @@ export class SceneView {
 
     this.dissectionVM.subscribe('localExplodeFactor', (factor) => {
       this._updateLocalizedExplosion(factor);
+    });
+
+    this.dissectionVM.subscribe('stomachWallLayers', () => {
+      this._updateStomachWallDissection();
+      this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
+    });
+
+    this.dissectionVM.subscribe('stomachWallExplodeFactor', () => {
+      this._updateStomachWallDissection();
+    });
+
+    this.dissectionVM.subscribe('activeWallLayerId', (layerId) => {
+      this._highlightActiveWallLayer(layerId);
     });
 
     this.dissectionVM.subscribe('isIsolateMode', () => {
@@ -522,12 +959,52 @@ export class SceneView {
       gallbladder_tree: 3, pancreas: 3, duodenum: 3, small_intestine: 3
     };
 
+    const wallLayersState = this.dissectionVM.state.stomachWallLayers || {};
+    const activeWallLayerId = this.dissectionVM.state.activeWallLayerId;
+
     this.clickableMeshes.forEach((mesh) => {
       const organId = mesh.userData.organId;
+      const isWallLayer = !!mesh.userData.isStomachWallLayer;
       const layer = layerMap[organId] || 3;
 
       if (!visibleLayers.includes(layer)) {
         mesh.visible = false;
+        return;
+      }
+
+      if (isWallLayer) {
+        const isLayerOn = wallLayersState[mesh.userData.wallLayerId] !== false;
+        if (!isLayerOn) {
+          mesh.visible = false;
+          return;
+        }
+
+        if (!selectedId) {
+          mesh.visible = true;
+          mesh.material.transparent = isXRay;
+          mesh.material.opacity = isXRay ? 0.35 : 1.0;
+          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        } else if (selectedId === 'stomach') {
+          mesh.visible = true;
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          if (mesh.material.emissive) {
+            if (activeWallLayerId && mesh.userData.wallLayerId === activeWallLayerId) {
+              mesh.material.emissive.setHex(0x331111);
+            } else {
+              mesh.material.emissive.setHex(0x000000);
+            }
+          }
+        } else {
+          if (isIsolate) {
+            mesh.visible = false;
+          } else {
+            mesh.visible = true;
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.12;
+            if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+          }
+        }
         return;
       }
 
@@ -557,6 +1034,72 @@ export class SceneView {
         }
       }
     });
+
+    this._updateStomachWallDissection();
+  }
+
+  _updateStomachWallDissection() {
+    if (!this.stomachWallMeshes || this.stomachWallMeshes.length === 0) return;
+    const layersState = this.dissectionVM.state.stomachWallLayers || {};
+    const explodeFactor = this.dissectionVM.state.stomachWallExplodeFactor || 0.0;
+    const localExplodeFactor = this.dissectionVM.state.localExplodeFactor || 0.0;
+    const selectedOrganId = this.sceneVM.state.selectedOrganId;
+    const visibleLayers = this.dissectionVM.state.visibleLayers;
+    const isStomachVisible = visibleLayers.includes(2);
+
+    // Hướng bóc tách trong WORLD space: Sang trái (hướng ô mở giữa màn hình) và ra trước (về phía camera)
+    const worldExplodeDir = new THREE.Vector3(-1.1, 0.25, 0.9);
+
+    this.stomachWallMeshes.forEach(mesh => {
+      const layerId = mesh.userData.wallLayerId;
+      const isLayerOn = layersState[layerId] !== false;
+
+      if (!isStomachVisible || !isLayerOn) {
+        mesh.visible = false;
+        return;
+      }
+
+      mesh.visible = true;
+
+      const pos = mesh.userData.initialPos.clone();
+      if (selectedOrganId === 'stomach' && localExplodeFactor > 0) {
+        pos.addScaledVector(mesh.userData.explodeVector, localExplodeFactor * 0.8);
+      }
+      if (explodeFactor > 0 && mesh.parent) {
+        const parentQuat = mesh.parent.getWorldQuaternion(new THREE.Quaternion());
+        const parentScale = mesh.parent.getWorldScale(new THREE.Vector3());
+        const localDir = worldExplodeDir.clone().applyQuaternion(parentQuat.invert()).divide(parentScale);
+
+        const layerOrder = mesh.userData.wallLayerOrder || 1;
+        const layerFactor = (4 - layerOrder) / 3;
+        pos.addScaledVector(localDir, explodeFactor * layerFactor * 1.5);
+      }
+      mesh.position.copy(pos);
+    });
+  }
+
+  _highlightActiveWallLayer(layerId) {
+    if (!this.stomachWallMeshes) return;
+    this.stomachWallMeshes.forEach(mesh => {
+      if (mesh.userData.wallLayerId === layerId) {
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x331111);
+      } else {
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+      }
+    });
+  }
+
+  focusStomach() {
+    if (this.stomachWallMeshes && this.stomachWallMeshes.length > 0) {
+      const mesh = this.stomachWallMeshes[0];
+      mesh.updateWorldMatrix(true, false);
+      const bbox = new THREE.Box3().setFromObject(mesh);
+      const center = bbox.getCenter(new THREE.Vector3());
+
+      this.controls.target.set(center.x, center.y, center.z);
+      this.camera.position.set(center.x - 0.4, center.y + 0.1, center.z + 5.2);
+      this.controls.update();
+    }
   }
 
   _updateLayerVisibility(visibleLayers) {
@@ -571,12 +1114,13 @@ export class SceneView {
       const layer = layerMap[organId] || 3;
       mesh.visible = visibleLayers.includes(layer);
     });
+    this._updateStomachWallDissection();
   }
 
   _updateLocalizedExplosion(factor) {
     const organId = this.dissectionVM.state.localExplodeOrganId;
     this.clickableMeshes.forEach((mesh) => {
-      if (mesh.userData.explodeVector) {
+      if (mesh.userData.explodeVector && !mesh.userData.isStomachWallLayer) {
         if (organId && mesh.userData.organId === organId) {
           mesh.position.copy(mesh.userData.initialPos).addScaledVector(mesh.userData.explodeVector, factor * 0.8);
         } else {
@@ -584,6 +1128,7 @@ export class SceneView {
         }
       }
     });
+    this._updateStomachWallDissection();
   }
 
   _smoothMoveCameraTarget(targetCoords) {
