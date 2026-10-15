@@ -602,10 +602,17 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: #e11d48;
 }
 
+.mini-btn.active {
+  background: #e11d48;
+  color: #ffffff;
+  border-color: #e11d48;
+  box-shadow: 0 0 8px rgba(225, 29, 72, 0.4);
+}
+
 .wall-preset-row {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
 }
 
 .wall-preset-pill {

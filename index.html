@@ -54,6 +54,21 @@
       <div class="landmarks-panel-header">
         <h4>🚨 Điểm Mốc Ngoại Khoa & Bệnh Học</h4>
       </div>
+
+      <!-- TORSO SKIN OPACITY SLIDER FOR CLINICAL SURFACE PALPATION -->
+      <div class="torso-control-box" style="padding: 10px 14px; background: rgba(224, 172, 105, 0.15); border-bottom: 1px solid rgba(212, 163, 115, 0.3);">
+        <div class="slider-label-row" style="margin-bottom: 4px;">
+          <span style="font-size: 11px; font-weight: 700; color: #b45309;">👤 Độ Mờ Da Bụng (Torso Opacity):</span>
+          <span id="torso-opacity-value" style="font-size: 11px; font-weight: 700; color: #78350f;">65%</span>
+        </div>
+        <input type="range" id="torso-opacity-slider" min="0" max="1" step="0.05" value="0.65" style="width: 100%;">
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 3px;">
+          <span>0% (Ẩn Da)</span>
+          <span>50% (Bán Thấu)</span>
+          <span>100% (Khám Da)</span>
+        </div>
+      </div>
+
       <div id="landmarks-list" class="landmarks-list-scroll"></div>
     </aside>
 
@@ -83,32 +98,47 @@
         <small style="font-size: 10px; color: var(--text-muted);">Kéo để tách rời các hạ phân thùy / cấu trúc con</small>
       </div>
 
-      <!-- STOMACH 4-LAYER WALL DISSECTION DOCK -->
+      <!-- STOMACH 6-LAYER WALL DISSECTION DOCK -->
       <div id="stomach-wall-box" class="stomach-wall-box hidden">
         <div class="wall-header-row">
-          <div class="wall-badge">🔬 MÔ HỌC THÀNH DẠ DÀY (4 LỚP)</div>
-          <button id="btn-stomach-focus" class="mini-btn" title="Phóng to Dạ Dày">🔍 Phóng to</button>
+          <div class="wall-badge">🔬 MÔ HỌC THÀNH DẠ DÀY (6 LỚP)</div>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-stomach-cutaway" class="mini-btn" title="Cắt mở bậc thang bộc lộ các tầng mô học và nếp gấp vị Rugae bên trong">✂️ Cắt Mở Lòng</button>
+            <button id="btn-stomach-focus" class="mini-btn" title="Phóng to Dạ Dày">🔍 Phóng to</button>
+          </div>
         </div>
 
         <!-- QUICK PEEL PRESETS -->
         <div class="wall-preset-row">
-          <button class="wall-preset-pill active" data-preset="all">Tất cả (4 Lớp)</button>
-          <button class="wall-preset-pill" data-preset="stomach_muscularis">Bóc Thanh Mạc</button>
-          <button class="wall-preset-pill" data-preset="stomach_submucosa">Bóc Tầng Cơ</button>
+          <button class="wall-preset-pill active" data-preset="all">Tất cả (6 Lớp)</button>
+          <button class="wall-preset-pill" data-preset="stomach_muscle_longitudinal">Bóc Thanh Mạc</button>
+          <button class="wall-preset-pill" data-preset="stomach_muscle_circular">Bộc Lộ Cơ Vòng</button>
+          <button class="wall-preset-pill" data-preset="stomach_muscle_oblique">Bộc Lộ Cơ Chéo</button>
+          <button class="wall-preset-pill" data-preset="stomach_submucosa">Bóc Hết Cơ</button>
           <button class="wall-preset-pill" data-preset="stomach_mucosa">Chỉ Niêm Mạc</button>
         </div>
 
-        <!-- 4 LAYER CHECKLIST -->
+        <!-- 6 LAYER CHECKLIST -->
         <div class="wall-layer-list">
           <div class="wall-layer-item" data-layer-id="stomach_serosa">
             <input type="checkbox" id="chk-serosa" checked>
             <span class="layer-dot" style="background: #e11d48;"></span>
             <label for="chk-serosa">Lớp 1: Thanh Mạc (Serosa)</label>
           </div>
-          <div class="wall-layer-item" data-layer-id="stomach_muscularis">
-            <input type="checkbox" id="chk-muscularis" checked>
+          <div class="wall-layer-item" data-layer-id="stomach_muscle_longitudinal">
+            <input type="checkbox" id="chk-muscle-long" checked>
+            <span class="layer-dot" style="background: #be123c;"></span>
+            <label for="chk-muscle-long">Lớp 2A: Thớ Cơ Dọc (Longitudinale)</label>
+          </div>
+          <div class="wall-layer-item" data-layer-id="stomach_muscle_circular">
+            <input type="checkbox" id="chk-muscle-circ" checked>
             <span class="layer-dot" style="background: #991b1b;"></span>
-            <label for="chk-muscularis">Lớp 2: Tầng Cơ (Muscularis - 3 lớp)</label>
+            <label for="chk-muscle-circ">Lớp 2B: Thớ Cơ Vòng (Circulare)</label>
+          </div>
+          <div class="wall-layer-item" data-layer-id="stomach_muscle_oblique">
+            <input type="checkbox" id="chk-muscle-obli" checked>
+            <span class="layer-dot" style="background: #7f1d1d;"></span>
+            <label for="chk-muscle-obli">Lớp 2C: Thớ Cơ Chéo (Obliquae)</label>
           </div>
           <div class="wall-layer-item" data-layer-id="stomach_submucosa">
             <input type="checkbox" id="chk-submucosa" checked>
@@ -118,14 +148,14 @@
           <div class="wall-layer-item" data-layer-id="stomach_mucosa">
             <input type="checkbox" id="chk-mucosa" checked>
             <span class="layer-dot" style="background: #f43f5e;"></span>
-            <label for="chk-mucosa">Lớp 4: Niêm Mạc (Mucosa - Rugae)</label>
+            <label for="chk-mucosa">Lớp 4: Niêm Mạc Rugae (Mucosa)</label>
           </div>
         </div>
 
         <!-- WALL EXPLODE SLIDER -->
         <div class="slider-group" style="margin-top: 4px;">
           <div class="slider-label-row">
-            <span style="font-weight: 700; color: var(--text-main);">Tách 4 Lớp:</span>
+            <span style="font-weight: 700; color: var(--text-main);">Tách 6 Lớp:</span>
             <span id="stomach-wall-explode-value">0%</span>
           </div>
           <input type="range" id="stomach-wall-explode-slider" min="0" max="1" step="0.01" value="0">

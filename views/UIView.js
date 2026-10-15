@@ -39,13 +39,18 @@ export class UIView {
     this.modePills = document.querySelectorAll('.mode-pill');
     this.landmarksPanel = document.getElementById('landmarks-panel');
 
-    // Stomach 4-layer wall controls
+    // Stomach wall controls
     this.stomachWallBox = document.getElementById('stomach-wall-box');
     this.stomachWallExplodeSlider = document.getElementById('stomach-wall-explode-slider');
     this.stomachWallExplodeValue = document.getElementById('stomach-wall-explode-value');
     this.stomachFocusBtn = document.getElementById('btn-stomach-focus');
+    this.stomachCutawayBtn = document.getElementById('btn-stomach-cutaway');
     this.stomachPresetPills = document.querySelectorAll('.wall-preset-pill');
     this.stomachLayerItems = document.querySelectorAll('.wall-layer-item');
+
+    // Torso skin opacity controls
+    this.torsoOpacitySlider = document.getElementById('torso-opacity-slider');
+    this.torsoOpacityValue = document.getElementById('torso-opacity-value');
 
     this._bindDOMEvents();
     this._bindViewModelEvents();
@@ -129,6 +134,24 @@ export class UIView {
       this.stomachFocusBtn.addEventListener('click', () => {
         if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView) {
           window.__DIGESTIVE_APP__.sceneView.focusStomach();
+        }
+      });
+    }
+
+    // 11b. Nút Cắt Mở Lòng Dạ Dày (Cutaway Window)
+    if (this.stomachCutawayBtn) {
+      this.stomachCutawayBtn.addEventListener('click', () => {
+        this.dissectionVM.toggleCutaway();
+      });
+    }
+
+    // 11c. Thanh trượt Độ Mờ Da Torso (Torso Skin Opacity)
+    if (this.torsoOpacitySlider) {
+      this.torsoOpacitySlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        this.dissectionVM.setTorsoSkinOpacity(val);
+        if (this.torsoOpacityValue) {
+          this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
         }
       });
     }
@@ -298,6 +321,20 @@ export class UIView {
         card.classList.toggle('highlight', card.id === `card-${layerId}`);
       });
     });
+
+    // 11. Đồng bộ trạng thái Cutaway Window
+    this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
+      if (this.stomachCutawayBtn) {
+        this.stomachCutawayBtn.classList.toggle('active', isOpen);
+        this.stomachCutawayBtn.textContent = isOpen ? '✖ Đóng Lòng' : '✂️ Cắt Mở Lòng';
+      }
+    });
+
+    // 12. Đồng bộ thanh trượt Torso Skin Opacity
+    this.dissectionVM.subscribe('torsoSkinOpacity', (val) => {
+      if (this.torsoOpacitySlider) this.torsoOpacitySlider.value = val;
+      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
+    });
   }
 
   _showOrganDrawer(organ) {
@@ -321,7 +358,7 @@ export class UIView {
       wallLayersHtml = `
         <div class="drawer-section">
           <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
-            🔬 Cấu Tạo Mô Học 4 Tầng Thành Dạ Dày:
+            🔬 Cấu Tạo Mô Học Thành Dạ Dày (${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
             Bấm vào từng tầng để xem mô tả cấu trúc vi thể và ý nghĩa phẫu thuật tương ứng:

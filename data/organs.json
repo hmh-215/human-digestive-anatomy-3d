@@ -31,22 +31,46 @@
           "clinicalNotes": "Khi ổ loét dạ dày ăn thủng mặt trước, dịch vị và thức ăn tràn tự do vào ổ phúc mạc lớn gây viêm phúc mạc toàn thể cấp tính nguy kịch (bụng cứng như gỗ). Thủng mặt sau thường khu trú trong hậu cung mạc nối (túi mạc nối)."
         },
         {
-          "id": "stomach_muscularis",
-          "name": "Lớp 2: Tầng Cơ (Tunica Muscularis - 3 Lớp)",
-          "latinName": "Tunica Muscularis Gaster",
+          "id": "stomach_muscle_longitudinal",
+          "name": "Lớp 2A: Thớ Cơ Dọc (Stratum Longitudinale)",
+          "latinName": "Stratum Longitudinale Tunicae Muscularis",
           "layerOrder": 2,
-          "thickness": "2.0 - 4.0 mm (dày nhất tại cơ thắt môn vị)",
+          "thickness": "0.8 - 1.2 mm",
+          "color": "#be123c",
+          "description": "Lớp nông nhất của tầng cơ trơn dạ dày. Các thớ chạy dọc liên tục từ lớp cơ dọc của thực quản tỏa xuống, phân bố dày đặc nhất dọc theo bờ cong nhỏ và bờ cong lớn dạ dày rồi hội tụ về phía môn vị.",
+          "histology": "Gồm các tế bào cơ trơn hình thoi xếp song song theo trục dọc dạ dày, liên kết chặt chẽ bằng các thể liên kết khe (gap junctions) giúp dẫn truyền nhanh sóng khử cực nhu động.",
+          "physiology": "Co rút theo chiều dọc giúp rút ngắn chiều dài dạ dày khi co bóp, tống dồn dưỡng trấp theo trục dạ dày hướng về phía hang môn vị.",
+          "clinicalNotes": "Khi phẫu thuật nối vị tràng hoặc mở dạ dày nuôi dưỡng, phẫu thuật viên rạch vuông góc với các thớ cơ dọc này để tiếp cận nhanh các tầng sâu hơn."
+        },
+        {
+          "id": "stomach_muscle_circular",
+          "name": "Lớp 2B: Thớ Cơ Vòng (Stratum Circulare)",
+          "latinName": "Stratum Circulare Tunicae Muscularis",
+          "layerOrder": 3,
+          "thickness": "1.2 - 2.5 mm (Dày tới 5 - 8 mm tại cơ thắt môn vị)",
           "color": "#991b1b",
-          "description": "Là tầng cơ dày và phức tạp nhất trong toàn bộ ống tiêu hóa. Không giống như thực quản hay ruột non chỉ có 2 lớp cơ, cơ dạ dày được tổ chức thành 3 lớp thớ cơ trơn đan bện chặt chẽ:",
-          "histology": "1. Thớ cơ dọc (Stratum longitudinale) ở nông nhất, dày dọc bờ cong nhỏ và lớn. 2. Thớ cơ vòng (Stratum circulare) ở giữa, bao quanh toàn bộ dạ dày và dày lên vượt bậc ở lỗ môn vị tạo nên Cơ thắt môn vị (M. sphincter pylori). 3. Thớ cơ chéo (Fibrae obliquae) ở sâu nhất, uốn thành hình quai móng ngựa quanh khuyết tâm vị tỏa xuống đáy vị và thân vị. Nằm xen giữa các lớp cơ là Đám rối thần kinh Auerbach (Plexus myentericus) điều khiển nhu động cơ học.",
-          "physiology": "Đảm nhiệm vận động cơ học: Co bóp nghiền nát, nhào trộn thức ăn với dịch vị thành dưỡng trấp (chyme), đồng thời co bóp từng đợt tống dưỡng trấp qua van môn vị vào tá tràng.",
-          "clinicalNotes": "Hẹp phì đại môn vị bẩm sinh (Congenital Hypertrophic Pyloric Stenosis) ở trẻ sơ sinh do phì đại quá mức lớp cơ vòng môn vị gây nôn vọt. Phẫu thuật mở cơ môn vị ngoài niêm mạc (Phẫu thuật Fredet-Ramstedt) chỉ cắt lớp thanh mạc và tầng cơ vòng mà bảo tồn nguyên vẹn niêm mạc bên trong."
+          "description": "Lớp cơ ở giữa, bao bọc liên tục xung quanh toàn bộ chu vi thân và hang vị dạ dày. Đặc biệt dày lên vượt bậc tại ranh giới giữa dạ dày và tá tràng tạo nên Cơ thắt môn vị (M. sphincter pylori).",
+          "histology": "Các bó cơ trơn chạy vòng cung đồng tâm khép kín quanh lòng dạ dày. Chứa mạng lưới thụ thể phong phú đáp ứng với kích thích đối giao cảm (dây thần kinh lang thang CN X).",
+          "physiology": "Tạo lực co thắt chu vi mạnh mẽ để nghiền nát thức ăn dạng cơ học thành nhũ trấp. Cơ thắt môn vị hoạt động như một van điều áp nhịp nhàng mở đóng để dưỡng trấp đi vào tá tràng từng lượng nhỏ.",
+          "clinicalNotes": "Hẹp phì đại môn vị bẩm sinh (Congenital Hypertrophic Pyloric Stenosis) ở trẻ sơ sinh do phì đại quá mức lớp cơ vòng môn vị gây nôn vọt. Phẫu thuật Fredet-Ramstedt chỉ rạch dọc lớp cơ vòng mà bảo tồn nguyên vẹn niêm mạc."
+        },
+        {
+          "id": "stomach_muscle_oblique",
+          "name": "Lớp 2C: Thớ Cơ Chéo (Fibrae Obliquae)",
+          "latinName": "Fibrae Obliquae Tunicae Muscularis",
+          "layerOrder": 4,
+          "thickness": "0.8 - 1.5 mm",
+          "color": "#7f1d1d",
+          "description": "Lớp cơ sâu nhất chỉ có duy nhất ở dạ dày (thực quản và ruột không có). Các thớ cơ uốn thành hình quai móng ngựa quanh khuyết tâm vị, tỏa chếch 45 độ xuống thành trước và thành sau của đáy vị và thân vị.",
+          "histology": "Các dải cơ trơn chạy chéo góc, tạo thành cấu trúc khung treo nâng đỡ toàn bộ túi dạ dày chống lại sức nặng của khối thức ăn chứa đựng.",
+          "physiology": "Phối hợp với 2 lớp cơ dọc và cơ vòng tạo ra chuyển động co bóp 3 chiều (xoắn vặn và nhào trộn) cực kỳ hiệu quả, giống như động tác vắt khăn để nghiền nát thức ăn đặc.",
+          "clinicalNotes": "Sự phân bố thớ chéo giúp duy trì trương lực thành dạ dày khi dung tích chứa căng giãn từ 50ml lúc rỗng lên đến 1.5 - 2 lít sau bữa ăn lớn mà không làm tăng vọt áp lực nội dạ dày (hiện tượng dãn tiếp nhận - Receptive relaxation)."
         },
         {
           "id": "stomach_submucosa",
           "name": "Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)",
           "latinName": "Tela Submucosa",
-          "layerOrder": 3,
+          "layerOrder": 5,
           "thickness": "1.5 - 2.5 mm",
           "color": "#fbcfe8",
           "description": "Tầng mô liên kết lỏng lẻo đệm nằm giữa tầng cơ và lớp niêm mạc, cho phép niêm mạc có thể trượt và gấp nếp tự do trên tầng cơ.",
@@ -56,15 +80,15 @@
         },
         {
           "id": "stomach_mucosa",
-          "name": "Lớp 4: Lớp Niêm Mạc Tuyến (Tunica Mucosa)",
+          "name": "Lớp 4: Lớp Niêm Mạc Tuyến (Tunica Mucosa & Rugae)",
           "latinName": "Tunica Mucosa & Rugae Gastricae",
-          "layerOrder": 4,
+          "layerOrder": 6,
           "thickness": "1.0 - 1.5 mm (các nếp gấp Rugae cao tới 3 - 5 mm)",
           "color": "#f43f5e",
           "description": "Lớp lót trong cùng của lòng dạ dày. Khi dạ dày rỗng, niêm mạc xếp thành các nếp gấp vị (Rugae gastricae) rất rõ nét chạy dọc theo bờ cong nhỏ (rãnh vị) và đan chéo ngoằn ngoèo ở thân vị; khi dạ dày căng đầy thức ăn, các nếp gấp dãn phẳng ra.",
-          "histology": "Biểu mô trụ đơn tiết nhầy bao phủ bề mặt và lót các hố vị (foveolae gastricae). Lớp đệm chứa hàng triệu tuyến vị gồm: 1. Tế bào viền (Parietal cells) tiết Acid HCl và Yếu tố nội sinh Castle (hấp thu vitamin B12); 2. Tế bào chính (Chief cells) tiết Pepsinogen (được HCl hoạt hóa thành Pepsin tiêu đạm); 3. Tế bào nhầy cổ tuyến tiết chất nhầy kiềm $HCO_3^-$ bảo vệ niêm mạc; 4. Tế bào nội tiết G tiết Gastrin kích thích bài tiết acid.",
+          "histology": "Biểu mô trụ đơn tiết nhầy bao phủ bề mặt và lót các hố vị (foveolae gastricae). Lớp đệm chứa hàng triệu tuyến vị gồm: 1. Tế bào viền (Parietal cells) tiết Acid HCl và Yếu tố nội Castle; 2. Tế bào chính (Chief cells) tiết Pepsinogen; 3. Tế bào nhầy cổ tuyến tiết chất nhầy kiềm bảo vệ; 4. Tế bào nội tiết G tiết Gastrin.",
           "physiology": "Tạo hàng rào bảo vệ niêm mạc (Mucosal Barrier) chống lại sự tự tiêu hủy của acid dịch vị pH 1.5 - 2.0. Tiết dịch vị (2 - 2.5 lít/ngày) để tiêu hóa hóa học protein và diệt khuẩn thức ăn.",
-          "clinicalNotes": "Nhiễm vi khuẩn Helicobacter pylori (Hp) bám dính vào lớp chất nhầy niêm mạc tiết urease gây viêm dạ dày mạn tính, loét dạ dày - tá tràng và là yếu tố sinh ung thư hàng đầu (Ung thư biểu mô tuyến dạ dày). Thiếu yếu tố nội Castle do viêm teo niêm mạc tự miễn dẫn đến bệnh thiếu máu ác tính Biermer."
+          "clinicalNotes": "Nhiễm vi khuẩn Helicobacter pylori (Hp) bám dính vào lớp chất nhầy niêm mạc gây viêm teo niêm mạc mạn tính, loét dạ dày - tá tràng và ung thư dạ dày. Teo niêm mạc dạ dày tự miễn làm mất tế bào viền gây thiếu yếu tố nội Castle dẫn đến bệnh thiếu máu ác tính Biermer."
         }
       ],
       "location": "Nằm ở ô dưới hoành trái và vùng thượng vị, hình chữ J. Phía trên nối với thực quản qua lỗ tâm vị (ngang T11), phía dưới nối với tá tràng qua lỗ môn vị (ngang L1).",

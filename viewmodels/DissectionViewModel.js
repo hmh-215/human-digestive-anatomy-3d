@@ -16,10 +16,14 @@ export class DissectionViewModel extends Observable {
       isXRayMode: false,
       globalExplodeFactor: 0.0,
       isWindowingOpen: false,
-      // Bóc tách 4 tầng mô học thành dạ dày (Stomach Wall Dissection)
+      isCutawayOpen: false,
+      torsoSkinOpacity: 0.65,
+      // Bóc tách 6 tầng mô học thành dạ dày (Stomach Wall Dissection - 3 lớp cơ riêng biệt)
       stomachWallLayers: {
         stomach_serosa: true,
-        stomach_muscularis: true,
+        stomach_muscle_longitudinal: true,
+        stomach_muscle_circular: true,
+        stomach_muscle_oblique: true,
         stomach_submucosa: true,
         stomach_mucosa: true
       },
@@ -81,6 +85,14 @@ export class DissectionViewModel extends Observable {
     this.state.isWindowingOpen = !this.state.isWindowingOpen;
   }
 
+  toggleCutaway() {
+    this.state.isCutawayOpen = !this.state.isCutawayOpen;
+  }
+
+  setTorsoSkinOpacity(opacity) {
+    this.state.torsoSkinOpacity = Math.max(0, Math.min(1, opacity));
+  }
+
   toggleStomachWallLayer(layerId) {
     const updated = { ...this.state.stomachWallLayers };
     updated[layerId] = !updated[layerId];
@@ -104,25 +116,48 @@ export class DissectionViewModel extends Observable {
   peelToLayer(targetLayerId) {
     const updated = {
       stomach_serosa: false,
-      stomach_muscularis: false,
+      stomach_muscle_longitudinal: false,
+      stomach_muscle_circular: false,
+      stomach_muscle_oblique: false,
       stomach_submucosa: false,
       stomach_mucosa: false
     };
+
     if (targetLayerId === 'all' || targetLayerId === 'stomach_serosa') {
+      // Hiện toàn bộ 6 lớp
       updated.stomach_serosa = true;
-      updated.stomach_muscularis = true;
+      updated.stomach_muscle_longitudinal = true;
+      updated.stomach_muscle_circular = true;
+      updated.stomach_muscle_oblique = true;
       updated.stomach_submucosa = true;
       updated.stomach_mucosa = true;
-    } else if (targetLayerId === 'stomach_muscularis') {
-      updated.stomach_muscularis = true;
+    } else if (targetLayerId === 'stomach_muscle_longitudinal') {
+      // Bóc thanh mạc -> bộc lộ cơ dọc
+      updated.stomach_muscle_longitudinal = true;
+      updated.stomach_muscle_circular = true;
+      updated.stomach_muscle_oblique = true;
+      updated.stomach_submucosa = true;
+      updated.stomach_mucosa = true;
+    } else if (targetLayerId === 'stomach_muscle_circular') {
+      // Bóc cơ dọc -> bộc lộ cơ vòng
+      updated.stomach_muscle_circular = true;
+      updated.stomach_muscle_oblique = true;
+      updated.stomach_submucosa = true;
+      updated.stomach_mucosa = true;
+    } else if (targetLayerId === 'stomach_muscle_oblique') {
+      // Bóc cơ vòng -> bộc lộ cơ chéo
+      updated.stomach_muscle_oblique = true;
       updated.stomach_submucosa = true;
       updated.stomach_mucosa = true;
     } else if (targetLayerId === 'stomach_submucosa') {
+      // Bóc toàn bộ cơ -> bộc lộ dưới niêm mạc
       updated.stomach_submucosa = true;
       updated.stomach_mucosa = true;
     } else if (targetLayerId === 'stomach_mucosa') {
+      // Chỉ xem niêm mạc Rugae trong cùng
       updated.stomach_mucosa = true;
     }
+
     this.state.stomachWallLayers = updated;
   }
 
@@ -136,9 +171,13 @@ export class DissectionViewModel extends Observable {
       this.state.isXRayMode = false;
       this.state.globalExplodeFactor = 0.0;
       this.state.isWindowingOpen = false;
+      this.state.isCutawayOpen = false;
+      this.state.torsoSkinOpacity = 0.65;
       this.state.stomachWallLayers = {
         stomach_serosa: true,
-        stomach_muscularis: true,
+        stomach_muscle_longitudinal: true,
+        stomach_muscle_circular: true,
+        stomach_muscle_oblique: true,
         stomach_submucosa: true,
         stomach_mucosa: true
       };

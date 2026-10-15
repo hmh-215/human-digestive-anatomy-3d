@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /**
  * SceneView.js
@@ -13,6 +14,9 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
  * - 5-level surgical depth peeling & selective layer visibility
  * - Localized sub-assembly explosion on real meshes (Couinaud segments I-VIII, Duodeno-Pancreatic complex)
  * - Smart contextual ghosting (12% X-Ray for non-selected organs)
+ * - 6-layer stomach wall architecture with 3 separate directional muscle layers
+ * - Cutaway cross-section windowing exposing inner rugae folds
+ * - Authentic torso abdominal wall model with skin tone for clinical surface palpation
  * - Clinical landmark pins with depth testing
  */
 export class SceneView {
@@ -42,6 +46,7 @@ export class SceneView {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.localClippingEnabled = true;
     container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -61,10 +66,18 @@ export class SceneView {
     this.allVisceralMeshes = [];
     this.stomachWallMeshes = [];
 
-    // Procedural PBR Textures for Hollow GI Wall Layers
+    // Torso abdominal wall model for clinical landmarks (Mode 2)
+    this.torsoRoot = null;
+    this.torsoSkinMaterial = null;
+
+    // Procedural PBR Textures for 6 Stomach Wall Layers
     this.serosaTexture = null;
-    this.muscularisTexture = null;
-    this.muscularisBump = null;
+    this.longitudinalMuscleTexture = null;
+    this.longitudinalMuscleBump = null;
+    this.circularMuscleTexture = null;
+    this.circularMuscleBump = null;
+    this.obliqueMuscleTexture = null;
+    this.obliqueMuscleBump = null;
     this.submucosaTexture = null;
     this.submucosaBump = null;
     this.mucosaTexture = null;
@@ -73,6 +86,7 @@ export class SceneView {
     this._setupLoadingOverlay();
     this._setupLights();
     this._buildClinicalLandmarks();
+    this._loadTorsoModel();
     this._bindEvents();
     this._bindViewModel();
 
@@ -208,77 +222,170 @@ export class SceneView {
       this.serosaTexture.wrapT = THREE.RepeatWrapping;
     }
 
-    // 2. LỚP 2: TẦNG CƠ (TUNICA MUSCULARIS)
-    // Màu đỏ nâu sẫm myoglobin, 3 hướng thớ cơ trơn (dọc, vòng, chéo)
+    // 2A. LỚP 2A: THỚ CƠ DỌC (STRATUM LONGITUDINALE)
+    // Đường thớ cơ chạy DỌC rõ rệt (hướng Y song song), màu đỏ myoglobin đậm
     {
       const canvas = createCanvas();
       const ctx = canvas.getContext('2d');
 
-      ctx.fillStyle = '#7f1d1d';
+      const bgGrad = ctx.createLinearGradient(0, 0, 512, 0);
+      bgGrad.addColorStop(0, '#701a24');
+      bgGrad.addColorStop(0.5, '#881337');
+      bgGrad.addColorStop(1, '#5c0916');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, 512, 512);
 
-      // Thớ cơ dọc
-      ctx.strokeStyle = 'rgba(153, 27, 27, 0.6)';
-      ctx.lineWidth = 2.5;
-      for (let x = 0; x < 512; x += 4) {
+      // Các dải bó cơ dọc chính (longitudinal fascicles)
+      for (let x = 0; x < 512; x += 14) {
+        ctx.fillStyle = (x % 28 === 0) ? 'rgba(159, 18, 57, 0.35)' : 'rgba(76, 5, 25, 0.45)';
+        ctx.fillRect(x, 0, 10, 512);
+      }
+
+      // Các sợi cơ trơn mảnh chạy DỌC liên tục từ trên xuống dưới
+      ctx.lineWidth = 1.6;
+      for (let x = 0; x < 512; x += 3) {
+        ctx.strokeStyle = Math.random() > 0.45 ? 'rgba(244, 63, 94, 0.55)' : 'rgba(76, 5, 25, 0.65)';
         ctx.beginPath();
-        ctx.moveTo(x + (Math.random() - 0.5) * 2, 0);
-        ctx.lineTo(x + (Math.random() - 0.5) * 4, 512);
+        ctx.moveTo(x + (Math.random() - 0.5) * 1.5, 0);
+        ctx.lineTo(x + (Math.random() - 0.5) * 2.5, 512);
         ctx.stroke();
       }
 
-      // Thớ cơ vòng
-      ctx.fillStyle = 'rgba(185, 28, 28, 0.25)';
-      for (let y = 0; y < 512; y += 12) {
-        ctx.fillRect(0, y, 512, 6);
-      }
-
-      // Thớ cơ chéo
-      ctx.strokeStyle = 'rgba(220, 38, 38, 0.35)';
-      ctx.lineWidth = 1.5;
-      for (let i = -512; i < 512; i += 8) {
+      // Hạch đám rối Auerbach chạy dọc giữa các bó cơ
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.6)';
+      for (let i = 0; i < 90; i++) {
         ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i + 512, 512);
-        ctx.stroke();
-      }
-
-      // Đám rối thần kinh Auerbach (hạt nhỏ màu hổ phách giữa các bó cơ)
-      ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
-      for (let i = 0; i < 120; i++) {
-        ctx.beginPath();
-        ctx.arc(Math.random() * 512, Math.random() * 512, 1.5, 0, Math.PI * 2);
+        ctx.arc(Math.random() * 512, Math.random() * 512, 1.4, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      this.muscularisTexture = new THREE.CanvasTexture(canvas);
-      this.muscularisTexture.wrapS = THREE.RepeatWrapping;
-      this.muscularisTexture.wrapT = THREE.RepeatWrapping;
+      this.longitudinalMuscleTexture = new THREE.CanvasTexture(canvas);
+      this.longitudinalMuscleTexture.wrapS = THREE.RepeatWrapping;
+      this.longitudinalMuscleTexture.wrapT = THREE.RepeatWrapping;
 
-      // Bump Map
+      // Bump map cho thớ cơ dọc (vân gờ nổi theo chiều dọc)
       const bumpCanvas = createCanvas();
       const bCtx = bumpCanvas.getContext('2d');
       bCtx.fillStyle = '#808080';
       bCtx.fillRect(0, 0, 512, 512);
-      bCtx.strokeStyle = '#f0f0f0';
-      bCtx.lineWidth = 2;
-      for (let x = 0; x < 512; x += 5) {
+      bCtx.lineWidth = 2.2;
+      for (let x = 0; x < 512; x += 4) {
+        bCtx.strokeStyle = Math.random() > 0.5 ? '#e2e8f0' : '#1e293b';
         bCtx.beginPath();
         bCtx.moveTo(x, 0);
         bCtx.lineTo(x, 512);
         bCtx.stroke();
       }
-      bCtx.strokeStyle = '#202020';
-      bCtx.lineWidth = 1.5;
-      for (let y = 0; y < 512; y += 10) {
+      this.longitudinalMuscleBump = new THREE.CanvasTexture(bumpCanvas);
+      this.longitudinalMuscleBump.wrapS = THREE.RepeatWrapping;
+      this.longitudinalMuscleBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // 2B. LỚP 2B: THỚ CƠ VÒNG (STRATUM CIRCULARE)
+    // Đường thớ cơ chạy NGANG / VÒNG quanh chu vi (hướng X song song), dày chắc
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 0, 512);
+      bgGrad.addColorStop(0, '#66101f');
+      bgGrad.addColorStop(0.5, '#7f1d1d');
+      bgGrad.addColorStop(1, '#4c0519');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Các đai cơ vòng lớn (circular muscular rings)
+      for (let y = 0; y < 512; y += 16) {
+        ctx.fillStyle = (y % 32 === 0) ? 'rgba(185, 28, 28, 0.4)' : 'rgba(69, 10, 10, 0.5)';
+        ctx.fillRect(0, y, 512, 12);
+      }
+
+      // Các sợi cơ trơn chạy NGANG liên tục
+      ctx.lineWidth = 1.8;
+      for (let y = 0; y < 512; y += 3.5) {
+        ctx.strokeStyle = Math.random() > 0.4 ? 'rgba(248, 113, 113, 0.5)' : 'rgba(69, 10, 10, 0.7)';
+        ctx.beginPath();
+        ctx.moveTo(0, y + (Math.random() - 0.5) * 1.2);
+        ctx.lineTo(512, y + (Math.random() - 0.5) * 1.8);
+        ctx.stroke();
+      }
+
+      this.circularMuscleTexture = new THREE.CanvasTexture(canvas);
+      this.circularMuscleTexture.wrapS = THREE.RepeatWrapping;
+      this.circularMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      // Bump map cho thớ cơ vòng (vân gờ nổi theo chiều ngang)
+      const bumpCanvas = createCanvas();
+      const bCtx = bumpCanvas.getContext('2d');
+      bCtx.fillStyle = '#808080';
+      bCtx.fillRect(0, 0, 512, 512);
+      bCtx.lineWidth = 2.4;
+      for (let y = 0; y < 512; y += 4.5) {
+        bCtx.strokeStyle = Math.random() > 0.5 ? '#f1f5f9' : '#0f172a';
         bCtx.beginPath();
         bCtx.moveTo(0, y);
         bCtx.lineTo(512, y);
         bCtx.stroke();
       }
-      this.muscularisBump = new THREE.CanvasTexture(bumpCanvas);
-      this.muscularisBump.wrapS = THREE.RepeatWrapping;
-      this.muscularisBump.wrapT = THREE.RepeatWrapping;
+      this.circularMuscleBump = new THREE.CanvasTexture(bumpCanvas);
+      this.circularMuscleBump.wrapS = THREE.RepeatWrapping;
+      this.circularMuscleBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // 2C. LỚP 2C: THỚ CƠ CHÉO (FIBRAE OBLIQUAE)
+    // Đường thớ cơ chạy CHÉO 45 ĐỘ uốn lượn hình quai móng ngựa
+    {
+      const canvas = createCanvas();
+      const ctx = canvas.getContext('2d');
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 512, 512);
+      bgGrad.addColorStop(0, '#581c87');
+      bgGrad.addColorStop(0.5, '#6b1111');
+      bgGrad.addColorStop(1, '#450a0a');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Các dải cơ chéo 45 độ
+      for (let i = -512; i < 512; i += 18) {
+        ctx.fillStyle = 'rgba(159, 18, 57, 0.35)';
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + 12, 0);
+        ctx.lineTo(i + 524, 512);
+        ctx.lineTo(i + 512, 512);
+        ctx.fill();
+      }
+
+      // Các sợi cơ trơn chạy CHÉO góc 45 độ
+      ctx.lineWidth = 1.6;
+      for (let i = -512; i < 512; i += 4) {
+        ctx.strokeStyle = Math.random() > 0.45 ? 'rgba(239, 68, 68, 0.5)' : 'rgba(88, 28, 135, 0.55)';
+        ctx.beginPath();
+        ctx.moveTo(i + (Math.random() - 0.5) * 2, 0);
+        ctx.lineTo(i + 512 + (Math.random() - 0.5) * 3, 512);
+        ctx.stroke();
+      }
+
+      this.obliqueMuscleTexture = new THREE.CanvasTexture(canvas);
+      this.obliqueMuscleTexture.wrapS = THREE.RepeatWrapping;
+      this.obliqueMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      // Bump map cho thớ cơ chéo
+      const bumpCanvas = createCanvas();
+      const bCtx = bumpCanvas.getContext('2d');
+      bCtx.fillStyle = '#808080';
+      bCtx.fillRect(0, 0, 512, 512);
+      bCtx.lineWidth = 2.2;
+      for (let i = -512; i < 512; i += 5) {
+        bCtx.strokeStyle = Math.random() > 0.5 ? '#f8fafc' : '#18181b';
+        bCtx.beginPath();
+        bCtx.moveTo(i, 0);
+        bCtx.lineTo(i + 512, 512);
+        bCtx.stroke();
+      }
+      this.obliqueMuscleBump = new THREE.CanvasTexture(bumpCanvas);
+      this.obliqueMuscleBump.wrapS = THREE.RepeatWrapping;
+      this.obliqueMuscleBump.wrapT = THREE.RepeatWrapping;
     }
 
     // 3. LỚP 3: TẦNG DƯỚI NIÊM MẠC (TELA SUBMUCOSA)
@@ -324,12 +431,12 @@ export class SceneView {
         drawVascularBranch(x1, y1, length * 0.72, angle - spread, depth - 1, strokeColor, width * 0.7);
       };
 
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 14; i++) {
         const rx = Math.random() * 450 + 30;
         const ry = Math.random() * 450 + 30;
         drawVascularBranch(rx, ry, 35, Math.random() * Math.PI * 2, 4, '#dc2626', 2.8);
       }
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 10; i++) {
         const rx = Math.random() * 450 + 30;
         const ry = Math.random() * 450 + 30;
         drawVascularBranch(rx, ry, 30, Math.random() * Math.PI * 2, 3, '#2563eb', 2.2);
@@ -337,7 +444,7 @@ export class SceneView {
 
       // Hạch thần kinh Meissner
       ctx.fillStyle = '#d97706';
-      for (let i = 0; i < 50; i++) {
+      for (let i = 0; i < 60; i++) {
         ctx.beginPath();
         ctx.arc(Math.random() * 512, Math.random() * 512, 2.5, 0, Math.PI * 2);
         ctx.fill();
@@ -362,47 +469,85 @@ export class SceneView {
       this.submucosaBump.wrapT = THREE.RepeatWrapping;
     }
 
-    // 4. LỚP 4: LỚP NIÊM MẠC (TUNICA MUCOSA)
-    // Nếp gấp vị Rugae uốn lượn rõ rệt, lỗ hố tuyến vị (gastric pits)
+    // 4. LỚP 4: LỚP NIÊM MẠC TUYẾN (TUNICA MUCOSA & RUGAE)
+    // Chuẩn theo ảnh tư liệu y khoa: Các nếp gấp vị Rugae màu hổ phách / cam san hô ấm (warm caramel/coral)
+    // uốn lượn sâu sắc, rãnh bóng đổ tối màu, đỉnh nếp gấp sáng bóng óng ánh
     {
       const canvas = createCanvas();
       const ctx = canvas.getContext('2d');
 
+      // Nền ấm áp màu cam san hô / caramel đậm
       const grad = ctx.createLinearGradient(0, 0, 512, 512);
-      grad.addColorStop(0, '#be123c');
-      grad.addColorStop(0.5, '#e11d48');
-      grad.addColorStop(1, '#f43f5e');
+      grad.addColorStop(0, '#7c2d12');
+      grad.addColorStop(0.3, '#c2410c');
+      grad.addColorStop(0.7, '#ea580c');
+      grad.addColorStop(1, '#9a3412');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 512, 512);
 
-      // Nếp Gấp Vị Rugae
-      for (let y = 30; y < 512; y += 45) {
-        ctx.strokeStyle = 'rgba(76, 5, 25, 0.65)';
-        ctx.lineWidth = 14;
+      // Các Nếp Gấp Vị Rugae dày đặc uốn lượn mềm mại
+      // Lớp 1: Rãnh sâu bóng đổ tối sẫm (valleys)
+      for (let y = 25; y < 512; y += 40) {
+        ctx.strokeStyle = '#380a04';
+        ctx.lineWidth = 18;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(0, y + 6);
-        for (let x = 0; x <= 512; x += 30) {
-          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
-          ctx.lineTo(x, y + 6 + offset);
+        ctx.moveTo(0, y + 8);
+        for (let x = 0; x <= 512; x += 25) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 35)) * 16 +
+                         Math.cos((x / 512) * Math.PI * 2) * 8;
+          ctx.lineTo(x, y + 8 + offset);
         }
         ctx.stroke();
+      }
 
-        ctx.strokeStyle = 'rgba(253, 164, 175, 0.85)';
-        ctx.lineWidth = 8;
+      // Lớp 2: Thân gờ nếp gấp nhô cao màu cam đỏ san hô
+      for (let y = 25; y < 512; y += 40) {
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 11;
+        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(0, y);
-        for (let x = 0; x <= 512; x += 30) {
-          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
+        for (let x = 0; x <= 512; x += 25) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 35)) * 16 +
+                         Math.cos((x / 512) * Math.PI * 2) * 8;
           ctx.lineTo(x, y + offset);
         }
         ctx.stroke();
       }
 
-      // Lỗ hố vị (Gastric Pits)
-      ctx.fillStyle = 'rgba(76, 5, 25, 0.45)';
-      for (let i = 0; i < 400; i++) {
+      // Lớp 3: Đỉnh nếp gấp bắt sáng óng ánh vàng mật ong (bright ridge crests)
+      for (let y = 25; y < 512; y += 40) {
+        ctx.strokeStyle = 'rgba(254, 215, 170, 0.9)';
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 1.5 + 0.5, 0, Math.PI * 2);
+        ctx.moveTo(0, y - 2);
+        for (let x = 0; x <= 512; x += 25) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 35)) * 16 +
+                         Math.cos((x / 512) * Math.PI * 2) * 8;
+          ctx.lineTo(x, y - 2 + offset);
+        }
+        ctx.stroke();
+      }
+
+      // Các nhánh nối phụ (anastomosing bridges giữa các nếp gấp)
+      for (let i = 0; i < 35; i++) {
+        const x = Math.random() * 460 + 20;
+        const y = Math.random() * 460 + 20;
+        ctx.strokeStyle = '#ea580c';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(x + 15, y + 20, x + (Math.random() - 0.5) * 30, y + 35);
+        ctx.stroke();
+      }
+
+      // Lỗ hố tuyến vị vi thể (Gastric Pits)
+      ctx.fillStyle = 'rgba(56, 10, 4, 0.55)';
+      for (let i = 0; i < 500; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 512, Math.random() * 512, Math.random() * 1.6 + 0.6, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -410,32 +555,38 @@ export class SceneView {
       this.mucosaTexture.wrapS = THREE.RepeatWrapping;
       this.mucosaTexture.wrapT = THREE.RepeatWrapping;
 
-      // Bump Map
+      // Bump Map chiều sâu cao (Deep Relief Normal Bump)
       const bumpCanvas = createCanvas();
       const bCtx = bumpCanvas.getContext('2d');
       bCtx.fillStyle = '#808080';
       bCtx.fillRect(0, 0, 512, 512);
-      for (let y = 30; y < 512; y += 45) {
-        bCtx.strokeStyle = '#202020';
-        bCtx.lineWidth = 16;
+
+      for (let y = 25; y < 512; y += 40) {
+        // Rãnh sâu đen
+        bCtx.strokeStyle = '#101010';
+        bCtx.lineWidth = 18;
         bCtx.beginPath();
-        bCtx.moveTo(0, y + 6);
-        for (let x = 0; x <= 512; x += 30) {
-          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
-          bCtx.lineTo(x, y + 6 + offset);
+        bCtx.moveTo(0, y + 8);
+        for (let x = 0; x <= 512; x += 25) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 35)) * 16 +
+                         Math.cos((x / 512) * Math.PI * 2) * 8;
+          bCtx.lineTo(x, y + 8 + offset);
         }
         bCtx.stroke();
 
-        bCtx.strokeStyle = '#f0f0f0';
+        // Đỉnh cao trắng
+        bCtx.strokeStyle = '#ffffff';
         bCtx.lineWidth = 8;
         bCtx.beginPath();
-        bCtx.moveTo(0, y);
-        for (let x = 0; x <= 512; x += 30) {
-          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 40)) * 18;
-          bCtx.lineTo(x, y + offset);
+        bCtx.moveTo(0, y - 2);
+        for (let x = 0; x <= 512; x += 25) {
+          const offset = Math.sin((x / 512) * Math.PI * 4 + (y / 35)) * 16 +
+                         Math.cos((x / 512) * Math.PI * 2) * 8;
+          bCtx.lineTo(x, y - 2 + offset);
         }
         bCtx.stroke();
       }
+
       this.mucosaBump = new THREE.CanvasTexture(bumpCanvas);
       this.mucosaBump.wrapS = THREE.RepeatWrapping;
       this.mucosaBump.wrapT = THREE.RepeatWrapping;
@@ -476,6 +627,9 @@ export class SceneView {
 
     // Giữ nguyên cấu trúc FBX trong masterRoot - KHÔNG tách rời mesh khỏi parent hierarchy
     this.masterRoot.add(fbx);
+    if (this.torsoRoot) {
+      this.masterRoot.add(this.torsoRoot);
+    }
 
     // 1. Chuẩn bị bảng phân loại vật liệu PBR y khoa chuẩn
     const materials = {
@@ -727,17 +881,28 @@ export class SceneView {
     const organData = this.appVM.organsData.find(o => o.id === 'stomach');
     const wallLayersDef = (organData && organData.wallLayers) || [
       { id: 'stomach_serosa', name: 'Lớp 1: Thanh Mạc (Tunica Serosa)', layerOrder: 1 },
-      { id: 'stomach_muscularis', name: 'Lớp 2: Tầng Cơ (Tunica Muscularis)', layerOrder: 2 },
-      { id: 'stomach_submucosa', name: 'Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)', layerOrder: 3 },
-      { id: 'stomach_mucosa', name: 'Lớp 4: Lớp Niêm Mạc (Tunica Mucosa)', layerOrder: 4 }
+      { id: 'stomach_muscle_longitudinal', name: 'Lớp 2A: Thớ Cơ Dọc (Stratum Longitudinale)', layerOrder: 2 },
+      { id: 'stomach_muscle_circular', name: 'Lớp 2B: Thớ Cơ Vòng (Stratum Circulare)', layerOrder: 3 },
+      { id: 'stomach_muscle_oblique', name: 'Lớp 2C: Thớ Cơ Chéo (Fibrae Obliquae)', layerOrder: 4 },
+      { id: 'stomach_submucosa', name: 'Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)', layerOrder: 5 },
+      { id: 'stomach_mucosa', name: 'Lớp 4: Lớp Niêm Mạc Tuyến (Tunica Mucosa & Rugae)', layerOrder: 6 }
     ];
 
-    // Inset distances:
+    // Inset distances cho 6 tầng đồng tâm:
     // Serosa: d = 0.0
-    // Muscularis: d = 0.022 * radius (dịch vào ~1.8mm)
-    // Submucosa: d = 0.044 * radius (dịch vào ~3.6mm)
-    // Mucosa: d = 0.066 * radius (dịch vào ~5.4mm)
-    const insets = [0.0, 0.022 * radius, 0.044 * radius, 0.066 * radius];
+    // Cơ dọc: d = 0.012 * radius
+    // Cơ vòng: d = 0.024 * radius
+    // Cơ chéo: d = 0.036 * radius
+    // Dưới niêm mạc: d = 0.048 * radius
+    // Niêm mạc Rugae: d = 0.060 * radius
+    const insets = [
+      0.0,
+      0.012 * radius,
+      0.024 * radius,
+      0.036 * radius,
+      0.048 * radius,
+      0.060 * radius
+    ];
 
     const materials = [
       new THREE.MeshStandardMaterial({
@@ -747,9 +912,25 @@ export class SceneView {
         side: THREE.DoubleSide
       }),
       new THREE.MeshStandardMaterial({
-        map: this.muscularisTexture,
-        bumpMap: this.muscularisBump,
-        bumpScale: 0.002,
+        map: this.longitudinalMuscleTexture,
+        bumpMap: this.longitudinalMuscleBump,
+        bumpScale: 0.003,
+        roughness: 0.52,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      }),
+      new THREE.MeshStandardMaterial({
+        map: this.circularMuscleTexture,
+        bumpMap: this.circularMuscleBump,
+        bumpScale: 0.003,
+        roughness: 0.54,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      }),
+      new THREE.MeshStandardMaterial({
+        map: this.obliqueMuscleTexture,
+        bumpMap: this.obliqueMuscleBump,
+        bumpScale: 0.003,
         roughness: 0.55,
         metalness: 0.05,
         side: THREE.DoubleSide
@@ -757,7 +938,7 @@ export class SceneView {
       new THREE.MeshStandardMaterial({
         map: this.submucosaTexture,
         bumpMap: this.submucosaBump,
-        bumpScale: 0.0015,
+        bumpScale: 0.002,
         roughness: 0.45,
         metalness: 0.05,
         side: THREE.DoubleSide
@@ -765,7 +946,7 @@ export class SceneView {
       new THREE.MeshStandardMaterial({
         map: this.mucosaTexture,
         bumpMap: this.mucosaBump,
-        bumpScale: 0.004,
+        bumpScale: 0.007,
         roughness: 0.35,
         metalness: 0.05,
         side: THREE.DoubleSide
@@ -776,7 +957,7 @@ export class SceneView {
     const baseExplodeDir = new THREE.Vector3(-0.09, 0.02, 0.07);
 
     wallLayersDef.forEach((layerDef, idx) => {
-      const d = insets[idx];
+      const d = insets[idx] || 0;
       const geo = origGeo.clone();
       if (d > 0) {
         const posAttr = geo.attributes.position;
@@ -799,8 +980,8 @@ export class SceneView {
       mesh.castShadow = true;
       mesh.receiveShadow = true;
 
-      // Serosa (idx=0) di chuyển xa nhất (factor 1.0), Muscularis 0.67, Submucosa 0.33, Mucosa 0.0
-      const offsetFactor = (3 - idx) / 3;
+      // Serosa (idx=0) di chuyển xa nhất (factor 1.0), niêm mạc (idx=5) factor 0.0
+      const offsetFactor = (5 - idx) / 5;
       const wallExplodeOffset = baseExplodeDir.clone().multiplyScalar(offsetFactor);
 
       mesh.userData = {
@@ -822,14 +1003,112 @@ export class SceneView {
     });
 
     stomachMesh.visible = false;
-    console.info(`[Stomach 4-Layers] Đã tạo thành công 4 tầng mô học đồng tâm (Serosa, Muscularis, Submucosa, Mucosa)`);
+    if (this.dissectionVM.state.isCutawayOpen) {
+      this._updateStomachCutaway(true);
+    }
+    console.info(`[Stomach 6-Layers] Đã tạo thành công 6 tầng mô học đồng tâm (Serosa, Cơ dọc, Cơ vòng, Cơ chéo, Dưới niêm mạc, Niêm mạc Rugae)`);
+  }
+
+  _updateStomachCutaway(isOpen) {
+    if (!this.stomachWallMeshes || this.stomachWallMeshes.length === 0) return;
+
+    if (!isOpen) {
+      this.stomachWallMeshes.forEach(mesh => {
+        mesh.material.clippingPlanes = [];
+        mesh.material.clipShadows = true;
+        mesh.material.needsUpdate = true;
+      });
+      return;
+    }
+
+    // Cắt mở bậc thang (Stepped Cutaway Window) ở thành trước dạ dày
+    // Normal hướng vào trong / ra sau (véc-tơ Z âm) để xén bỏ thành trước hướng ra camera
+    const clipNormal = new THREE.Vector3(0.3, 0.1, -0.95).normalize();
+    // Offset càng nhỏ thì cắt càng sâu (mở cửa sổ càng rộng)
+    // Tầng 0 (Serosa): mở rộng nhất -> offset 0.008
+    // Tầng 1 (Cơ dọc): lùi lại -> offset 0.015
+    // Tầng 2 (Cơ vòng): lùi lại -> offset 0.022
+    // Tầng 3 (Cơ chéo): lùi lại -> offset 0.029
+    // Tầng 4 (Dưới niêm mạc): lùi lại -> offset 0.036
+    // Tầng 5 (Niêm mạc): mở cửa sổ giữa -> offset 0.043 (bộc lộ thành sau với Rugae folds)
+    const offsets = [0.008, 0.015, 0.022, 0.029, 0.036, 0.043];
+
+    this.stomachWallMeshes.forEach(mesh => {
+      const order = mesh.userData.wallLayerOrder || 1;
+      const idx = Math.min(Math.max(order - 1, 0), 5);
+      const plane = new THREE.Plane(clipNormal, offsets[idx]);
+      mesh.material.clippingPlanes = [plane];
+      mesh.material.clipShadows = true;
+      mesh.material.needsUpdate = true;
+    });
+  }
+
+  _loadTorsoModel() {
+    const gltfLoader = new GLTFLoader();
+    this.torsoRoot = new THREE.Group();
+    this.torsoRoot.name = 'Torso_Abdominal_Wall_Root';
+    this.torsoRoot.visible = (this.appVM.state.activeMode === 'pathology');
+
+    this.torsoSkinMaterial = new THREE.MeshStandardMaterial({
+      color: 0xd4a373, // Màu da người ấm áp tự nhiên (Natural warm skin tone)
+      roughness: 0.42,
+      metalness: 0.06,
+      transparent: true,
+      opacity: this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.65,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+
+    gltfLoader.load(
+      './assets/models/TorsoAbdominalWall.glb',
+      (gltf) => {
+        gltf.scene.traverse((child) => {
+          if (child.isMesh) {
+            child.material = this.torsoSkinMaterial;
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        this.torsoRoot.add(gltf.scene);
+        // Tỷ lệ chuẩn hóa: GLB decimeters (10cm) -> FBX centimeters (1cm) = 10.0x
+        this.torsoRoot.scale.set(10.0, 10.0, 10.0);
+        if (this.masterRoot) {
+          this.masterRoot.add(this.torsoRoot);
+        }
+        console.info('[Z-Anatomy Torso] Nạp thành công mô hình hệ cơ thành bụng Torso với màu da khám bệnh (scale 10.0x)!');
+      },
+      undefined,
+      (err) => {
+        console.warn('Không thể nạp TorsoAbdominalWall.glb:', err);
+      }
+    );
+  }
+
+  _updateTorsoSkinOpacity(opacity) {
+    if (!this.torsoSkinMaterial) return;
+    this.torsoSkinMaterial.opacity = opacity;
+    if (opacity <= 0.02) {
+      if (this.torsoRoot) this.torsoRoot.visible = false;
+    } else {
+      if (this.torsoRoot && this.appVM.state.activeMode === 'pathology') {
+        this.torsoRoot.visible = true;
+      }
+      if (opacity >= 0.98) {
+        this.torsoSkinMaterial.transparent = false;
+        this.torsoSkinMaterial.depthWrite = true;
+      } else {
+        this.torsoSkinMaterial.transparent = true;
+        this.torsoSkinMaterial.depthWrite = false;
+      }
+    }
+    this.torsoSkinMaterial.needsUpdate = true;
   }
 
   _buildClinicalLandmarks() {
     this.landmarksRoot = new THREE.Group();
     this.scene.add(this.landmarksRoot);
 
-    const pinGeo = new THREE.SphereGeometry(0.18, 16, 16);
+    const pinGeo = new THREE.SphereGeometry(0.11, 24, 24);
     this.appVM.landmarksData.forEach(lm => {
       const pinMat = new THREE.MeshStandardMaterial({
         color: 0x38bdf8,
@@ -935,6 +1214,21 @@ export class SceneView {
 
     this.dissectionVM.subscribe('isXRayMode', () => {
       this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
+    });
+
+    this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
+      this._updateStomachCutaway(isOpen);
+    });
+
+    this.dissectionVM.subscribe('torsoSkinOpacity', (opacity) => {
+      this._updateTorsoSkinOpacity(opacity);
+    });
+
+    this.appVM.subscribe('activeMode', (mode) => {
+      this.landmarksRoot.visible = (mode === 'pathology');
+      if (this.torsoRoot) {
+        this.torsoRoot.visible = (mode === 'pathology');
+      }
     });
 
     this.appVM.subscribe('theme', (theme) => {
@@ -1071,7 +1365,7 @@ export class SceneView {
         const localDir = worldExplodeDir.clone().applyQuaternion(parentQuat.invert()).divide(parentScale);
 
         const layerOrder = mesh.userData.wallLayerOrder || 1;
-        const layerFactor = (4 - layerOrder) / 3;
+        const layerFactor = (6 - layerOrder) / 5;
         pos.addScaledVector(localDir, explodeFactor * layerFactor * 1.5);
       }
       mesh.position.copy(pos);
