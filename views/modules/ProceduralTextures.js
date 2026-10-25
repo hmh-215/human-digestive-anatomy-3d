@@ -377,6 +377,538 @@ export class ProceduralTextures {
       result.mucosaBump.wrapT = THREE.RepeatWrapping;
     }
 
+    // ========================================================
+    // 5. TÁ TRÀNG (DUODENUM) — REFERENCE FIGURE 1
+    // ========================================================
+    {
+      // 5A. Duodenum Serosa
+      const canvas = createCanvas(256);
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 256, 256);
+      grad.addColorStop(0, '#ea580c');
+      grad.addColorStop(0.5, '#f97316');
+      grad.addColorStop(1, '#fdba74');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 256, 256);
+      // Fine capillary net
+      ctx.strokeStyle = 'rgba(154, 52, 18, 0.3)';
+      ctx.lineWidth = 0.8;
+      for (let i = 0; i < 20; i++) {
+        ctx.beginPath();
+        let x = Math.random() * 256, y = Math.random() * 256;
+        ctx.moveTo(x, y);
+        for (let j = 0; j < 3; j++) {
+          x += (Math.random() - 0.5) * 40;
+          y += (Math.random() - 0.5) * 40;
+          ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      result.duodenumSerosaTexture = new THREE.CanvasTexture(canvas);
+      result.duodenumSerosaTexture.wrapS = THREE.RepeatWrapping;
+      result.duodenumSerosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // 5B. Duodenum Outer Longitudinal Muscle
+      const canvasLM = createCanvas(512);
+      const ctxLM = canvasLM.getContext('2d');
+      const gradLM = ctxLM.createLinearGradient(0, 0, 512, 0);
+      gradLM.addColorStop(0, '#9a3412');
+      gradLM.addColorStop(0.5, '#c2410c');
+      gradLM.addColorStop(1, '#7c2d12');
+      ctxLM.fillStyle = gradLM;
+      ctxLM.fillRect(0, 0, 512, 512);
+      ctxLM.lineWidth = 1.4;
+      for (let x = 0; x < 512; x += 4) {
+        ctxLM.strokeStyle = Math.random() > 0.4 ? 'rgba(251, 146, 60, 0.55)' : 'rgba(124, 45, 18, 0.65)';
+        ctxLM.beginPath();
+        ctxLM.moveTo(x, 0);
+        ctxLM.lineTo(x + (Math.random() - 0.5) * 2, 512);
+        ctxLM.stroke();
+      }
+      result.duodenumLongitudinalMuscleTexture = new THREE.CanvasTexture(canvasLM);
+      result.duodenumLongitudinalMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.duodenumLongitudinalMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpLM = createCanvas(256);
+      const bCtxLM = bumpLM.getContext('2d');
+      bCtxLM.fillStyle = '#808080';
+      bCtxLM.fillRect(0, 0, 256, 256);
+      bCtxLM.lineWidth = 2.0;
+      for (let x = 0; x < 256; x += 4) {
+        bCtxLM.strokeStyle = (x % 8 === 0) ? '#e2e8f0' : '#1e293b';
+        bCtxLM.beginPath();
+        bCtxLM.moveTo(x, 0);
+        bCtxLM.lineTo(x, 256);
+        bCtxLM.stroke();
+      }
+      result.duodenumLongitudinalMuscleBump = new THREE.CanvasTexture(bumpLM);
+      result.duodenumLongitudinalMuscleBump.wrapS = THREE.RepeatWrapping;
+      result.duodenumLongitudinalMuscleBump.wrapT = THREE.RepeatWrapping;
+
+      // 5C. Duodenum Inner Circular Muscle
+      const canvasCM = createCanvas(512);
+      const ctxCM = canvasCM.getContext('2d');
+      const gradCM = ctxCM.createLinearGradient(0, 0, 0, 512);
+      gradCM.addColorStop(0, '#7c2d12');
+      gradCM.addColorStop(0.5, '#9a3412');
+      gradCM.addColorStop(1, '#431407');
+      ctxCM.fillStyle = gradCM;
+      ctxCM.fillRect(0, 0, 512, 512);
+      ctxCM.lineWidth = 1.6;
+      for (let y = 0; y < 512; y += 4) {
+        ctxCM.strokeStyle = Math.random() > 0.4 ? 'rgba(251, 146, 60, 0.5)' : 'rgba(67, 20, 7, 0.7)';
+        ctxCM.beginPath();
+        ctxCM.moveTo(0, y);
+        ctxCM.lineTo(512, y + (Math.random() - 0.5) * 2);
+        ctxCM.stroke();
+      }
+      result.duodenumCircularMuscleTexture = new THREE.CanvasTexture(canvasCM);
+      result.duodenumCircularMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.duodenumCircularMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpCM = createCanvas(256);
+      const bCtxCM = bumpCM.getContext('2d');
+      bCtxCM.fillStyle = '#808080';
+      bCtxCM.fillRect(0, 0, 256, 256);
+      bCtxCM.lineWidth = 2.2;
+      for (let y = 0; y < 256; y += 4) {
+        bCtxCM.strokeStyle = (y % 8 === 0) ? '#f8fafc' : '#0f172a';
+        bCtxCM.beginPath();
+        bCtxCM.moveTo(0, y);
+        bCtxCM.lineTo(256, y);
+        bCtxCM.stroke();
+      }
+      result.duodenumCircularMuscleBump = new THREE.CanvasTexture(bumpCM);
+      result.duodenumCircularMuscleBump.wrapS = THREE.RepeatWrapping;
+      result.duodenumCircularMuscleBump.wrapT = THREE.RepeatWrapping;
+
+      // 5D. Duodenum Submucosa with Brunner's Glands (Figure 1: studded granular nodules)
+      const canvasSub = createCanvas(512);
+      const ctxSub = canvasSub.getContext('2d');
+      const gradSub = ctxSub.createLinearGradient(0, 0, 512, 512);
+      gradSub.addColorStop(0, '#ffedd5');
+      gradSub.addColorStop(0.5, '#fed7aa');
+      gradSub.addColorStop(1, '#fde68a');
+      ctxSub.fillStyle = gradSub;
+      ctxSub.fillRect(0, 0, 512, 512);
+
+      // Brunner's Gland Nodules (Chùm tuyến Brunner dạng hạt lấm tấm màu nâu cam như hình 1)
+      for (let i = 0; i < 280; i++) {
+        const gx = Math.random() * 512;
+        const gy = Math.random() * 512;
+        const gr = Math.random() * 4 + 2;
+        const bGrad = ctxSub.createRadialGradient(gx, gy, 0, gx, gy, gr);
+        bGrad.addColorStop(0, '#b45309');
+        bGrad.addColorStop(0.7, '#d97706');
+        bGrad.addColorStop(1, 'rgba(217, 119, 6, 0)');
+        ctxSub.fillStyle = bGrad;
+        ctxSub.beginPath();
+        ctxSub.arc(gx, gy, gr, 0, Math.PI * 2);
+        ctxSub.fill();
+      }
+      // Micro-vessels
+      ctxSub.strokeStyle = 'rgba(220, 38, 38, 0.45)';
+      ctxSub.lineWidth = 1.2;
+      for (let i = 0; i < 15; i++) {
+        ctxSub.beginPath();
+        let vx = Math.random() * 512, vy = Math.random() * 512;
+        ctxSub.moveTo(vx, vy);
+        for (let k = 0; k < 3; k++) {
+          vx += (Math.random() - 0.5) * 50;
+          vy += (Math.random() - 0.5) * 50;
+          ctxSub.lineTo(vx, vy);
+        }
+        ctxSub.stroke();
+      }
+      result.duodenumSubmucosaTexture = new THREE.CanvasTexture(canvasSub);
+      result.duodenumSubmucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.duodenumSubmucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // Brunner's Bump map (Cobblestone granular relief)
+      const bumpSub = createCanvas(256);
+      const bCtxSub = bumpSub.getContext('2d');
+      bCtxSub.fillStyle = '#808080';
+      bCtxSub.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 200; i++) {
+        const gx = Math.random() * 256;
+        const gy = Math.random() * 256;
+        const gr = Math.random() * 3 + 1.5;
+        const rad = bCtxSub.createRadialGradient(gx, gy, 0, gx, gy, gr);
+        rad.addColorStop(0, '#ffffff');
+        rad.addColorStop(1, '#808080');
+        bCtxSub.fillStyle = rad;
+        bCtxSub.beginPath();
+        bCtxSub.arc(gx, gy, gr, 0, Math.PI * 2);
+        bCtxSub.fill();
+      }
+      result.duodenumSubmucosaBump = new THREE.CanvasTexture(bumpSub);
+      result.duodenumSubmucosaBump.wrapS = THREE.RepeatWrapping;
+      result.duodenumSubmucosaBump.wrapT = THREE.RepeatWrapping;
+
+      // 5E. Duodenum Mucosa with Circular Kerckring Folds
+      const canvasMuc = createCanvas(512);
+      const ctxMuc = canvasMuc.getContext('2d');
+      ctxMuc.fillStyle = '#c2410c';
+      ctxMuc.fillRect(0, 0, 512, 512);
+      for (let y = 16; y < 512; y += 32) {
+        ctxMuc.strokeStyle = '#ea580c';
+        ctxMuc.lineWidth = 14;
+        ctxMuc.beginPath();
+        ctxMuc.moveTo(0, y);
+        for (let x = 0; x <= 512; x += 32) {
+          ctxMuc.lineTo(x, y + Math.sin((x / 512) * Math.PI * 6) * 6);
+        }
+        ctxMuc.stroke();
+
+        ctxMuc.strokeStyle = '#ffedd5';
+        ctxMuc.lineWidth = 3.5;
+        ctxMuc.beginPath();
+        ctxMuc.moveTo(0, y - 2);
+        for (let x = 0; x <= 512; x += 32) {
+          ctxMuc.lineTo(x, y - 2 + Math.sin((x / 512) * Math.PI * 6) * 6);
+        }
+        ctxMuc.stroke();
+      }
+      result.duodenumMucosaTexture = new THREE.CanvasTexture(canvasMuc);
+      result.duodenumMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.duodenumMucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpMuc = createCanvas(256);
+      const bCtxMuc = bumpMuc.getContext('2d');
+      bCtxMuc.fillStyle = '#808080';
+      bCtxMuc.fillRect(0, 0, 256, 256);
+      for (let y = 8; y < 256; y += 16) {
+        bCtxMuc.strokeStyle = '#ffffff';
+        bCtxMuc.lineWidth = 5;
+        bCtxMuc.beginPath();
+        bCtxMuc.moveTo(0, y);
+        for (let x = 0; x <= 256; x += 16) {
+          bCtxMuc.lineTo(x, y + Math.sin((x / 256) * Math.PI * 6) * 3);
+        }
+        bCtxMuc.stroke();
+        bCtxMuc.strokeStyle = '#101010';
+        bCtxMuc.lineWidth = 5;
+        bCtxMuc.beginPath();
+        bCtxMuc.moveTo(0, y + 6);
+        for (let x = 0; x <= 256; x += 16) {
+          bCtxMuc.lineTo(x, y + 6 + Math.sin((x / 256) * Math.PI * 6) * 3);
+        }
+        bCtxMuc.stroke();
+      }
+      result.duodenumMucosaBump = new THREE.CanvasTexture(bumpMuc);
+      result.duodenumMucosaBump.wrapS = THREE.RepeatWrapping;
+      result.duodenumMucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // ========================================================
+    // 6. RUỘT NON (SMALL INTESTINE) — REFERENCE FIGURE 2
+    // ========================================================
+    {
+      // 6A. Small Intestine Serosa
+      const canvas = createCanvas(256);
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 256, 256);
+      grad.addColorStop(0, '#fb7185');
+      grad.addColorStop(0.5, '#fda4af');
+      grad.addColorStop(1, '#f43f5e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 256, 256);
+      result.siSerosaTexture = new THREE.CanvasTexture(canvas);
+      result.siSerosaTexture.wrapS = THREE.RepeatWrapping;
+      result.siSerosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // 6B. Small Intestine Longitudinal Muscle (Figure 2: orange-red longitudinal stripes)
+      const canvasLM = createCanvas(512);
+      const ctxLM = canvasLM.getContext('2d');
+      ctxLM.fillStyle = '#b91c1c';
+      ctxLM.fillRect(0, 0, 512, 512);
+      ctxLM.lineWidth = 1.6;
+      for (let x = 0; x < 512; x += 4) {
+        ctxLM.strokeStyle = (x % 8 === 0) ? '#f87171' : '#7f1d1d';
+        ctxLM.beginPath();
+        ctxLM.moveTo(x, 0);
+        ctxLM.lineTo(x, 512);
+        ctxLM.stroke();
+      }
+      result.siLongitudinalMuscleTexture = new THREE.CanvasTexture(canvasLM);
+      result.siLongitudinalMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.siLongitudinalMuscleTexture.wrapT = THREE.RepeatWrapping;
+      result.siLongitudinalMuscleBump = result.duodenumLongitudinalMuscleBump;
+
+      // 6C. Small Intestine Circular Muscle with Myenteric Auerbach Plexus (Figure 2: white nerve plexus & red ganglia)
+      const canvasCM = createCanvas(512);
+      const ctxCM = canvasCM.getContext('2d');
+      ctxCM.fillStyle = '#991b1b';
+      ctxCM.fillRect(0, 0, 512, 512);
+      // Circular muscle ribs
+      ctxCM.lineWidth = 1.8;
+      for (let y = 0; y < 512; y += 5) {
+        ctxCM.strokeStyle = (y % 10 === 0) ? '#ef4444' : '#5c0d0d';
+        ctxCM.beginPath();
+        ctxCM.moveTo(0, y);
+        ctxCM.lineTo(512, y);
+        ctxCM.stroke();
+      }
+      // Myenteric Auerbach Nerve Plexus (Lưới thần kinh trắng ngà & hạch đỏ như Figure 2)
+      ctxCM.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      ctxCM.lineWidth = 1.8;
+      for (let i = 0; i < 18; i++) {
+        let nx = Math.random() * 512, ny = Math.random() * 512;
+        ctxCM.beginPath();
+        ctxCM.moveTo(nx, ny);
+        for (let j = 0; j < 4; j++) {
+          nx += (Math.random() - 0.5) * 60;
+          ny += (Math.random() - 0.5) * 60;
+          ctxCM.lineTo(nx, ny);
+        }
+        ctxCM.stroke();
+        // Red ganglion knot
+        ctxCM.fillStyle = '#dc2626';
+        ctxCM.beginPath();
+        ctxCM.arc(nx, ny, 3.5, 0, Math.PI * 2);
+        ctxCM.fill();
+      }
+      result.siCircularMuscleTexture = new THREE.CanvasTexture(canvasCM);
+      result.siCircularMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.siCircularMuscleTexture.wrapT = THREE.RepeatWrapping;
+      result.siCircularMuscleBump = result.duodenumCircularMuscleBump;
+
+      // 6D. Small Intestine Submucosa (Figure 2: white/silver fibrous grid)
+      const canvasSub = createCanvas(512);
+      const ctxSub = canvasSub.getContext('2d');
+      ctxSub.fillStyle = '#f8fafc';
+      ctxSub.fillRect(0, 0, 512, 512);
+      // Fibrous collagen lattice grid
+      ctxSub.strokeStyle = '#cbd5e1';
+      ctxSub.lineWidth = 1.2;
+      for (let x = 0; x < 512; x += 32) {
+        ctxSub.beginPath(); ctxSub.moveTo(x, 0); ctxSub.lineTo(x + 20, 512); ctxSub.stroke();
+      }
+      for (let y = 0; y < 512; y += 32) {
+        ctxSub.beginPath(); ctxSub.moveTo(0, y); ctxSub.lineTo(512, y + 20); ctxSub.stroke();
+      }
+      result.siSubmucosaTexture = new THREE.CanvasTexture(canvasSub);
+      result.siSubmucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.siSubmucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.siSubmucosaBump = result.duodenumSubmucosaBump;
+
+      // 6E. Small Intestine Mucosa & Villi (Figure 2: yellow velvety villi surface)
+      const canvasMuc = createCanvas(512);
+      const ctxMuc = canvasMuc.getContext('2d');
+      ctxMuc.fillStyle = '#eab308';
+      ctxMuc.fillRect(0, 0, 512, 512);
+      // Micro-villi stippling (nhung mao ruột phủ mịn)
+      for (let i = 0; i < 450; i++) {
+        const vx = Math.random() * 512, vy = Math.random() * 512;
+        ctxMuc.fillStyle = Math.random() > 0.5 ? '#fde047' : '#ca8a04';
+        ctxMuc.beginPath();
+        ctxMuc.arc(vx, vy, Math.random() * 2.5 + 1, 0, Math.PI * 2);
+        ctxMuc.fill();
+      }
+      result.siMucosaTexture = new THREE.CanvasTexture(canvasMuc);
+      result.siMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.siMucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpMuc = createCanvas(256);
+      const bCtxMuc = bumpMuc.getContext('2d');
+      bCtxMuc.fillStyle = '#808080';
+      bCtxMuc.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 350; i++) {
+        const vx = Math.random() * 256, vy = Math.random() * 256;
+        bCtxMuc.fillStyle = Math.random() > 0.5 ? '#ffffff' : '#202020';
+        bCtxMuc.beginPath();
+        bCtxMuc.arc(vx, vy, 1.8, 0, Math.PI * 2);
+        bCtxMuc.fill();
+      }
+      result.siMucosaBump = new THREE.CanvasTexture(bumpMuc);
+      result.siMucosaBump.wrapS = THREE.RepeatWrapping;
+      result.siMucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // ========================================================
+    // 7. RUỘT GIÀ / ĐẠI TRÀNG (COLON) — REFERENCE FIGURE 3
+    // ========================================================
+    {
+      // 7A. Colon Serosa (with epiploic fat tags / bọng mỡ mạc nối)
+      const canvas = createCanvas(512);
+      const ctx = canvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#84cc16');
+      grad.addColorStop(0.5, '#a3e635');
+      grad.addColorStop(1, '#65a30d');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      // Soft fat appendages (túi mỡ mạc nối màu vàng nhạt)
+      for (let i = 0; i < 18; i++) {
+        const fx = Math.random() * 512, fy = Math.random() * 512;
+        const fGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, 22);
+        fGrad.addColorStop(0, 'rgba(254, 240, 138, 0.75)');
+        fGrad.addColorStop(0.7, 'rgba(234, 179, 8, 0.35)');
+        fGrad.addColorStop(1, 'rgba(234, 179, 8, 0)');
+        ctx.fillStyle = fGrad;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 22, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      result.colonSerosaTexture = new THREE.CanvasTexture(canvas);
+      result.colonSerosaTexture.wrapS = THREE.RepeatWrapping;
+      result.colonSerosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // 7B. Colon Longitudinal Muscle with Taeniae Coli (Figure 3: prominent longitudinal muscular bands)
+      const canvasLM = createCanvas(512);
+      const ctxLM = canvasLM.getContext('2d');
+      ctxLM.fillStyle = '#4d7c0f';
+      ctxLM.fillRect(0, 0, 512, 512);
+      // Background longitudinal fibers
+      ctxLM.lineWidth = 1.2;
+      for (let x = 0; x < 512; x += 4) {
+        ctxLM.strokeStyle = 'rgba(163, 230, 53, 0.25)';
+        ctxLM.beginPath(); ctxLM.moveTo(x, 0); ctxLM.lineTo(x, 512); ctxLM.stroke();
+      }
+      // TAENIAE COLI (3 Dải cơ dọc nổi gờ màu vàng nâu sáng như hình 3)
+      for (const tx of [128, 256, 384]) {
+        const tGrad = ctxLM.createLinearGradient(tx - 30, 0, tx + 30, 0);
+        tGrad.addColorStop(0, 'rgba(163, 230, 53, 0)');
+        tGrad.addColorStop(0.5, '#bef264');
+        tGrad.addColorStop(1, 'rgba(163, 230, 53, 0)');
+        ctxLM.fillStyle = tGrad;
+        ctxLM.fillRect(tx - 30, 0, 60, 512);
+        // Striations inside taenia
+        ctxLM.strokeStyle = '#4d7c0f';
+        ctxLM.lineWidth = 1.4;
+        for (let ix = tx - 22; ix <= tx + 22; ix += 5) {
+          ctxLM.beginPath(); ctxLM.moveTo(ix, 0); ctxLM.lineTo(ix, 512); ctxLM.stroke();
+        }
+      }
+      result.colonLongitudinalMuscleTexture = new THREE.CanvasTexture(canvasLM);
+      result.colonLongitudinalMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.colonLongitudinalMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpLM = createCanvas(256);
+      const bCtxLM = bumpLM.getContext('2d');
+      bCtxLM.fillStyle = '#808080';
+      bCtxLM.fillRect(0, 0, 256, 256);
+      for (const tx of [64, 128, 192]) {
+        const rGrad = bCtxLM.createLinearGradient(tx - 15, 0, tx + 15, 0);
+        rGrad.addColorStop(0, '#808080');
+        rGrad.addColorStop(0.5, '#ffffff');
+        rGrad.addColorStop(1, '#808080');
+        bCtxLM.fillStyle = rGrad;
+        bCtxLM.fillRect(tx - 15, 0, 30, 256);
+      }
+      result.colonLongitudinalMuscleBump = new THREE.CanvasTexture(bumpLM);
+      result.colonLongitudinalMuscleBump.wrapS = THREE.RepeatWrapping;
+      result.colonLongitudinalMuscleBump.wrapT = THREE.RepeatWrapping;
+
+      // 7C. Colon Circular Muscle & Haustra Folds (Figure 3: deep haustral rings)
+      const canvasCM = createCanvas(512);
+      const ctxCM = canvasCM.getContext('2d');
+      ctxCM.fillStyle = '#365314';
+      ctxCM.fillRect(0, 0, 512, 512);
+      // Haustral groove rings every 64px
+      for (let y = 0; y < 512; y += 64) {
+        ctxCM.fillStyle = 'rgba(20, 83, 45, 0.85)';
+        ctxCM.fillRect(0, y + 20, 512, 24);
+        ctxCM.fillStyle = '#65a30d';
+        ctxCM.fillRect(0, y, 512, 20);
+      }
+      result.colonCircularMuscleTexture = new THREE.CanvasTexture(canvasCM);
+      result.colonCircularMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.colonCircularMuscleTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpCM = createCanvas(256);
+      const bCtxCM = bumpCM.getContext('2d');
+      bCtxCM.fillStyle = '#808080';
+      bCtxCM.fillRect(0, 0, 256, 256);
+      for (let y = 0; y < 256; y += 32) {
+        bCtxCM.strokeStyle = '#ffffff';
+        bCtxCM.lineWidth = 10;
+        bCtxCM.beginPath(); bCtxCM.moveTo(0, y); bCtxCM.lineTo(256, y); bCtxCM.stroke();
+        bCtxCM.strokeStyle = '#101010';
+        bCtxCM.lineWidth = 10;
+        bCtxCM.beginPath(); bCtxCM.moveTo(0, y + 16); bCtxCM.lineTo(256, y + 16); bCtxCM.stroke();
+      }
+      result.colonCircularMuscleBump = new THREE.CanvasTexture(bumpCM);
+      result.colonCircularMuscleBump.wrapS = THREE.RepeatWrapping;
+      result.colonCircularMuscleBump.wrapT = THREE.RepeatWrapping;
+
+      // 7D. Colon Submucosa
+      const canvasSub = createCanvas(512);
+      const ctxSub = canvasSub.getContext('2d');
+      ctxSub.fillStyle = '#f3e8ff';
+      ctxSub.fillRect(0, 0, 512, 512);
+      // Lymphoid solitary nodules
+      for (let i = 0; i < 45; i++) {
+        ctxSub.fillStyle = '#d8b4fe';
+        ctxSub.beginPath();
+        ctxSub.arc(Math.random() * 512, Math.random() * 512, 4, 0, Math.PI * 2);
+        ctxSub.fill();
+      }
+      result.colonSubmucosaTexture = new THREE.CanvasTexture(canvasSub);
+      result.colonSubmucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.colonSubmucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.colonSubmucosaBump = result.duodenumSubmucosaBump;
+
+      // 7E. Colon Mucosa with Plicae Semilunares (Figure 3: deep crescent folds inside haustra)
+      const canvasMuc = createCanvas(512);
+      const ctxMuc = canvasMuc.getContext('2d');
+      const gradMuc = ctxMuc.createLinearGradient(0, 0, 0, 512);
+      gradMuc.addColorStop(0, '#be123c');
+      gradMuc.addColorStop(0.5, '#e11d48');
+      gradMuc.addColorStop(1, '#9f1239');
+      ctxMuc.fillStyle = gradMuc;
+      ctxMuc.fillRect(0, 0, 512, 512);
+      // Plicae semilunares crescent folds (nếp gấp bán nguyệt)
+      for (let y = 30; y < 512; y += 64) {
+        ctxMuc.strokeStyle = '#fda4af';
+        ctxMuc.lineWidth = 16;
+        ctxMuc.beginPath();
+        ctxMuc.moveTo(0, y);
+        for (let x = 0; x <= 512; x += 32) {
+          ctxMuc.lineTo(x, y + Math.sin((x / 512) * Math.PI * 4) * 14);
+        }
+        ctxMuc.stroke();
+
+        ctxMuc.strokeStyle = 'rgba(76, 5, 25, 0.75)';
+        ctxMuc.lineWidth = 10;
+        ctxMuc.beginPath();
+        ctxMuc.moveTo(0, y + 14);
+        for (let x = 0; x <= 512; x += 32) {
+          ctxMuc.lineTo(x, y + 14 + Math.sin((x / 512) * Math.PI * 4) * 14);
+        }
+        ctxMuc.stroke();
+      }
+      result.colonMucosaTexture = new THREE.CanvasTexture(canvasMuc);
+      result.colonMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.colonMucosaTexture.wrapT = THREE.RepeatWrapping;
+
+      const bumpMuc = createCanvas(256);
+      const bCtxMuc = bumpMuc.getContext('2d');
+      bCtxMuc.fillStyle = '#808080';
+      bCtxMuc.fillRect(0, 0, 256, 256);
+      for (let y = 15; y < 256; y += 32) {
+        bCtxMuc.strokeStyle = '#ffffff';
+        bCtxMuc.lineWidth = 8;
+        bCtxMuc.beginPath();
+        bCtxMuc.moveTo(0, y);
+        for (let x = 0; x <= 256; x += 16) {
+          bCtxMuc.lineTo(x, y + Math.sin((x / 256) * Math.PI * 4) * 7);
+        }
+        bCtxMuc.stroke();
+        bCtxMuc.strokeStyle = '#101010';
+        bCtxMuc.lineWidth = 8;
+        bCtxMuc.beginPath();
+        bCtxMuc.moveTo(0, y + 8);
+        for (let x = 0; x <= 256; x += 16) {
+          bCtxMuc.lineTo(x, y + 8 + Math.sin((x / 256) * Math.PI * 4) * 7);
+        }
+        bCtxMuc.stroke();
+      }
+      result.colonMucosaBump = new THREE.CanvasTexture(bumpMuc);
+      result.colonMucosaBump.wrapS = THREE.RepeatWrapping;
+      result.colonMucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+
     return result;
   }
 }

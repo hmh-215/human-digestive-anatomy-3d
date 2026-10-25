@@ -28,20 +28,17 @@ export class ExplosionManager {
   }
 
   _initStomachGuideLine() {
-    const points = [];
-    for (let i = 0; i < 6; i++) {
-      points.push(new THREE.Vector3());
-    }
-    const geo = new THREE.BufferGeometry().setFromPoints(points);
+    const geo = new THREE.BufferGeometry();
     const mat = new THREE.LineDashedMaterial({
       color: 0xe11d48,
-      dashSize: 0.12,
-      gapSize: 0.08,
+      dashSize: 0.14,
+      gapSize: 0.09,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.85,
       depthTest: false
     });
     this.stomachGuideLine = new THREE.Line(geo, mat);
+    this.stomachGuideLine.renderOrder = 999;
     this.stomachGuideLine.visible = false;
     this.guideLineGroup.add(this.stomachGuideLine);
   }
@@ -115,13 +112,15 @@ export class ExplosionManager {
     selectedOrganId,
     isCutawayOpen,
     clickableMeshes,
-    stomachWallMeshes
+    stomachWallMeshes,
+    organLayersMap
   }) {
     const t = Math.max(0, Math.min(1, explodeFactor || 0));
+    const layersMap = organLayersMap || (this.stomachBuilder ? this.stomachBuilder.organLayersMap : null);
 
-    // 1. Non-stomach-layer visceral meshes
+    // 1. Non-wall visceral meshes
     clickableMeshes.forEach((mesh) => {
-      if (mesh.userData.isStomachWallLayer) return;
+      if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) return;
       const initPos = mesh.userData.initialPos;
       if (!initPos) return;
 
@@ -134,7 +133,7 @@ export class ExplosionManager {
           mesh.position.copy(initPos);
         }
       } else if (mesh.userData.organId === selectedOrganId) {
-        // Selected organ sub-assembly explosion (e.g. Liver Couinaud segments)
+        // Selected organ sub-assembly explosion (e.g. Liver Couinaud segments, or colon frame)
         const vec = mesh.userData.subExplodeVec;
         if (vec && t > 0) {
           mesh.position.copy(initPos).addScaledVector(vec, t * 1.15);
@@ -146,35 +145,59 @@ export class ExplosionManager {
       }
     });
 
-    // 2. Stomach 6-Layer meshes
-    if (stomachWallMeshes && stomachWallMeshes.length > 0) {
-      const isStomachSelected = (selectedOrganId === 'stomach');
+    // 2. Multi-Organ Concentric Histological Layers Explosion
+    // Supported hollow organs: stomach (6 layers), duodenum (5 layers), small_intestine (5 layers), large_intestine (5 layers)
+    const hollowOrgans = ['stomach', 'duodenum', 'small_intestine', 'large_intestine'];
+    const organStepVectors = {
+      stomach: new THREE.Vector3(-7.8, 1.4, 5.2),
+      duodenum: new THREE.Vector3(-4.5, 0.9, 3.2),
+      small_intestine: new THREE.Vector3(-6.2, 1.2, 4.2),
+      large_intestine: new THREE.Vector3(-6.8, 1.3, 4.5)
+    };
+    const organColors = {
+      stomach: 0xe11d48,
+      duodenum: 0xf97316,
+      small_intestine: 0xf87171,
+      large_intestine: 0x84cc16
+    };
+
+    let activeGuidePoints = null;
+    let activeGuideColor = 0xe11d48;
+    const tempBox = new THREE.Box3();
+
+    hollowOrgans.forEach((organId) => {
+      let layerMeshes = null;
+      if (layersMap && layersMap.has(organId)) {
+        layerMeshes = layersMap.get(organId);
+      } else if (organId === 'stomach' && stomachWallMeshes && stomachWallMeshes.length > 0) {
+        layerMeshes = stomachWallMeshes;
+      }
+
+      if (!layerMeshes || layerMeshes.length === 0) return;
+
+      const isThisOrganSelected = (selectedOrganId === organId);
       const isWholeSystemExploding = (!selectedOrganId && t > 0);
-
-      // Orthogonal near-to-far 3D depth cascade in masterRoot centimeter space when Stomach is exploded:
-      // Primary axis is Z (perpendicular to screen center, from +Z near viewer to -Z far/deep),
-      // combined with generous lateral X and vertical Y separation to ensure ZERO overlap between layers.
-      const shellBaseStep = new THREE.Vector3(-11.5, 2.0, 7.5);
+      const N = layerMeshes.length;
+      const stepVec = organStepVectors[organId] || new THREE.Vector3(-10, 2, 7);
       const guidePoints = [];
-      const tempBox = new THREE.Box3();
 
-      stomachWallMeshes.forEach((mesh, idx) => {
+      layerMeshes.forEach((mesh, idx) => {
         const initPos = mesh.userData.initialPos || new THREE.Vector3();
         const pos = initPos.clone();
 
         if (isWholeSystemExploding) {
-          // Move all 6 layers together as a single stomach unit during whole-system explosion
-          const sysVec = mesh.userData.systemExplodeVec || new THREE.Vector3(12, 7, 7);
+          // Move all layers of this organ together along its whole-system explosion vector
+          const sysVec = mesh.userData.systemExplodeVec || new THREE.Vector3(0, 0, 5);
           pos.addScaledVector(sysVec, t);
-        } else if (isStomachSelected && t > 0) {
-          // Orthogonal depth cascade:
-          // idx = 0 (Serosa, outermost) -> centeredStep = +2.5 (+Z gần màn hình nhất, -X sang trái)
-          // idx = 5 (Mucosa, innermost) -> centeredStep = -2.5 (-Z xa màn hình nhất, +X sang phải)
-          const centeredStep = 2.5 - idx;
+        } else if (isThisOrganSelected && t > 0) {
+          // Near-to-Far Orthogonal Depth Cascade (Zero Overlap):
+          // idx = 0 (Serosa, outermost) -> centeredStep = +(N-1)/2 (+Z nearest viewer, -X left)
+          // idx = N-1 (Mucosa, innermost) -> centeredStep = -(N-1)/2 (-Z deepest into screen, +X right)
+          const centeredStep = ((N - 1) / 2.0) - idx;
           const offset = new THREE.Vector3(
-            shellBaseStep.x * centeredStep,
-            shellBaseStep.y * centeredStep,
-            shellBaseStep.z * centeredStep
+            stepVec.x * centeredStep,
+            stepVec.y * centeredStep,
+            stepVec.z * centeredStep
           );
           pos.addScaledVector(offset, t);
         }
@@ -182,24 +205,35 @@ export class ExplosionManager {
         mesh.position.copy(pos);
         mesh.updateWorldMatrix(true, false);
 
-        if (isStomachSelected && t > 0.02 && mesh.visible) {
+        if (isThisOrganSelected && t > 0.02 && mesh.visible) {
           tempBox.setFromObject(mesh);
           guidePoints.push(tempBox.getCenter(new THREE.Vector3()));
         }
       });
 
-      // Update clipping planes for Cutaway Shells or Cutaway Window
-      const effectiveLayerExplode = isStomachSelected ? t : 0.0;
-      this.stomachBuilder.updateClipping(isCutawayOpen, effectiveLayerExplode);
-
-      // Update 3D dashed leader line connecting the 6 exploded stomach layers
-      if (isStomachSelected && t > 0.02 && guidePoints.length >= 2) {
-        this.stomachGuideLine.geometry.setFromPoints(guidePoints);
-        this.stomachGuideLine.computeLineDistances();
-        this.stomachGuideLine.visible = true;
-      } else {
-        this.stomachGuideLine.visible = false;
+      if (isThisOrganSelected) {
+        if (guidePoints.length >= 2) {
+          activeGuidePoints = guidePoints;
+          activeGuideColor = organColors[organId] || 0xe11d48;
+        }
       }
+    });
+
+    // Update clipping planes for the selected hollow organ (or reset if whole system)
+    if (this.stomachBuilder) {
+      const activeHollow = hollowOrgans.includes(selectedOrganId) ? selectedOrganId : 'stomach';
+      const effectiveLayerExplode = hollowOrgans.includes(selectedOrganId) ? t : 0.0;
+      this.stomachBuilder.updateClipping(activeHollow, isCutawayOpen, effectiveLayerExplode);
+    }
+
+    // Update 3D dashed leader line connecting the exploded layers
+    if (activeGuidePoints && t > 0.02) {
+      this.stomachGuideLine.geometry.setFromPoints(activeGuidePoints);
+      this.stomachGuideLine.material.color.setHex(activeGuideColor);
+      this.stomachGuideLine.computeLineDistances();
+      this.stomachGuideLine.visible = true;
+    } else {
+      this.stomachGuideLine.visible = false;
     }
   }
 

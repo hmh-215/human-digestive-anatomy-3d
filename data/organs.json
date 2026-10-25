@@ -186,6 +186,68 @@
         { "id": "duodenum_d4", "name": "Đoạn lên (D4 - Góc tá hỗng tràng Treitz)", "explodeVector": [-0.3, -0.1, -0.1] },
         { "id": "duodenum_papilla", "name": "Nhú tá tràng lớn (Papilla Vater)", "explodeVector": [0.4, 0, 0.4] }
       ],
+      "wallLayers": [
+        {
+          "id": "duodenum_serosa",
+          "name": "Lớp 1: Thanh Mạc / Ngoại Mạc (Tunica Serosa & Adventitia)",
+          "latinName": "Tunica Serosa / Tunica Adventitia",
+          "layerOrder": 1,
+          "thickness": "0.4 - 0.7 mm",
+          "color": "#ea580c",
+          "description": "Lớp ngoài cùng của tá tràng. Đoạn D1 di động được phúc mạc bao bọc cả hai mặt (thanh mạc); từ D2 đến D4 cố định vào thành bụng sau nên chỉ có phúc mạc phủ mặt trước, mặt sau dính bởi mô liên kết ngoại mạc và mạc Treitz.",
+          "histology": "Mặt trước lót bởi tế bào biểu mô vảy đơn (Mesothelium) tiết thanh dịch trơn láng; mặt sau là mô liên kết thưa giàu mạch máu dính chặt vào thành bụng sau và đầu tụy.",
+          "physiology": "Cố định quai tá tràng hình chữ C quanh đầu tụy, đồng thời tạo bề mặt trơn láng mặt trước giảm ma sát với gan và đại tràng ngang.",
+          "clinicalNotes": "Vết loét thủng tá tràng ở mặt trước D1 làm tràn dịch tiêu hóa vào khoang phúc mạc lớn gây viêm phúc mạc cấp tính. Thủng mặt sau D2-D3 tràn dịch sau phúc mạc, tạo ổ áp-xe sau phúc mạc khó chẩn đoán."
+        },
+        {
+          "id": "duodenum_muscle_longitudinal",
+          "name": "Lớp 2A: Thớ Cơ Dọc Ngoài (Stratum Longitudinale)",
+          "latinName": "Stratum Longitudinale Tunicae Muscularis",
+          "layerOrder": 2,
+          "thickness": "0.6 - 1.0 mm",
+          "color": "#c2410c",
+          "description": "Lớp cơ trơn nông nhất chạy dọc liên tục theo chiều cong chữ C của tá tràng, tiếp nối từ thớ cơ dọc môn vị dạ dày tỏa xuống.",
+          "histology": "Các bó tế bào cơ trơn hình thoi xếp song song theo trục dọc ống tá tràng, liên kết khe đồng bộ điện thế.",
+          "physiology": "Co rút làm ngắn đoạn tá tràng, mở đường tiếp nhận đợt dưỡng trấp mới từ dạ dày tống qua lỗ môn vị.",
+          "clinicalNotes": "Phẫu thuật viên bóc tách lớp cơ dọc khi thực hiện thủ thuật mở rộng môn vị - tá tràng (Pyloroplasty) điều trị hẹp môn vị do loét xơ chai."
+        },
+        {
+          "id": "duodenum_muscle_circular",
+          "name": "Lớp 2B: Thớ Cơ Vòng Trong (Stratum Circulare)",
+          "latinName": "Stratum Circulare Tunicae Muscularis",
+          "layerOrder": 3,
+          "thickness": "1.0 - 1.8 mm",
+          "color": "#9a3412",
+          "description": "Lớp cơ trơn dày hơn nằm bên trong, các thớ cơ chạy vòng quanh chu vi lòng tá tràng. Tại nhú tá lớn, thớ cơ vòng dày lên bao quanh bóng gan tụy tạo thành Cơ thắt Oddi (Sphincter of Oddi).",
+          "histology": "Các sợi cơ trơn chạy vòng khép kín quanh lòng ống. Chứa đám rối thần kinh cơ ruột Auerbach nằm giữa lớp cơ dọc và cơ vòng.",
+          "physiology": "Tạo các co bóp phân đoạn nhào trộn dịch tụy, dịch mật với dưỡng trấp axit, đồng thời tạo sóng nhu động đẩy dưỡng trấp chuyển sang hỗng tràng.",
+          "clinicalNotes": "Rối loạn chức năng cơ thắt Oddi (Sphincter of Oddi Dysfunction) gây đau hạ sườn phải và ứ trệ dịch mật tụy tái phát. Cắt cơ thắt Oddi qua nội soi mật tụy ngược dòng (ERCP) để gắp sỏi ống mật chủ."
+        },
+        {
+          "id": "duodenum_submucosa",
+          "name": "Lớp 3: Tầng Dưới Niêm Mạc & Tuyến Brunner (Tela Submucosa & Duodenal Glands)",
+          "latinName": "Tela Submucosa & Glandulae Duodenales (Brunner)",
+          "layerOrder": 4,
+          "thickness": "1.2 - 2.2 mm",
+          "color": "#fed7aa",
+          "description": "Tầng mô liên kết lỏng lẻo đặc trưng bởi sự hiện diện dày đặc của các Tuyến tá tràng Brunner (Brunner's glands) - đặc điểm vi thể phân biệt tá tràng với tất cả các đoạn ruột khác.",
+          "histology": "Mô liên kết giàu collagen, chứa các chùm tuyến ống - túi phân nhánh Brunner và mạng lưới mao mạch nuôi dưỡng dày đặc cùng đám rối thần kinh Meissner.",
+          "physiology": "Tuyến Brunner bài tiết chất nhầy kiềm chứa nồng độ cao HCO3- (pH 8.2 - 9.3) ngay khi có dưỡng trấp axit tràn vào, bảo vệ biểu mô tá tràng khỏi bị loét do HCl và pepsin.",
+          "clinicalNotes": "Sự suy giảm bài tiết kiềm của tuyến Brunner là yếu tố bệnh sinh hàng đầu dẫn đến loét hành tá tràng do vi khuẩn Helicobacter pylori hoặc stress."
+        },
+        {
+          "id": "duodenum_mucosa",
+          "name": "Lớp 4: Tầng Niêm Mạc & Nếp Van Kerckring (Tunica Mucosa & Plicae Circulares)",
+          "latinName": "Tunica Mucosa & Plicae Circulares (Kerckring)",
+          "layerOrder": 5,
+          "thickness": "1.0 - 1.6 mm",
+          "color": "#f97316",
+          "description": "Lớp lót trong cùng của lòng tá tràng. Bắt đầu từ đoạn D2 xuất hiện các nếp gấp van vòng Kerckring (Plicae circulares) nhô cao vào lòng ống, cùng Nhú tá lớn (Papilla duodeni major) nơi đổ vào của ống mật chủ và ống tụy chính.",
+          "histology": "Biểu mô trụ đơn phủ các vi nhung mao (microvilli), xen kẽ tế bào đài tiết nhầy và tế bào nội tiết ruột (tiết Secretin và Cholecystokinin CCK). Các hốc tuyến Lieberkühn cắm sâu vào lớp đệm.",
+          "physiology": "Tiết hormone Secretin (kích thích tụy tiết HCO3-) và CCK (kích thích túi mật co bóp và tụy tiết enzym tiêu hóa). Các nếp van vòng tăng diện tích tiếp xúc hóa học lên gấp 3 lần.",
+          "clinicalNotes": "Nội soi dạ dày tá tràng quan sát trực tiếp nếp niêm mạc D2 và nhú tá lớn. U quanh bóng Vater (ung thư nhú tá lớn, ung thư đoạn cuối ống mật chủ) gây tắc mật vàng da sớm."
+        }
+      ],
       "location": "Đoạn đầu tiên của ruột non, dài khoảng 25 cm (12 khoanh ngón tay), uốn hình chữ C ôm lấy đầu tụy. Cố định chặt vào thành bụng sau bởi Mạc dính Treitz.",
       "structure": "Chia làm 4 phần: Đoạn trên (D1 - 2/3 đầu phình to gọi là Hành tá tràng / Bulbus duodeni, di động, dễ loét); Đoạn xuống (D2 - dài 8 cm, chạy dọc bờ phải đốt sống L1-L3, thành trong có Nhú tá lớn và Nhú tá bé); Đoạn ngang (D3 - dài 10 cm, bắt chéo trước TM chủ dưới và ĐM chủ bụng, bị kẹp giữa ĐM chủ bụng và ĐM mạc treo tràng trên); Đoạn lên (D4 - dài 2-3 cm, tận cùng ở Góc tá hỗng tràng được treo bởi Dây chằng Treitz).",
       "vasculature": "Nhận máu từ các vòng cung động mạch tụy tá tràng trước và sau (sự tiếp nối giữa ĐM thân tạng qua ĐM vị tá tràng và ĐM mạc treo tràng trên qua ĐM tụy tá tràng dưới).",
@@ -206,6 +268,68 @@
         { "id": "si_ileum", "name": "Hồi tràng (Quai nằm dọc, mảng Peyer)", "explodeVector": [0.3, -0.3, 0.2] },
         { "id": "si_mesentery", "name": "Rễ mạc treo ruột non & Cung mạch", "explodeVector": [0, 0, -0.3] }
       ],
+      "wallLayers": [
+        {
+          "id": "si_serosa",
+          "name": "Lớp 1: Thanh Mạc (Tunica Serosa)",
+          "latinName": "Tunica Serosa & Tela Subserosa",
+          "layerOrder": 1,
+          "thickness": "0.3 - 0.6 mm",
+          "color": "#fb7185",
+          "description": "Lá tạng của phúc mạc bao bọc liên tục xung quanh toàn bộ chu vi các quai hỗng tràng và hồi tràng, liên tiếp với hai lá của mạc treo ruột non tại bờ mạc treo.",
+          "histology": "Lớp tế bào biểu mô vảy đơn (Mesothelium) tựa trên lá đáy và tầng dưới thanh mạc mỏng chứa mạch máu nông.",
+          "physiology": "Tạo bề mặt trơn bóng và tiết vi lượng thanh dịch bôi trơn, cho phép các quai ruột non trượt linh hoạt lên nhau trong ổ bụng khi co bóp nhu động.",
+          "clinicalNotes": "Tổn thương thanh mạc do phẫu thuật mở bụng dễ hình thành các dải xơ dính ruột (Adhesions), là nguyên nhân hàng đầu gây tắc ruột cơ học sau mổ."
+        },
+        {
+          "id": "si_muscle_longitudinal",
+          "name": "Lớp 2A: Thớ Cơ Dọc Ngoài (Stratum Longitudinale)",
+          "latinName": "Stratum Longitudinale Tunicae Muscularis",
+          "layerOrder": 2,
+          "thickness": "0.5 - 0.9 mm",
+          "color": "#e11d48",
+          "description": "Lớp cơ trơn mỏng hơn nằm phía ngoài, các thớ cơ chạy dọc song song theo chiều dài ống ruột non từ góc Treitz đến van hồi manh tràng.",
+          "histology": "Bó sợi cơ trơn hình thoi xếp dọc theo trục ống ruột non.",
+          "physiology": "Co thắt theo chiều dọc làm ngắn và mở rộng lòng quai ruột phía trước làn sóng nhu động, chuẩn bị đón khối dưỡng chất di chuyển tới.",
+          "clinicalNotes": "Thiếu máu mạc treo cấp tính làm tê liệt lớp cơ dọc trước tiên, dẫn đến liệt ruột cơ năng và chướng bụng cấp."
+        },
+        {
+          "id": "si_muscle_circular",
+          "name": "Lớp 2B: Thớ Cơ Vòng & Đám Rối Auerbach (Stratum Circulare & Myenteric Plexus)",
+          "latinName": "Stratum Circulare & Plexus Myentericus (Auerbach)",
+          "layerOrder": 3,
+          "thickness": "0.8 - 1.5 mm",
+          "color": "#991b1b",
+          "description": "Lớp cơ trơn dày hơn nằm bên trong, chạy vòng quanh chu vi quai ruột. Nằm kẹp giữa lớp cơ dọc và cơ vòng là Đám rối thần kinh cơ ruột Auerbach (Myenteric plexus).",
+          "histology": "Các thớ cơ trơn đồng tâm khép kín quanh lòng ruột. Đám rối Auerbach gồm các chuỗi hạch thần kinh tự chủ liên kết mạng lưới sợi thần kinh không myelin.",
+          "physiology": "Tạo các đợt co thắt phân đoạn (Segmentation contractions) nhào trộn chyme 12-16 lần/phút và sóng nhu động đẩy dịch ruột tiến dần về manh tràng. Đám rối Auerbach điều hòa nhịp điệu nhu động tự chủ ruột.",
+          "clinicalNotes": "Rối loạn đám rối thần kinh Auerbach do thuốc giảm đau opioid hoặc đái tháo đường gây liệt dạ dày ruột (gastroparesis) và táo bón trơ."
+        },
+        {
+          "id": "si_submucosa",
+          "name": "Lớp 3: Tầng Dưới Niêm Mạc & Mảng Peyer (Tela Submucosa & Peyer's Patches)",
+          "latinName": "Tela Submucosa & Noduli Lymphoidei Aggregati",
+          "layerOrder": 4,
+          "thickness": "1.0 - 1.8 mm",
+          "color": "#fce7f3",
+          "description": "Tầng mô liên kết collagen và sợi chun dày dặn, giàu mạng lưới vi mạch máu và mạch bạch huyết. Ở đoạn cuối hồi tràng tập trung các Mảng Peyer (nang bạch huyết chùm lớn).",
+          "histology": "Mô liên kết chứa đám rối thần kinh dưới niêm mạc Meissner chi phối bài tiết men ruột; tại hồi tràng có 30 - 40 Mảng Peyer (Peyer's patches) lồi vào lòng ruột.",
+          "physiology": "Trung tâm miễn dịch niêm mạc đường tiêu hóa (GALT): Mảng Peyer chứa tế bào M bắt giữ kháng nguyên vi khuẩn lòng ruột, kích hoạt tế bào lympho B tiết kháng thể IgA tiết bảo vệ.",
+          "clinicalNotes": "Bệnh thương hàn (Salmonella Typhi) làm viêm loét hoại tử các mảng Peyer ở hồi tràng, nguy cơ ăn thủng thành ruột gây viêm phúc mạc vào tuần thứ 3 của bệnh."
+        },
+        {
+          "id": "si_mucosa",
+          "name": "Lớp 4: Tầng Niêm Mạc & Nhung Mao Ruột (Tunica Mucosa & Intestinal Villi)",
+          "latinName": "Tunica Mucosa & Villi Intestinales",
+          "layerOrder": 5,
+          "thickness": "1.2 - 2.0 mm (Nhung mao cao 0.5 - 1 mm)",
+          "color": "#f59e0b",
+          "description": "Tầng trong cùng thực hiện chức năng hấp thu dinh dưỡng chính của cơ thể. Bề mặt phủ kín hàng triệu vi nhung mao (Villi) mịn như nhung và các nếp gấp van Kerckring làm tăng diện tích hấp thu lên tới 250 m2.",
+          "histology": "Biểu mô trụ đơn gồm tế bào hấp thu (Enterocytes) có bờ bàn chải, tế bào đài tiết nhầy, tế bào Paneth tiết lysozyme diệt khuẩn, và tế bào nội tiết ruột (tiết GIP, GLP-1). Trung tâm mỗi nhung mao có một mao mạch dưỡng chấp bạch huyết (Lacteal) hấp thu chất béo.",
+          "physiology": "Hấp thu 90% nước, điện giải, đường đơn, axit amin, axit béo và vitamin. Tiết enzyme màng bờ bàn chải (Lactase, Maltase, Peptidase) hoàn tất quá trình tiêu hóa đại phân tử.",
+          "clinicalNotes": "Bệnh Celiac (dị ứng gluten) gây teo đét toàn bộ nhung mao ruột non, dẫn đến hội chứng kém hấp thu trầm trọng, tiêu chảy phân mỡ và sụt cân suy dinh dưỡng."
+        }
+      ],
       "location": "Chiếm phần lớn tầng dưới mạc treo đại tràng ngang và khoang chậu hông, dài 6 - 7 mét, xếp thành 14 - 16 quai ruột hình chữ U.",
       "structure": "Tiếp nối từ góc tá hỗng tràng đến van hồi manh tràng. Hỗng tràng chiếm 2/5 trên (thành dày, khẩu kính lớn, nhiều nếp vòng van nhung mao, mạng mạch máu ít cung nhưng nhánh thẳng dài); Hồi tràng chiếm 3/5 dưới (thành mỏng hơn, có nhiều nang bạch huyết chùm - Mảng Peyer, mạng mạch nhiều tầng cung nhánh thẳng ngắn). Toàn bộ ruột non được treo vào thành bụng sau bởi Mạc treo ruột non (rễ mạc treo dài chỉ 15 cm nhưng bờ tự do dài tới 6 mét bám vào quai ruột).",
       "vasculature": "Được cấp máu độc quyền bởi Động mạch mạc treo tràng trên (SMA) qua 12 - 18 nhánh ĐM hỗng - hồi tràng; các nhánh nối nhau tạo thành các cung mạch bậc 1, bậc 2, bậc 3 rồi cho các nhánh thẳng cắm vào thành ruột. Tĩnh mạch mạc treo tràng trên dẫn máu về tĩnh mạch cửa.",
@@ -225,10 +349,72 @@
         { "id": "colon_cecum", "name": "Manh tràng & Van Bauhin", "explodeVector": [0.6, -0.4, 0.3] },
         { "id": "colon_appendix", "name": "Ruột thừa (Vermiform Appendix)", "explodeVector": [0.7, -0.6, 0.4] },
         { "id": "colon_ascending", "name": "Đại tràng lên & Góc gan", "explodeVector": [0.5, 0.1, 0.1] },
-        { "id": "colon_transverse", "name": "Đại tràng ngang & Mạc treo", "explodeVector": [0, 0.4, 0.4] },
+        { "id": "colon_transverse", "name": "Đại tràng ngang & Mạc treo", "explodeVector": [0.4, 0.4, 0.4] },
         { "id": "colon_descending", "name": "Góc lách & Đại tràng xuống", "explodeVector": [-0.5, 0.1, 0.1] },
         { "id": "colon_sigmoid", "name": "Đại tràng sigma (Xích-ma)", "explodeVector": [-0.4, -0.4, 0.3] },
         { "id": "colon_rectum", "name": "Trực tràng & Ống hậu môn", "explodeVector": [0, -0.7, -0.1] }
+      ],
+      "wallLayers": [
+        {
+          "id": "colon_serosa",
+          "name": "Lớp 1: Thanh Mạc & Bọng Mỡ Mạc Nối (Tunica Serosa & Appendices Epiploicae)",
+          "latinName": "Tunica Serosa & Appendices Omentales",
+          "layerOrder": 1,
+          "thickness": "0.4 - 0.8 mm",
+          "color": "#84cc16",
+          "description": "Lá thanh mạc bao bọc đại tràng. Trên bề mặt dọc bờ tự do và dải mạc nối đính dày đặc các túi thừa mạc nối (Appendices epiploicae) - các túi mỡ nhỏ bọc bởi phúc mạc đặc trưng của đại tràng.",
+          "histology": "Biểu mô vảy đơn phủ trên lớp dưới thanh mạc chứa các bọc mô mỡ có cuống mạch máu nuôi dưỡng.",
+          "physiology": "Bọng mỡ có vai trò đệm giảm chấn động cơ học khi đại tràng co bóp mạnh tống phân và hỗ trợ tuần hoàn tại chỗ.",
+          "clinicalNotes": "Xoắn hoặc nhồi máu bọng mỡ mạc nối (Epiploic Appendagitis) gây cơn đau bụng cấp khu trú giống viêm ruột thừa (nếu ở hố chậu phải) hoặc viêm túi thừa (nếu ở hố chậu trái)."
+        },
+        {
+          "id": "colon_muscle_longitudinal",
+          "name": "Lớp 2A: Thớ Cơ Dọc & 3 Dải Cơ Dọc (Stratum Longitudinale & Taeniae Coli)",
+          "latinName": "Stratum Longitudinale & Taeniae Coli",
+          "layerOrder": 2,
+          "thickness": "0.5 - 1.2 mm (Dày tới 2 - 3 mm tại dải cơ dọc)",
+          "color": "#65a30d",
+          "description": "Lớp cơ trơn dọc đặc biệt của ruột già: không bao bọc đều khắp chu vi mà tập trung thành 3 dải cơ dọc dày chắc (Taeniae coli): Dải tự do (Taenia libera), Dải mạc treo (Taenia mesocolica) và Dải mạc nối (Taenia omentalis).",
+          "histology": "Các bó cơ trơn dọc dày đặc hội tụ lại tại gốc ruột thừa manh tràng và tỏa ra chạy suốt khung đại tràng đến bóng trực tràng.",
+          "physiology": "Ba dải cơ dọc ngắn hơn chiều dài tổng thể của đại tràng khoảng 1/6, tạo lực chun kéo làm thành đại tràng phình ra thành các túi phình (Haustra).",
+          "clinicalNotes": "Trong mổ tìm ruột thừa khó, phẫu thuật viên lần theo dải cơ dọc tự do của manh tràng đi xuống dưới sẽ luôn dẫn chính xác đến gốc ruột thừa."
+        },
+        {
+          "id": "colon_muscle_circular",
+          "name": "Lớp 2B: Thớ Cơ Vòng & Túi Phình Đại Tràng (Stratum Circulare & Haustra Coli)",
+          "latinName": "Stratum Circulare & Haustra Coli",
+          "layerOrder": 3,
+          "thickness": "1.0 - 1.8 mm",
+          "color": "#4d7c0f",
+          "description": "Lớp cơ trơn bên trong bao bọc quanh chu vi thành đại tràng, dày lên rõ rệt tại các rãnh thắt giữa các túi phình Haustra.",
+          "histology": "Các thớ cơ trơn chạy vòng liên tục, chứa đám rối thần kinh cơ ruột Auerbach nằm giữa lớp cơ vòng và dải cơ dọc.",
+          "physiology": "Co bóp túi phình (Haustral churning) nhào trộn bã thức ăn qua lại để tối ưu hóa tái hấp thu nước; co bóp nhu động khối (Mass movement) 1 - 3 lần/ngày tống phân xuống trực tràng.",
+          "clinicalNotes": "Bệnh phình đại tràng bẩm sinh Hirschsprung: Vô hạch bẩm sinh đám rối Auerbach ở đoạn trực tràng - sigma làm lớp cơ vòng co thắt liên tục không dãn, gây tắc ruột sơ sinh và giãn phình đại tràng khổng lồ phía trên."
+        },
+        {
+          "id": "colon_submucosa",
+          "name": "Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)",
+          "latinName": "Tela Submucosa",
+          "layerOrder": 4,
+          "thickness": "1.2 - 2.0 mm",
+          "color": "#f3e8ff",
+          "description": "Tầng mô liên kết dày chắc, đệm nâng đỡ niêm mạc đại tràng, chứa các đám rối mạch máu lớn và nang bạch huyết đơn độc (Solitary lymphoid nodules).",
+          "histology": "Mô liên kết giàu sợi chun và mạng lưới mạch máu nuôi dưỡng phân nhánh cùng đám rối thần kinh Meissner.",
+          "physiology": "Cung cấp dinh dưỡng dồi dào cho niêm mạc và biểu mô tiết chất nhầy, duy trì áp lực keo và lưu lượng máu lớn hấp thu nước.",
+          "clinicalNotes": "Bệnh túi thừa đại tràng (Diverticulosis): Niêm mạc và dưới niêm mạc thoát vị chui qua các điểm yếu của tầng cơ (nơi mạch máu cắm xuyên qua), hay gặp ở đại tràng sigma, có thể gây viêm hoặc chảy máu túi thừa."
+        },
+        {
+          "id": "colon_mucosa",
+          "name": "Lớp 4: Tầng Niêm Mạc & Nếp Bán Nguyệt (Tunica Mucosa & Plicae Semilunares)",
+          "latinName": "Tunica Mucosa & Plicae Semilunares Coli",
+          "layerOrder": 5,
+          "thickness": "1.0 - 1.6 mm",
+          "color": "#be123c",
+          "description": "Lớp lót trong cùng của đại tràng. Không có nhung mao ruột, bề mặt nhẵn bóng tạo các nếp gấp hình bán nguyệt (Plicae semilunares) tương ứng với các rãnh thắt bên ngoài giữa các túi Haustra.",
+          "histology": "Biểu mô trụ đơn chứa dày đặc tế bào đài (Goblet cells) tiết chất nhầy mucin, xen kẽ các tế bào hấp thu nước (Colonocytes). Các hốc Lieberkühn thẳng đứng sâu và dày đặc.",
+          "physiology": "Tái hấp thu 1.5 lít nước và điện giải (Na+, Cl-) mỗi ngày, biến dưỡng chất lỏng thành phân khuôn mềm. Tiết lượng lớn chất nhầy bôi trơn bảo vệ thành ruột chống ma sát khối phân cứng và vi khuẩn phân.",
+          "clinicalNotes": "Viêm loét đại trực tràng chảy máu (Ulcerative Colitis) gây viêm loét nông liên tục lan tỏa từ trực tràng lên niêm mạc đại tràng, biểu hiện đi ngoài phân nhầy máu nhiều lần trong ngày."
+        }
       ],
       "location": "Dài khoảng 1.5 mét, hình khung chữ U ngược vây quanh các quai ruột non. Bắt đầu từ hố chậu phải (manh tràng) và kết thúc tại hậu môn.",
       "structure": "3 đặc điểm nhận dạng đặc trưng ngoài mắt thường (ruột non không có): 1. Ba dải cơ dọc (Taeniae coli - dải mạc treo, dải mạc nối, dải tự do; hội tụ tại gốc ruột thừa); 2. Các bướu phình đại tràng (Haustra); 3. Các túi thừa mạc nối (bọng mỡ phúc mạc). Các đoạn: Manh tràng (kèm ruột thừa), Đại tràng lên (dính vào thành bụng sau), Góc đại tràng phải (góc gan), Đại tràng ngang (di động, có mạc treo đại tràng ngang), Góc đại tràng trái (góc lách - cao hơn góc gan), Đại tràng xuống (dính), Đại tràng sigma (di động hình chữ S), Trực tràng (dài 12-15 cm, mất dải cơ dọc, phình bóng trực tràng) và Ống hậu môn.",

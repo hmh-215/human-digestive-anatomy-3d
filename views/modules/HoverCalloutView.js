@@ -80,8 +80,10 @@ export class HoverCalloutView {
       this.descEl.style.display = 'none';
     }
 
-    // Determine elbow direction so the callout card never overflows the viewport
-    const placeLeft = x > vw * 0.62;
+    // Determine elbow direction so the callout card never overflows the viewport or collides with the right drawer
+    const isDrawerOpen = document.getElementById('organ-drawer')?.classList.contains('open');
+    const thresholdX = isDrawerOpen ? vw * 0.45 : vw * 0.62;
+    const placeLeft = x > thresholdX;
     const placeDown = y < 130;
 
     const dx1 = placeLeft ? -28 : 28;

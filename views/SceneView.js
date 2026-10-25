@@ -243,9 +243,40 @@ export class SceneView {
       const organId = inferOrganId(child.name, child.userData);
       const low = (child.name || '').toLowerCase();
 
+      // Synthesize 5/6 Concentric Histological Layers for all Hollow Visceral Organs
       if (child.name === 'Stomach' || organId === 'stomach') {
-        const layers = this.stomachBuilder.createLayers(child, this.appVM.organsData);
+        const layers = this.stomachBuilder.createLayers('stomach', child, this.appVM.organsData);
         this.stomachWallMeshes = layers;
+        layers.forEach((lMesh) => {
+          this.clickableMeshes.push(lMesh);
+          this.allVisceralMeshes.push(lMesh);
+        });
+        return;
+      }
+
+      if (child.name === 'Duodenum' || (organId === 'duodenum' && low === 'duodenum')) {
+        const layers = this.stomachBuilder.createLayers('duodenum', child, this.appVM.organsData);
+        this.duodenumWallMeshes = layers;
+        layers.forEach((lMesh) => {
+          this.clickableMeshes.push(lMesh);
+          this.allVisceralMeshes.push(lMesh);
+        });
+        return;
+      }
+
+      if (child.name === 'Jejunum') {
+        const layers = this.stomachBuilder.createLayers('small_intestine', child, this.appVM.organsData);
+        this.smallIntestineWallMeshes = layers;
+        layers.forEach((lMesh) => {
+          this.clickableMeshes.push(lMesh);
+          this.allVisceralMeshes.push(lMesh);
+        });
+        return;
+      }
+
+      if (child.name === 'Transverse_colon') {
+        const layers = this.stomachBuilder.createLayers('large_intestine', child, this.appVM.organsData);
+        this.colonWallMeshes = layers;
         layers.forEach((lMesh) => {
           this.clickableMeshes.push(lMesh);
           this.allVisceralMeshes.push(lMesh);
@@ -408,14 +439,16 @@ export class SceneView {
    * Formats human-readable Vietnamese/Latin metadata for any hovered 3D mesh.
    */
   _buildHoverPayload(mesh, screenX, screenY) {
-    if (mesh.userData.isStomachWallLayer) {
+    if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) {
       const shortThickness = (mesh.userData.wallLayerThickness || '').split('(')[0].trim();
+      const organTitle = mesh.userData.organTitle ? mesh.userData.organTitle.toUpperCase() : 'MÔ HỌC';
+      const total = mesh.userData.totalLayers || (mesh.userData.organId === 'stomach' ? 6 : 5);
       return {
-        organId: 'stomach',
+        organId: mesh.userData.organId,
         wallLayerId: mesh.userData.wallLayerId,
         x: screenX,
         y: screenY,
-        tag: `MÔ HỌC DẠ DÀY • LỚP ${mesh.userData.wallLayerOrder}/6`,
+        tag: `MÔ HỌC ${organTitle} • LỚP ${mesh.userData.wallLayerOrder}/${total}`,
         badge: shortThickness,
         title: mesh.userData.wallLayerName,
         subtitle: mesh.userData.wallLayerDesc || '',
@@ -513,9 +546,10 @@ export class SceneView {
       const activeLayerId = this.dissectionVM.state.activeWallLayerId;
       const selectedId = this.sceneVM.state.selectedOrganId;
 
-      if (prev.userData.isStomachWallLayer && prev.userData.wallLayerId === activeLayerId) {
+      const isWall = !!(prev.userData.isWallLayer || prev.userData.isStomachWallLayer);
+      if (isWall && prev.userData.wallLayerId === activeLayerId) {
         prev.material.emissive.setHex(0x331111);
-      } else if (!prev.userData.isStomachWallLayer && prev.userData.organId === selectedId) {
+      } else if (!isWall && prev.userData.organId === selectedId) {
         prev.material.emissive.setHex(0x221508);
       } else if (prev.userData.organId === 'gallbladder_tree' && !selectedId) {
         prev.material.emissive.setHex(0x064e3b);
@@ -605,8 +639,8 @@ export class SceneView {
 
       if (validHit) {
         const topHit = validHit.object;
-        if (topHit.userData.isStomachWallLayer) {
-          this.sceneVM.selectOrgan('stomach');
+        if (topHit.userData.isWallLayer || topHit.userData.isStomachWallLayer) {
+          this.sceneVM.selectOrgan(topHit.userData.organId);
           this.dissectionVM.setActiveWallLayer(topHit.userData.wallLayerId);
         } else {
           this.sceneVM.selectOrgan(topHit.userData.organId);
@@ -622,8 +656,10 @@ export class SceneView {
       selectedOrganId: this.sceneVM.state.selectedOrganId,
       isCutawayOpen: this.dissectionVM.state.isCutawayOpen,
       clickableMeshes: this.clickableMeshes,
-      stomachWallMeshes: this.stomachWallMeshes
+      stomachWallMeshes: this.stomachWallMeshes,
+      organLayersMap: this.stomachBuilder ? this.stomachBuilder.organLayersMap : null
     });
+    this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
   }
 
   _bindViewModel() {
@@ -632,6 +668,12 @@ export class SceneView {
       this._syncExplosion();
       if (selectedId === 'stomach') {
         this.focusStomach();
+      } else if (selectedId === 'duodenum') {
+        this.focusDuodenum();
+      } else if (selectedId === 'small_intestine') {
+        this.focusSmallIntestine();
+      } else if (selectedId === 'large_intestine') {
+        this.focusColon();
       } else if (selectedId) {
         this.focusOrgan(selectedId);
       }
@@ -700,7 +742,7 @@ export class SceneView {
 
     this.clickableMeshes.forEach((mesh) => {
       const organId = mesh.userData.organId;
-      const isWallLayer = !!mesh.userData.isStomachWallLayer;
+      const isWallLayer = !!(mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer);
       const layer = layerMap[organId] || 3;
 
       if (!visibleLayers.includes(layer)) {
@@ -714,7 +756,7 @@ export class SceneView {
           mesh.material.transparent = isXRay;
           mesh.material.opacity = isXRay ? 0.35 : 1.0;
           if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
-        } else if (selectedId === 'stomach') {
+        } else if (selectedId === organId) {
           mesh.visible = true;
           mesh.material.transparent = isXRay;
           mesh.material.opacity = isXRay ? 0.45 : 1.0;
@@ -747,8 +789,10 @@ export class SceneView {
         }
       } else if (organId === selectedId) {
         mesh.visible = true;
-        mesh.material.transparent = isXRay;
-        mesh.material.opacity = isXRay ? 0.45 : 1.0;
+        const isColonFrame = (organId === 'large_intestine');
+        const explodeFactor = this.dissectionVM.state.explodeFactor || 0;
+        mesh.material.transparent = isXRay || (isColonFrame && explodeFactor > 0.15);
+        mesh.material.opacity = isXRay ? 0.45 : ((isColonFrame && explodeFactor > 0.15) ? 0.18 : 1.0);
         if (mesh.material.emissive) mesh.material.emissive.setHex(0x221508);
       } else {
         if (isIsolate) {
@@ -764,28 +808,62 @@ export class SceneView {
   }
 
   _highlightActiveWallLayer(layerId) {
-    if (!this.stomachWallMeshes) return;
-    this.stomachWallMeshes.forEach(mesh => {
+    this.clickableMeshes.forEach(mesh => {
+      if (!mesh.userData.isWallLayer && !mesh.userData.isStomachWallLayer) return;
       if (mesh.userData.wallLayerId === layerId) {
-        if (mesh.material.emissive) mesh.material.emissive.setHex(0x331111);
+        if (mesh.material && mesh.material.emissive) mesh.material.emissive.setHex(0x331111);
       } else {
-        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        if (mesh.material && mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
       }
     });
   }
 
   focusStomach() {
-    if (this.stomachWallMeshes && this.stomachWallMeshes.length > 0) {
-      const center = this.stomachBuilder
-        ? this.stomachBuilder.baseCenterWorld.clone()
-        : new THREE.Vector3(0.688, 0.339, 0.206);
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('stomach')
+      : new THREE.Vector3(0.688, 0.339, 0.206);
 
-      // Frame the stomach center with generous viewport width & depth so all 6 exploded layers fit cleanly without overlap
-      this._smoothMoveCameraTarget(
-        [center.x - 0.35, center.y + 0.15, center.z],
-        [center.x - 0.35, center.y + 0.35, center.z + 8.6]
-      );
-    }
+    // Frame stomach center with generous viewport width & depth so all 6 exploded layers fit cleanly without overlap
+    this._smoothMoveCameraTarget(
+      [center.x - 0.45, center.y + 0.15, center.z],
+      [center.x - 0.45, center.y + 0.35, center.z + 8.4]
+    );
+  }
+
+  focusDuodenum() {
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('duodenum')
+      : new THREE.Vector3(-0.3, 0.1, 0.0);
+
+    // Frame C-loop of duodenum and its 5 exploded layers cleanly
+    this._smoothMoveCameraTarget(
+      [center.x - 0.35, center.y + 0.05, center.z],
+      [center.x - 0.35, center.y + 0.20, center.z + 6.2]
+    );
+  }
+
+  focusSmallIntestine() {
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('small_intestine')
+      : new THREE.Vector3(0.0, -0.6, 0.0);
+
+    // Frame small intestine quays and its 5 exploded layers cleanly
+    this._smoothMoveCameraTarget(
+      [center.x - 0.40, center.y + 0.1, center.z],
+      [center.x - 0.40, center.y + 0.25, center.z + 7.8]
+    );
+  }
+
+  focusColon() {
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('large_intestine')
+      : new THREE.Vector3(0.0, 0.2, 0.0);
+
+    // Frame colon arch and its 5 exploded layers cleanly
+    this._smoothMoveCameraTarget(
+      [center.x - 0.40, center.y + 0.15, center.z],
+      [center.x - 0.40, center.y + 0.30, center.z + 8.2]
+    );
   }
 
   focusOrgan(organId) {

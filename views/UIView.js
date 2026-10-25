@@ -178,6 +178,15 @@ export class UIView {
           if (organId === 'stomach') {
             this.explodeModeLabel.textContent = '💥 Tách 6 Lớp Vỏ Dạ Dày:';
             this.explodeHelperText.textContent = 'Tách 5 mảnh vỏ cong (Thanh mạc → Dưới niêm mạc) khỏi lõi Niêm mạc Rugae';
+          } else if (organId === 'duodenum') {
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Tá Tràng:';
+            this.explodeHelperText.textContent = 'Tách 5 lớp mô học tá tràng (Tuyến Brunner, nếp Kerckring, cơ trơn)';
+          } else if (organId === 'small_intestine') {
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Ruột Non:';
+            this.explodeHelperText.textContent = 'Tách 5 lớp mô học ruột non (Đám rối Auerbach, nhung mao Villi, cơ trơn)';
+          } else if (organId === 'large_intestine') {
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Đại Tràng:';
+            this.explodeHelperText.textContent = 'Tách 5 lớp mô học đại tràng (Dải cơ dọc Taeniae coli, túi phình Haustra, nếp bán nguyệt)';
           } else {
             this.explodeModeLabel.textContent = `💥 Tách Cấu Trúc ${organ.vietnameseName}:`;
             this.explodeHelperText.textContent = 'Tách rời các hạ phân thùy / cấu trúc con để rê chuột xem nhãn';
@@ -287,7 +296,7 @@ export class UIView {
       wallLayersHtml = `
         <div class="drawer-section">
           <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
-            🔬 Cấu Tạo Mô Học Thành Dạ Dày (${organ.wallLayers.length} Lớp):
+            🔬 Cấu Tạo Mô Học Thành ${organ.vietnameseName} (${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
             Bấm vào từng tầng để làm sáng lớp tương ứng trên mô hình 3D:

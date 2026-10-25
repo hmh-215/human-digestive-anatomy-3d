@@ -1,29 +1,51 @@
 import * as THREE from 'three';
 
 /**
- * StomachLayersBuilder.js
- * Module 2: Builds the 6 concentric histological layers of the Stomach Wall
- * (Serosa, Longitudinal Muscle, Circular Muscle, Oblique Muscle, Submucosa, Mucosa Rugae)
- * and manages both:
+ * StomachLayersBuilder.js (HollowOrganLayersBuilder)
+ * Module 2: Builds concentric histological layers for all hollow visceral organs:
+ *   - Stomach (Dạ dày - 6 layers)
+ *   - Duodenum (Tá tràng - 5 layers with Brunner's glands & Kerckring folds)
+ *   - Small Intestine (Ruột non - 5 layers with Auerbach plexus & Villi)
+ *   - Large Intestine / Colon (Đại tràng - 5 layers with Taeniae coli & Haustra)
+ *
+ * Manages both:
  *   1. Stepped Cutaway Window (Cắt mở lòng bậc thang) when assembled
- *   2. Curved Anterior Cutaway Shells (Tách dạng mảnh vỏ cong) when exploded
+ *   2. Orthogonal Near-to-Far Depth Explosion when separated
  */
 export class StomachLayersBuilder {
   constructor(proceduralTextures) {
     this.proceduralTextures = proceduralTextures;
+    this.organLayersMap = new Map();
+    this.baseCenterMap = new Map();
     this.stomachWallMeshes = [];
+    this.duodenumWallMeshes = [];
+    this.smallIntestineWallMeshes = [];
+    this.colonWallMeshes = [];
     this.baseCenterWorld = new THREE.Vector3(0.688, 0.339, 0.206);
   }
 
   /**
-   * Builds 6 concentric meshes from the base Stomach mesh.
-   * @param {THREE.Mesh} stomachMesh
-   * @param {Array} organsData
-   * @returns {Array<THREE.Mesh>} The 6 created layer meshes
+   * Builds concentric layer meshes from a base hollow organ mesh.
+   * Signature: createLayers(organId, baseMesh, organsData) or legacy createLayers(stomachMesh, organsData)
    */
-  createLayers(stomachMesh, organsData) {
-    this.stomachWallMeshes = [];
-    const origGeo = stomachMesh.geometry;
+  createLayers(arg1, arg2, arg3) {
+    let organId = 'stomach';
+    let baseMesh = null;
+    let organsData = null;
+
+    if (typeof arg1 === 'string') {
+      organId = arg1;
+      baseMesh = arg2;
+      organsData = arg3;
+    } else {
+      organId = 'stomach';
+      baseMesh = arg1;
+      organsData = arg2;
+    }
+
+    if (!baseMesh) return [];
+
+    const origGeo = baseMesh.geometry;
     if (!origGeo.attributes.normal) {
       origGeo.computeVertexNormals();
     }
@@ -32,15 +54,13 @@ export class StomachLayersBuilder {
 
     const radius = (origGeo.boundingSphere && origGeo.boundingSphere.radius)
       ? origGeo.boundingSphere.radius
-      : 8.1;
+      : 8.0;
 
     const localCenter = new THREE.Vector3();
     if (origGeo.boundingBox) {
       origGeo.boundingBox.getCenter(localCenter);
 
-      // Generate clean, anatomically aligned UV coordinates across the J-shaped stomach
-      // so procedural muscle fibers (Longitudinal, Circular, Oblique), Submucosa vessels,
-      // and Mucosa Rugae folds tile crisply without global-atlas stretching.
+      // Generate clean, anatomically aligned UV coordinates across the tubular / J-shaped organ
       const bbox = origGeo.boundingBox;
       const sizeX = Math.max(0.001, bbox.max.x - bbox.min.x);
       const sizeY = Math.max(0.001, bbox.max.y - bbox.min.y);
@@ -51,34 +71,229 @@ export class StomachLayersBuilder {
         const nx = (posAttrBase.getX(i) - bbox.min.x) / sizeX;
         const ny = (posAttrBase.getY(i) - bbox.min.y) / sizeY;
         const nz = (posAttrBase.getZ(i) - bbox.min.z) / sizeZ;
-        uvArray[i * 2] = nx * 1.8 + nz * 0.7;
-        uvArray[i * 2 + 1] = ny * 2.0;
+        uvArray[i * 2]     = nx * 2.0 + nz * 0.8;
+        uvArray[i * 2 + 1] = ny * 2.5;
       }
       origGeo.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2));
     }
 
-    const organData = (organsData || []).find(o => o.id === 'stomach');
-    const wallLayersDef = (organData && organData.wallLayers) || [
-      { id: 'stomach_serosa', name: 'Lớp 1: Thanh Mạc (Tunica Serosa)', layerOrder: 1, color: '#e11d48', thickness: '0.5 - 0.8 mm', description: 'Lá tạng phúc mạc trơn láng bao bọc mặt ngoài dạ dày.' },
-      { id: 'stomach_muscle_longitudinal', name: 'Lớp 2A: Thớ Cơ Dọc (Stratum Longitudinale)', layerOrder: 2, color: '#be123c', thickness: '0.8 - 1.2 mm', description: 'Các bó sợi cơ trơn chạy dọc theo bờ cong lớn và bờ cong nhỏ.' },
-      { id: 'stomach_muscle_circular', name: 'Lớp 2B: Thớ Cơ Vòng (Stratum Circulare)', layerOrder: 3, color: '#991b1b', thickness: '1.5 - 2.5 mm', description: 'Lớp cơ chạy vòng quanh chu vi thân vị, dày lên tạo cơ thắt môn vị.' },
-      { id: 'stomach_muscle_oblique', name: 'Lớp 2C: Thớ Cơ Chéo (Fibrae Obliquae)', layerOrder: 4, color: '#7f1d1d', thickness: '0.6 - 1.0 mm', description: 'Thớ cơ đan chéo góc 45° đặc trưng riêng của dạ dày giúp nhào trộn thức ăn.' },
-      { id: 'stomach_submucosa', name: 'Lớp 3: Tầng Dưới Niêm Mạc (Tela Submucosa)', layerOrder: 5, color: '#f472b6', thickness: '2.0 - 3.5 mm', description: 'Mô liên kết giàu mạch máu và đám rối thần kinh Meissner.' },
-      { id: 'stomach_mucosa', name: 'Lớp 4: Lớp Niêm Mạc Tuyến (Tunica Mucosa & Rugae)', layerOrder: 6, color: '#ea580c', thickness: '1.5 - 2.5 mm', description: 'Lớp trong cùng với các nếp gấp vị (Rugae) uốn lượn và tuyến tiết dịch vị.' }
-    ];
+    const organData = (organsData || []).find(o => o.id === organId);
+    const wallLayersDef = (organData && organData.wallLayers) || [];
+    const count = wallLayersDef.length || (organId === 'stomach' ? 6 : 5);
 
-    const insets = [
-      0.0,
-      0.012 * radius,
-      0.024 * radius,
-      0.036 * radius,
-      0.048 * radius,
-      0.060 * radius
-    ];
+    // Compute concentric normal insets proportional to bounding radius
+    const insets = [];
+    for (let i = 0; i < count; i++) {
+      insets.push(i * (0.060 / Math.max(1, count - 1)) * radius);
+    }
 
     const tex = this.proceduralTextures.getTextures();
+    const materials = this._getMaterialsForOrgan(organId, tex);
 
-    const materials = [
+    const organSysVecs = {
+      stomach: new THREE.Vector3(12.0, 7.0, 7.0),
+      duodenum: new THREE.Vector3(-4.0, -1.0, 8.0),
+      small_intestine: new THREE.Vector3(0.0, -10.0, 11.0),
+      large_intestine: new THREE.Vector3(0.0, -4.0, 3.0)
+    };
+    const sysVec = organSysVecs[organId] || new THREE.Vector3(0, 0, 5);
+
+    const layerMeshes = [];
+
+    wallLayersDef.forEach((layerDef, idx) => {
+      const d = insets[idx] || 0;
+      const geo = origGeo.clone();
+      if (d > 0) {
+        const posAttr = geo.attributes.position;
+        const normAttr = geo.attributes.normal;
+        for (let i = 0; i < posAttr.count; i++) {
+          const px = posAttr.getX(i) - normAttr.getX(i) * d;
+          const py = posAttr.getY(i) - normAttr.getY(i) * d;
+          const pz = posAttr.getZ(i) - normAttr.getZ(i) * d;
+          posAttr.setXYZ(i, px, py, pz);
+        }
+        posAttr.needsUpdate = true;
+      }
+
+      const mat = materials[idx] || materials[0];
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.name = layerDef.id;
+      mesh.position.copy(baseMesh.position);
+      mesh.rotation.copy(baseMesh.rotation);
+      mesh.scale.copy(baseMesh.scale);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      mesh.userData = {
+        organId: organId,
+        organTitle: organData ? organData.vietnameseName : organId,
+        isWallLayer: true,
+        isStomachWallLayer: (organId === 'stomach'),
+        wallLayerId: layerDef.id,
+        wallLayerOrder: layerDef.layerOrder || (idx + 1),
+        totalLayers: count,
+        wallLayerName: layerDef.name,
+        wallLayerColor: layerDef.color || '#e11d48',
+        wallLayerThickness: layerDef.thickness || '',
+        wallLayerDesc: layerDef.description || '',
+        rawName: layerDef.name,
+        localCenter: localCenter.clone(),
+        initialPos: baseMesh.position.clone(),
+        systemExplodeVec: sysVec.clone()
+      };
+
+      baseMesh.parent.add(mesh);
+      layerMeshes.push(mesh);
+    });
+
+    baseMesh.visible = false;
+    this.organLayersMap.set(organId, layerMeshes);
+
+    if (organId === 'stomach') {
+      this.stomachWallMeshes = layerMeshes;
+    } else if (organId === 'duodenum') {
+      this.duodenumWallMeshes = layerMeshes;
+    } else if (organId === 'small_intestine') {
+      this.smallIntestineWallMeshes = layerMeshes;
+    } else if (organId === 'large_intestine') {
+      this.colonWallMeshes = layerMeshes;
+    }
+
+    return layerMeshes;
+  }
+
+  _getMaterialsForOrgan(organId, tex) {
+    if (organId === 'duodenum') {
+      return [
+        new THREE.MeshStandardMaterial({
+          map: tex.duodenumSerosaTexture,
+          roughness: 0.24,
+          metalness: 0.08,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.duodenumLongitudinalMuscleTexture,
+          bumpMap: tex.duodenumLongitudinalMuscleBump,
+          bumpScale: 0.025,
+          roughness: 0.48,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.duodenumCircularMuscleTexture,
+          bumpMap: tex.duodenumCircularMuscleBump,
+          bumpScale: 0.025,
+          roughness: 0.50,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.duodenumSubmucosaTexture,
+          bumpMap: tex.duodenumSubmucosaBump,
+          bumpScale: 0.015,
+          roughness: 0.44,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.duodenumMucosaTexture,
+          bumpMap: tex.duodenumMucosaBump,
+          bumpScale: 0.045,
+          roughness: 0.36,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        })
+      ];
+    }
+
+    if (organId === 'small_intestine') {
+      return [
+        new THREE.MeshStandardMaterial({
+          map: tex.siSerosaTexture,
+          roughness: 0.22,
+          metalness: 0.06,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.siLongitudinalMuscleTexture,
+          bumpMap: tex.siLongitudinalMuscleBump,
+          bumpScale: 0.022,
+          roughness: 0.48,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.siCircularMuscleTexture,
+          bumpMap: tex.siCircularMuscleBump,
+          bumpScale: 0.022,
+          roughness: 0.50,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.siSubmucosaTexture,
+          bumpMap: tex.siSubmucosaBump,
+          bumpScale: 0.012,
+          roughness: 0.42,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.siMucosaTexture,
+          bumpMap: tex.siMucosaBump,
+          bumpScale: 0.040,
+          roughness: 0.38,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        })
+      ];
+    }
+
+    if (organId === 'large_intestine') {
+      return [
+        new THREE.MeshStandardMaterial({
+          map: tex.colonSerosaTexture,
+          roughness: 0.28,
+          metalness: 0.08,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.colonLongitudinalMuscleTexture,
+          bumpMap: tex.colonLongitudinalMuscleBump,
+          bumpScale: 0.030,
+          roughness: 0.50,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.colonCircularMuscleTexture,
+          bumpMap: tex.colonCircularMuscleBump,
+          bumpScale: 0.030,
+          roughness: 0.52,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.colonSubmucosaTexture,
+          bumpMap: tex.colonSubmucosaBump,
+          bumpScale: 0.015,
+          roughness: 0.44,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.colonMucosaTexture,
+          bumpMap: tex.colonMucosaBump,
+          bumpScale: 0.045,
+          roughness: 0.35,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        })
+      ];
+    }
+
+    // Default: Stomach (6 materials)
+    return [
       new THREE.MeshStandardMaterial({
         map: tex.serosaTexture,
         roughness: 0.24,
@@ -126,80 +341,66 @@ export class StomachLayersBuilder {
         side: THREE.DoubleSide
       })
     ];
+  }
 
-    wallLayersDef.forEach((layerDef, idx) => {
-      const d = insets[idx] || 0;
-      const geo = origGeo.clone();
-      if (d > 0) {
-        const posAttr = geo.attributes.position;
-        const normAttr = geo.attributes.normal;
-        for (let i = 0; i < posAttr.count; i++) {
-          const px = posAttr.getX(i) - normAttr.getX(i) * d;
-          const py = posAttr.getY(i) - normAttr.getY(i) * d;
-          const pz = posAttr.getZ(i) - normAttr.getZ(i) * d;
-          posAttr.setXYZ(i, px, py, pz);
+  /**
+   * Records the normalized world-space center of all hollow organs after masterRoot is scaled/positioned.
+   */
+  recordBaseCenterWorld(specificOrganId) {
+    const organsToRecord = specificOrganId ? [specificOrganId] : Array.from(this.organLayersMap.keys());
+    organsToRecord.forEach(organId => {
+      const meshes = this.organLayersMap.get(organId);
+      if (meshes && meshes.length > 0) {
+        const m0 = meshes[0];
+        m0.updateWorldMatrix(true, false);
+        const box0 = new THREE.Box3().setFromObject(m0);
+        const center = new THREE.Vector3();
+        box0.getCenter(center);
+        this.baseCenterMap.set(organId, center);
+        if (organId === 'stomach') {
+          this.baseCenterWorld.copy(center);
         }
-        posAttr.needsUpdate = true;
       }
+    });
+  }
 
-      const mesh = new THREE.Mesh(geo, materials[idx]);
-      mesh.name = layerDef.id;
-      mesh.position.copy(stomachMesh.position);
-      mesh.rotation.copy(stomachMesh.rotation);
-      mesh.scale.copy(stomachMesh.scale);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+  getBaseCenter(organId) {
+    return this.baseCenterMap.get(organId) || this.baseCenterWorld;
+  }
 
-      mesh.userData = {
-        organId: 'stomach',
-        isStomachWallLayer: true,
-        wallLayerId: layerDef.id,
-        wallLayerOrder: layerDef.layerOrder || (idx + 1),
-        wallLayerName: layerDef.name,
-        wallLayerColor: layerDef.color || '#e11d48',
-        wallLayerThickness: layerDef.thickness || '',
-        wallLayerDesc: layerDef.description || '',
-        rawName: layerDef.name,
-        localCenter: localCenter.clone(),
-        initialPos: stomachMesh.position.clone(),
-        // Whole-system radial explosion vector for stomach
-        explodeVector: new THREE.Vector3(7.5, 2.5, 4.5)
-      };
+  /**
+   * Updates clipping planes for both Cutaway Window mode and Exploded Layer mode.
+   */
+  updateClipping(selectedOrganId, isCutawayOpen, wallExplodeFactor) {
+    // If called with legacy 2 args: updateClipping(isCutawayOpen, wallExplodeFactor)
+    if (typeof selectedOrganId === 'boolean') {
+      wallExplodeFactor = isCutawayOpen;
+      isCutawayOpen = selectedOrganId;
+      selectedOrganId = 'stomach';
+    }
 
-      stomachMesh.parent.add(mesh);
-      this.stomachWallMeshes.push(mesh);
+    const organId = selectedOrganId || 'stomach';
+    const meshes = this.organLayersMap.get(organId) || this.stomachWallMeshes;
+    if (!meshes || meshes.length === 0) return;
+
+    // Clear clipping on other hollow organs so they remain solid without leftover cuts
+    this.organLayersMap.forEach((otherMeshes, otherId) => {
+      if (otherId !== organId) {
+        otherMeshes.forEach(mesh => {
+          if (mesh.material && mesh.material.clippingPlanes) {
+            mesh.material.clippingPlanes = null;
+            mesh.material.needsUpdate = true;
+          }
+        });
+      }
     });
 
-    stomachMesh.visible = false;
-    return this.stomachWallMeshes;
-  }
-
-  /**
-   * Records the normalized world-space center of the unexploded stomach after masterRoot is scaled/positioned.
-   */
-  recordBaseCenterWorld() {
-    if (this.stomachWallMeshes.length > 0) {
-      const m0 = this.stomachWallMeshes[0];
-      m0.updateWorldMatrix(true, false);
-      const box0 = new THREE.Box3().setFromObject(m0);
-      box0.getCenter(this.baseCenterWorld);
-    }
-  }
-
-  /**
-   * Updates clipping planes for both Cutaway Window mode and Exploded 6-Layer mode.
-   * @param {boolean} isCutawayOpen
-   * @param {number} wallExplodeFactor (0..1)
-   */
-  updateClipping(isCutawayOpen, wallExplodeFactor) {
-    if (!this.stomachWallMeshes || this.stomachWallMeshes.length === 0) return;
-
-    const isExplodingLayers = wallExplodeFactor > 0.01;
+    const isExplodingLayers = (wallExplodeFactor > 0.01);
     const windowNormal = new THREE.Vector3(0.3, 0.1, -0.95).normalize();
     const windowOffsets = [0.008, 0.015, 0.022, 0.029, 0.036, 0.043];
 
     if (!isCutawayOpen && !isExplodingLayers) {
-      this.stomachWallMeshes.forEach(mesh => {
+      meshes.forEach(mesh => {
         if (mesh.material.clippingPlanes) {
           mesh.material.clippingPlanes = null;
           mesh.material.needsUpdate = true;
@@ -211,19 +412,21 @@ export class StomachLayersBuilder {
     const tempBox = new THREE.Box3();
     const worldCenter = new THREE.Vector3();
     const worldDelta = new THREE.Vector3();
+    const baseCenter = this.getBaseCenter(organId);
+    const innermostIdx = meshes.length - 1;
 
-    this.stomachWallMeshes.forEach((mesh, idx) => {
+    meshes.forEach((mesh, idx) => {
       if (!mesh.visible) return;
 
       mesh.updateWorldMatrix(true, false);
       tempBox.setFromObject(mesh);
       tempBox.getCenter(worldCenter);
-      worldDelta.subVectors(worldCenter, this.baseCenterWorld);
+      worldDelta.subVectors(worldCenter, baseCenter);
       const shiftCompensation = -windowNormal.dot(worldDelta);
 
       if (isExplodingLayers) {
-        if (idx === 5) {
-          // Layer 6 (Mucosa & Rugae): Keep co-moving anterior lumen window open when cutaway is enabled
+        if (idx === innermostIdx) {
+          // Innermost layer (Mucosa): Keep co-moving anterior lumen window open when cutaway is enabled
           if (isCutawayOpen) {
             mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, 0.022 + shiftCompensation)];
             mesh.material.clipShadows = true;
@@ -232,8 +435,7 @@ export class StomachLayersBuilder {
           }
           mesh.material.needsUpdate = true;
         } else {
-          // Layers 1..5 (Serosa, Longitudinal, Circular, Oblique, Submucosa):
-          // When separated (factor >= 0.25), layers are solid complete 3D models with full PBR textures
+          // Outer layers: Solid complete 3D models with full PBR textures when separated
           if (wallExplodeFactor >= 0.25 || !isCutawayOpen) {
             if (mesh.material.clippingPlanes) {
               mesh.material.clippingPlanes = null;
@@ -241,7 +443,7 @@ export class StomachLayersBuilder {
             }
           } else {
             const closeProgress = wallExplodeFactor / 0.25;
-            const baseConst = windowOffsets[idx] + closeProgress * 0.14;
+            const baseConst = (windowOffsets[idx] || 0.02) + closeProgress * 0.14;
             mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, baseConst + shiftCompensation)];
             mesh.material.clipShadows = true;
             mesh.material.needsUpdate = true;

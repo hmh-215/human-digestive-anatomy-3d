@@ -1,3 +1,6 @@
+import * as THREE from 'three';
+window.THREE = THREE;
+
 import { AppViewModel } from './viewmodels/AppViewModel.js';
 import { SceneView } from './views/SceneView.js';
 import { UIView } from './views/UIView.js';
