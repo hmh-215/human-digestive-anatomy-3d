@@ -199,9 +199,11 @@ export class StomachLayersBuilder {
     const windowOffsets = [0.008, 0.015, 0.022, 0.029, 0.036, 0.043];
 
     if (!isCutawayOpen && !isExplodingLayers) {
-      const unclippedPlane = new THREE.Plane(windowNormal, 10.0);
       this.stomachWallMeshes.forEach(mesh => {
-        mesh.material.clippingPlanes = [unclippedPlane];
+        if (mesh.material.clippingPlanes) {
+          mesh.material.clippingPlanes = null;
+          mesh.material.needsUpdate = true;
+        }
       });
       return;
     }
@@ -222,20 +224,27 @@ export class StomachLayersBuilder {
       if (isExplodingLayers) {
         if (idx === 5) {
           // Layer 6 (Mucosa & Rugae): Keep co-moving anterior lumen window open when cutaway is enabled
-          const c = isCutawayOpen ? (0.022 + shiftCompensation) : 10.0;
-          mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, c)];
-          mesh.material.clipShadows = true;
+          if (isCutawayOpen) {
+            mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, 0.022 + shiftCompensation)];
+            mesh.material.clipShadows = true;
+          } else {
+            mesh.material.clippingPlanes = null;
+          }
+          mesh.material.needsUpdate = true;
         } else {
           // Layers 1..5 (Serosa, Longitudinal, Circular, Oblique, Submucosa):
-          // Smoothly close the front cutaway window as layers separate so each separated layer
-          // displays its complete, intact J-shaped 3D stomach geometry and directional fiber textures.
-          if (wallExplodeFactor >= 0.28 || !isCutawayOpen) {
-            mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, 10.0)];
+          // When separated (factor >= 0.25), layers are solid complete 3D models with full PBR textures
+          if (wallExplodeFactor >= 0.25 || !isCutawayOpen) {
+            if (mesh.material.clippingPlanes) {
+              mesh.material.clippingPlanes = null;
+              mesh.material.needsUpdate = true;
+            }
           } else {
-            const closeProgress = wallExplodeFactor / 0.28;
+            const closeProgress = wallExplodeFactor / 0.25;
             const baseConst = windowOffsets[idx] + closeProgress * 0.14;
             mesh.material.clippingPlanes = [new THREE.Plane(windowNormal, baseConst + shiftCompensation)];
             mesh.material.clipShadows = true;
+            mesh.material.needsUpdate = true;
           }
         }
       } else if (isCutawayOpen) {
@@ -243,6 +252,7 @@ export class StomachLayersBuilder {
         const plane = new THREE.Plane(windowNormal, (windowOffsets[idx] || 0.02) + shiftCompensation);
         mesh.material.clippingPlanes = [plane];
         mesh.material.clipShadows = true;
+        mesh.material.needsUpdate = true;
       }
     });
   }

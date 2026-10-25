@@ -151,10 +151,10 @@ export class ExplosionManager {
       const isStomachSelected = (selectedOrganId === 'stomach');
       const isWholeSystemExploding = (!selectedOrganId && t > 0);
 
-      // Symmetric 3D fan-out in masterRoot centimeter space when Stomach is exploded:
-      // Layers 1..6 fan out from screen-left (Serosa, idx=0) to screen-right (Mucosa Rugae, idx=5)
-      // centered around the stomach's natural position so all 6 layers remain 100% inside the viewport.
-      const shellBaseStep = new THREE.Vector3(-5.8, 0.55, 1.6);
+      // Orthogonal near-to-far 3D depth cascade in masterRoot centimeter space when Stomach is exploded:
+      // Primary axis is Z (perpendicular to screen center, from +Z near viewer to -Z far/deep),
+      // combined with generous lateral X and vertical Y separation to ensure ZERO overlap between layers.
+      const shellBaseStep = new THREE.Vector3(-11.5, 2.0, 7.5);
       const guidePoints = [];
       const tempBox = new THREE.Box3();
 
@@ -167,9 +167,9 @@ export class ExplosionManager {
           const sysVec = mesh.userData.systemExplodeVec || new THREE.Vector3(12, 7, 7);
           pos.addScaledVector(sysVec, t);
         } else if (isStomachSelected && t > 0) {
-          // Symmetric fan-out:
-          // idx = 0 (Serosa) -> centeredStep = +2.5 (leftmost, slightly anterior)
-          // idx = 5 (Mucosa) -> centeredStep = -2.5 (rightmost, open lumen window)
+          // Orthogonal depth cascade:
+          // idx = 0 (Serosa, outermost) -> centeredStep = +2.5 (+Z gần màn hình nhất, -X sang trái)
+          // idx = 5 (Mucosa, innermost) -> centeredStep = -2.5 (-Z xa màn hình nhất, +X sang phải)
           const centeredStep = 2.5 - idx;
           const offset = new THREE.Vector3(
             shellBaseStep.x * centeredStep,

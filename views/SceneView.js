@@ -780,10 +780,10 @@ export class SceneView {
         ? this.stomachBuilder.baseCenterWorld.clone()
         : new THREE.Vector3(0.688, 0.339, 0.206);
 
-      // Frame the stomach center with generous viewport width so all 6 exploded layers fit cleanly
+      // Frame the stomach center with generous viewport width & depth so all 6 exploded layers fit cleanly without overlap
       this._smoothMoveCameraTarget(
-        [center.x - 0.15, center.y + 0.02, center.z],
-        [center.x - 0.15, center.y + 0.22, center.z + 6.1]
+        [center.x - 0.35, center.y + 0.15, center.z],
+        [center.x - 0.35, center.y + 0.35, center.z + 8.6]
       );
     }
   }
