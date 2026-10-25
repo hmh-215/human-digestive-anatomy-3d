@@ -1,11 +1,13 @@
 /**
  * UIView.js
- * DOM UI Controller for Human Digestive Anatomy 3D.
- * Implements MVVM reactive binding with ViewModels:
- * - Search bar with instant autocomplete
- * - Layer peeling dock & Localized Sub-assembly Explosion slider
- * - Medical Info Drawer populated with ĐHYHN clinical curriculum
- * - Quick surgical preset buttons
+ * Simplified DOM UI Controller for Human Digestive Anatomy 3D.
+ *
+ * Features:
+ * - Minimal Context-Aware Dissection Dock (Whole System vs. Selected Organ)
+ * - Single Unified Explode Slider (0% - 100%) + One-Click Animated Explode Button
+ * - Quick Organ Chips & Instant Search Bar
+ * - Medical Info Drawer (Right side) with ĐHYHN clinical & histological cards
+ * - Clean separation between Mode 1 (Dissection Dock) and Mode 2 (Clinical Landmarks Panel)
  */
 export class UIView {
   constructor(appVM) {
@@ -14,24 +16,28 @@ export class UIView {
     this.dissectionVM = appVM.dissectionVM;
     this.landmarksVM = appVM.landmarksVM;
 
+    this.dissectionDockEl = document.getElementById('dissection-dock');
+    this.contextTitleEl = document.getElementById('dock-context-title');
+    this.backSystemBtn = document.getElementById('btn-back-system');
+    this.organChips = document.querySelectorAll('.organ-chip');
+
+    this.explodeSlider = document.getElementById('unified-explode-slider');
+    this.explodeValueBadge = document.getElementById('explode-value-badge');
+    this.explodeModeLabel = document.getElementById('explode-mode-label');
+    this.explodeHelperText = document.getElementById('explode-helper-text');
+    this.animateExplodeBtn = document.getElementById('btn-animate-explode');
+
+    this.cutawayBtn = document.getElementById('btn-stomach-cutaway');
+    this.isolateBtn = document.getElementById('btn-isolate');
+    this.xrayBtn = document.getElementById('btn-xray');
+    this.resetCameraBtn = document.getElementById('btn-reset-camera');
+    this.themeToggleBtn = document.getElementById('btn-theme-toggle');
+
     this.drawerEl = document.getElementById('organ-drawer');
     this.drawerTitleEl = document.getElementById('drawer-title');
     this.drawerLatinEl = document.getElementById('drawer-latin');
     this.drawerContentEl = document.getElementById('drawer-content');
     this.drawerCloseBtn = document.getElementById('drawer-close');
-
-    this.depthSlider = document.getElementById('depth-slider');
-    this.depthValueLabel = document.getElementById('depth-value');
-
-    this.localExplodeContainer = document.getElementById('local-explode-box');
-    this.localExplodeSlider = document.getElementById('local-explode-slider');
-    this.localExplodeLabel = document.getElementById('local-explode-value');
-    this.localExplodeTitle = document.getElementById('local-explode-organ-name');
-
-    this.isolateBtn = document.getElementById('btn-isolate');
-    this.xrayBtn = document.getElementById('btn-xray');
-    this.resetCameraBtn = document.getElementById('btn-reset-camera');
-    this.themeToggleBtn = document.getElementById('btn-theme-toggle');
 
     this.searchInput = document.getElementById('organ-search');
     this.searchResultsBox = document.getElementById('search-results');
@@ -39,16 +45,6 @@ export class UIView {
     this.modePills = document.querySelectorAll('.mode-pill');
     this.landmarksPanel = document.getElementById('landmarks-panel');
 
-    // Stomach wall controls
-    this.stomachWallBox = document.getElementById('stomach-wall-box');
-    this.stomachWallExplodeSlider = document.getElementById('stomach-wall-explode-slider');
-    this.stomachWallExplodeValue = document.getElementById('stomach-wall-explode-value');
-    this.stomachFocusBtn = document.getElementById('btn-stomach-focus');
-    this.stomachCutawayBtn = document.getElementById('btn-stomach-cutaway');
-    this.stomachPresetPills = document.querySelectorAll('.wall-preset-pill');
-    this.stomachLayerItems = document.querySelectorAll('.wall-layer-item');
-
-    // Torso skin opacity controls
     this.torsoOpacitySlider = document.getElementById('torso-opacity-slider');
     this.torsoOpacityValue = document.getElementById('torso-opacity-value');
 
@@ -58,205 +54,193 @@ export class UIView {
   }
 
   _bindDOMEvents() {
-    // 1. Thanh trượt Bóc Tách Tầng Sâu (Depth Peeling Slider)
-    this.depthSlider.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value, 10);
-      this.dissectionVM.setDepthLevel(val);
-      const labels = {
-        1: 'Tầng 1 (Toàn thể)',
-        2: 'Tầng 2 (Bóc Mạc Nối)',
-        3: 'Tầng 3 (Bộc Lộ Tá-Tụy)',
-        4: 'Tầng 4 (Cuống Mạch)',
-        5: 'Tầng 5 (Sâu nhất)'
-      };
-      this.depthValueLabel.textContent = labels[val] || `Tầng ${val}`;
+    // 1. Unified Context-Aware Explode Slider
+    if (this.explodeSlider) {
+      this.explodeSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        this.dissectionVM.setExplodeFactor(val);
+      });
+    }
+
+    // 2. One-Click Smooth Animated Explode Toggle Button
+    if (this.animateExplodeBtn) {
+      this.animateExplodeBtn.addEventListener('click', () => {
+        if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView) {
+          window.__DIGESTIVE_APP__.sceneView.animateToggleExplode();
+        }
+      });
+    }
+
+    // 3. Back to Whole System Button
+    if (this.backSystemBtn) {
+      this.backSystemBtn.addEventListener('click', () => {
+        this.sceneVM.resetCamera();
+      });
+    }
+
+    // 4. Quick Organ Chips
+    this.organChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const organId = chip.dataset.organ || null;
+        if (!organId) {
+          this.sceneVM.resetCamera();
+        } else {
+          this.sceneVM.selectOrgan(organId);
+        }
+      });
     });
 
-    // 2. Thanh trượt Phân Rã Cục Bộ (Localized Explosion Slider)
-    this.localExplodeSlider.addEventListener('input', (e) => {
-      const val = parseFloat(e.target.value);
-      this.dissectionVM.setLocalExplodeFactor(val);
-      this.localExplodeLabel.textContent = `${Math.round(val * 100)}%`;
-    });
+    // 5. Cutaway Window Toggle
+    if (this.cutawayBtn) {
+      this.cutawayBtn.addEventListener('click', () => {
+        if (this.sceneVM.state.selectedOrganId !== 'stomach') {
+          this.sceneVM.selectOrgan('stomach');
+        }
+        this.dissectionVM.toggleCutaway();
+      });
+    }
 
-    // 3. Nút Cô Lập Tạng (Isolate Mode)
-    this.isolateBtn.addEventListener('click', () => {
-      this.dissectionVM.toggleIsolateMode();
-    });
+    // 6. Isolate Mode Toggle
+    if (this.isolateBtn) {
+      this.isolateBtn.addEventListener('click', () => {
+        this.dissectionVM.toggleIsolateMode();
+      });
+    }
 
-    // 4. Nút X-Ray Thấu Quang
-    this.xrayBtn.addEventListener('click', () => {
-      this.dissectionVM.toggleXRayMode();
-    });
+    // 7. X-Ray Mode Toggle
+    if (this.xrayBtn) {
+      this.xrayBtn.addEventListener('click', () => {
+        this.dissectionVM.toggleXRayMode();
+      });
+    }
 
-    // 5. Nút Căn Lại Camera
-    this.resetCameraBtn.addEventListener('click', () => {
-      this.sceneVM.resetCamera();
-    });
+    // 8. Reset Camera
+    if (this.resetCameraBtn) {
+      this.resetCameraBtn.addEventListener('click', () => {
+        this.sceneVM.resetCamera();
+      });
+    }
 
-    // 6. Đổi Theme Sáng / Tối
-    this.themeToggleBtn.addEventListener('click', () => {
-      this.appVM.toggleTheme();
-    });
+    // 9. Theme Toggle
+    if (this.themeToggleBtn) {
+      this.themeToggleBtn.addEventListener('click', () => {
+        this.appVM.toggleTheme();
+      });
+    }
 
-    // 7. Đóng Drawer thông tin
-    this.drawerCloseBtn.addEventListener('click', () => {
-      this.sceneVM.selectOrgan(null);
-    });
+    // 10. Close Drawer
+    if (this.drawerCloseBtn) {
+      this.drawerCloseBtn.addEventListener('click', () => {
+        this.drawerEl.classList.remove('open');
+      });
+    }
 
-    // 8. Tìm kiếm tức thì đa ngữ
-    this.searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      this._handleSearch(q);
-    });
+    // 11. Search Bar
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        this._handleSearch(q);
+      });
+    }
 
-    // 9. Chuyển chế độ xem (Tabs)
-    this.modePills.forEach(pill => {
+    // 12. Mode Switcher (Dissection vs. Clinical Landmarks)
+    this.modePills.forEach((pill) => {
       pill.addEventListener('click', () => {
         const mode = pill.dataset.mode;
         this.appVM.setMode(mode);
       });
     });
 
-    // 10. Thanh trượt Bóc Tách 4 Lớp Thành Dạ Dày
-    if (this.stomachWallExplodeSlider) {
-      this.stomachWallExplodeSlider.addEventListener('input', (e) => {
-        const val = parseFloat(e.target.value);
-        this.dissectionVM.setStomachWallExplodeFactor(val);
-        if (this.stomachWallExplodeValue) {
-          this.stomachWallExplodeValue.textContent = `${Math.round(val * 100)}%`;
-        }
-      });
-    }
-
-    // 11. Nút Phóng to Dạ Dày
-    if (this.stomachFocusBtn) {
-      this.stomachFocusBtn.addEventListener('click', () => {
-        if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView) {
-          window.__DIGESTIVE_APP__.sceneView.focusStomach();
-        }
-      });
-    }
-
-    // 11b. Nút Cắt Mở Lòng Dạ Dày (Cutaway Window)
-    if (this.stomachCutawayBtn) {
-      this.stomachCutawayBtn.addEventListener('click', () => {
-        this.dissectionVM.toggleCutaway();
-      });
-    }
-
-    // 11c. Thanh trượt Độ Mờ Da Torso (Torso Skin Opacity)
+    // 13. Torso Skin Opacity Slider (Mode 2)
     if (this.torsoOpacitySlider) {
       this.torsoOpacitySlider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
         this.dissectionVM.setTorsoSkinOpacity(val);
-        if (this.torsoOpacityValue) {
-          this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
-        }
       });
     }
-
-    // 12. Nút Preset Bóc Lớp Nhanh
-    this.stomachPresetPills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        const preset = pill.dataset.preset;
-        this.dissectionVM.peelToLayer(preset);
-        this.stomachPresetPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-      });
-    });
-
-    // 13. Toggles 4 Lớp Thành Dạ Dày
-    this.stomachLayerItems.forEach(item => {
-      const layerId = item.dataset.layerId;
-      const chk = item.querySelector('input[type="checkbox"]');
-      if (chk) {
-        chk.addEventListener('change', () => {
-          this.dissectionVM.setStomachWallLayerVisibility(layerId, chk.checked);
-        });
-      }
-      item.addEventListener('click', (e) => {
-        if (e.target.tagName !== 'INPUT') {
-          this.dissectionVM.setActiveWallLayer(layerId);
-          const targetCard = document.getElementById(`card-${layerId}`);
-          if (targetCard) {
-            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            document.querySelectorAll('.wall-layer-card').forEach(c => c.classList.remove('highlight'));
-            targetCard.classList.add('highlight');
-          }
-        }
-      });
-    });
   }
 
   _bindViewModelEvents() {
-    // 1. Cập nhật Info Drawer khi chọn tạng
+    // 1. Update Context Header, Explode Labels, and Right Info Drawer on Organ Selection
     this.sceneVM.subscribe('selectedOrganId', (organId) => {
+      // Sync quick chips
+      this.organChips.forEach((chip) => {
+        const chipOrgan = chip.dataset.organ || null;
+        chip.classList.toggle('active', chipOrgan === organId);
+      });
+
       if (organId) {
         const organ = this.appVM.organsData.find(o => o.id === organId);
         if (organ) {
+          this.contextTitleEl.textContent = organ.vietnameseName;
+          this.backSystemBtn.classList.remove('hidden');
+
+          if (organId === 'stomach') {
+            this.explodeModeLabel.textContent = '💥 Tách 6 Lớp Vỏ Dạ Dày:';
+            this.explodeHelperText.textContent = 'Tách 5 mảnh vỏ cong (Thanh mạc → Dưới niêm mạc) khỏi lõi Niêm mạc Rugae';
+          } else {
+            this.explodeModeLabel.textContent = `💥 Tách Cấu Trúc ${organ.vietnameseName}:`;
+            this.explodeHelperText.textContent = 'Tách rời các hạ phân thùy / cấu trúc con để rê chuột xem nhãn';
+          }
+
           this._showOrganDrawer(organ);
         }
       } else {
+        this.contextTitleEl.textContent = 'Toàn Hệ Tiêu Hóa';
+        this.backSystemBtn.classList.add('hidden');
+        this.explodeModeLabel.textContent = '💥 Tách Rời Các Cơ Quan:';
+        this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để bung mô hình, sau đó rê chuột lên từng lớp để xem nhãn';
         this._hideOrganDrawer();
       }
     });
 
-    // 2. Hiện / Ẩn thanh phân rã cục bộ
-    this.dissectionVM.subscribe('localExplodeOrganId', (organId) => {
-      if (organId) {
-        const organ = this.appVM.organsData.find(o => o.id === organId);
-        if (organ && organ.canLocalExplode) {
-          this.localExplodeContainer.classList.remove('hidden');
-          this.localExplodeTitle.textContent = organ.vietnameseName;
-          this.localExplodeSlider.value = 0;
-          this.localExplodeLabel.textContent = '0%';
-        } else {
-          this.localExplodeContainer.classList.add('hidden');
-        }
-      } else {
-        this.localExplodeContainer.classList.add('hidden');
+    // 2. Sync Unified Explode Slider & Trigger Button Label
+    this.dissectionVM.subscribe('explodeFactor', (factor) => {
+      const pct = Math.round((factor || 0) * 100);
+      if (this.explodeSlider) this.explodeSlider.value = factor || 0;
+      if (this.explodeValueBadge) this.explodeValueBadge.textContent = `${pct}%`;
+      if (this.animateExplodeBtn) {
+        const isExpanded = factor > 0.3;
+        this.animateExplodeBtn.classList.toggle('active', isExpanded);
+        this.animateExplodeBtn.textContent = isExpanded ? '🔄 Thu Gọn' : '💥 Tách Lớp';
       }
     });
 
-    // 3. Nút Isolate active state
+    // 3. Sync Isolate, X-Ray, and Cutaway button states
     this.dissectionVM.subscribe('isIsolateMode', (isIsolate) => {
-      if (isIsolate) {
-        this.isolateBtn.classList.add('active');
-      } else {
-        this.isolateBtn.classList.remove('active');
-      }
+      if (this.isolateBtn) this.isolateBtn.classList.toggle('active', isIsolate);
     });
 
-    // 4. Nút X-Ray active state
     this.dissectionVM.subscribe('isXRayMode', (isXRay) => {
-      if (isXRay) {
-        this.xrayBtn.classList.add('active');
-      } else {
-        this.xrayBtn.classList.remove('active');
+      if (this.xrayBtn) this.xrayBtn.classList.toggle('active', isXRay);
+    });
+
+    this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
+      if (this.cutawayBtn) {
+        this.cutawayBtn.classList.toggle('active', isOpen);
+        this.cutawayBtn.textContent = isOpen ? '✖ Đóng Lòng' : '✂️ Cắt Mở Lòng';
       }
     });
 
-    // 5. Cập nhật thanh trượt Bóc Tách Tầng Sâu (Depth Peeling)
-    this.dissectionVM.subscribe('depthLevel', (level) => {
-      this.depthSlider.value = level;
-      const labels = {
-        1: 'Tầng 1 (Toàn thể)',
-        2: 'Tầng 2 (Bóc Mạc Nối)',
-        3: 'Tầng 3 (Bộc Lộ Tá-Tụy)',
-        4: 'Tầng 4 (Cuống Mạch)',
-        5: 'Tầng 5 (Sâu nhất)'
-      };
-      this.depthValueLabel.textContent = labels[level] || `Tầng ${level}`;
+    // 4. Sync Active Wall Layer Card in Right Drawer when clicked
+    this.dissectionVM.subscribe('activeWallLayerId', (layerId) => {
+      if (!layerId) return;
+      const targetCard = document.getElementById(`card-${layerId}`);
+      document.querySelectorAll('.wall-layer-card').forEach(card => {
+        card.classList.toggle('highlight', card.id === `card-${layerId}`);
+      });
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     });
 
-    // 6. Cập nhật thanh trượt Phân Rã Cục Bộ (Localized Explosion)
-    this.dissectionVM.subscribe('localExplodeFactor', (factor) => {
-      this.localExplodeSlider.value = factor;
-      this.localExplodeLabel.textContent = `${Math.round(factor * 100)}%`;
+    // 5. Sync Torso Opacity Slider
+    this.dissectionVM.subscribe('torsoSkinOpacity', (val) => {
+      if (this.torsoOpacitySlider) this.torsoOpacitySlider.value = val;
+      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
     });
 
-    // 5. Thay đổi Theme class trên body
+    // 6. Theme Toggle
     this.appVM.subscribe('theme', (theme) => {
       if (theme === 'dark') {
         document.body.classList.add('dark-theme');
@@ -267,73 +251,18 @@ export class UIView {
       }
     });
 
-    // 6. Chuyển chế độ hiển thị Mode
+    // 7. Mode Switcher (Ensure Landmarks Panel and Dissection Dock NEVER overlap)
     this.appVM.subscribe('activeMode', (mode) => {
       this.modePills.forEach(p => {
         p.classList.toggle('active', p.dataset.mode === mode);
       });
       if (mode === 'pathology') {
         this.landmarksPanel.classList.remove('hidden');
+        if (this.dissectionDockEl) this.dissectionDockEl.classList.add('hidden');
       } else {
         this.landmarksPanel.classList.add('hidden');
+        if (this.dissectionDockEl) this.dissectionDockEl.classList.remove('hidden');
       }
-    });
-
-    // 7. Hiện / Ẩn Stomach Wall Dissection Dock khi chọn Dạ Dày
-    this.sceneVM.subscribe('selectedOrganId', (organId) => {
-      if (this.stomachWallBox) {
-        if (organId === 'stomach') {
-          this.stomachWallBox.classList.remove('hidden');
-        } else {
-          this.stomachWallBox.classList.add('hidden');
-        }
-      }
-    });
-
-    // 8. Đồng bộ Checkbox & Active state của 4 Lớp
-    this.dissectionVM.subscribe('stomachWallLayers', (layers) => {
-      if (!layers) return;
-      this.stomachLayerItems.forEach(item => {
-        const layerId = item.dataset.layerId;
-        const chk = item.querySelector('input[type="checkbox"]');
-        if (chk && layers[layerId] !== undefined) {
-          chk.checked = layers[layerId];
-        }
-      });
-    });
-
-    // 9. Đồng bộ thanh trượt Wall Explode
-    this.dissectionVM.subscribe('stomachWallExplodeFactor', (factor) => {
-      if (this.stomachWallExplodeSlider) {
-        this.stomachWallExplodeSlider.value = factor;
-      }
-      if (this.stomachWallExplodeValue) {
-        this.stomachWallExplodeValue.textContent = `${Math.round(factor * 100)}%`;
-      }
-    });
-
-    // 10. Đồng bộ Active Layer Highlight
-    this.dissectionVM.subscribe('activeWallLayerId', (layerId) => {
-      this.stomachLayerItems.forEach(item => {
-        item.classList.toggle('active-layer', item.dataset.layerId === layerId);
-      });
-      document.querySelectorAll('.wall-layer-card').forEach(card => {
-        card.classList.toggle('highlight', card.id === `card-${layerId}`);
-      });
-    });
-
-    // 11. Đồng bộ trạng thái Cutaway Window
-    this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
-      if (this.stomachCutawayBtn) {
-        this.stomachCutawayBtn.classList.toggle('active', isOpen);
-        this.stomachCutawayBtn.textContent = isOpen ? '✖ Đóng Lòng' : '✂️ Cắt Mở Lòng';
-      }
-    });
-
-    // 12. Đồng bộ thanh trượt Torso Skin Opacity
-    this.dissectionVM.subscribe('torsoSkinOpacity', (val) => {
-      if (this.torsoOpacitySlider) this.torsoOpacitySlider.value = val;
-      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
     });
   }
 
@@ -361,7 +290,7 @@ export class UIView {
             🔬 Cấu Tạo Mô Học Thành Dạ Dày (${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
-            Bấm vào từng tầng để xem mô tả cấu trúc vi thể và ý nghĩa phẫu thuật tương ứng:
+            Bấm vào từng tầng để làm sáng lớp tương ứng trên mô hình 3D:
           </p>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             ${organ.wallLayers.map(l => `
@@ -393,7 +322,7 @@ export class UIView {
     }
 
     this.drawerContentEl.innerHTML = `
-      <div class="drawer-badge">Tầng Bóc Tách: ${organ.layer}</div>
+      <div class="drawer-badge">Tầng Giải Phẫu: ${organ.layer}</div>
       <div class="drawer-section">
         <h4>📍 Vị Trí & Liên Quan Giải Phẫu:</h4>
         <p>${organ.location}</p>
@@ -418,7 +347,6 @@ export class UIView {
       </div>
     `;
 
-    // Gán sự kiện click vào các thẻ lớp mô học trong Drawer
     this.drawerContentEl.querySelectorAll('.wall-layer-card').forEach(card => {
       card.addEventListener('click', () => {
         const layerId = card.dataset.layerId;
@@ -440,7 +368,7 @@ export class UIView {
       return;
     }
 
-    const matches = this.appVM.organsData.filter(o => 
+    const matches = this.appVM.organsData.filter(o =>
       o.vietnameseName.toLowerCase().includes(query) ||
       o.latinName.toLowerCase().includes(query) ||
       o.englishName.toLowerCase().includes(query)
