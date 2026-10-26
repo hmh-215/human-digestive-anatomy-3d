@@ -273,7 +273,7 @@ export class ExplosionManager {
       stomach: new THREE.Vector3(-7.6, 1.2, 5.4),
       duodenum: new THREE.Vector3(-4.6, 0.8, 3.4),
       small_intestine: new THREE.Vector3(-6.8, 1.0, 4.8),
-      large_intestine: new THREE.Vector3(-8.2, 1.1, 5.6),
+      large_intestine: new THREE.Vector3(-6.2, 0.9, 9.6),
       gallbladder_tree: new THREE.Vector3(-6.8, 1.1, 4.2),
       esophagus: new THREE.Vector3(-4.5, 0.5, 3.5)
     };
@@ -308,6 +308,7 @@ export class ExplosionManager {
 
       layerMeshes.forEach((mesh, idx) => {
         const initPos = mesh.userData.initialPos || new THREE.Vector3();
+        const initScale = mesh.userData.initialScale || new THREE.Vector3(1, 1, 1);
         const pos = initPos.clone();
 
         if (isThisOrganSelected && t > 0) {
@@ -321,6 +322,18 @@ export class ExplosionManager {
             stepVec.z * centeredStep
           );
           pos.addScaledVector(offset, t);
+
+          // For the wide U-shaped Colon frame, gently compress AP depth during explosion
+          // so that the anterior Transverse Colon of outer layers never clips the posterior
+          // Descending Colon of inner layers even at partial explosion (30-50%).
+          if (organId === 'large_intestine') {
+            const zCompress = 1.0 - 0.64 * Math.pow(t, 0.45);
+            mesh.scale.set(initScale.x, initScale.y, initScale.z * zCompress);
+          } else {
+            mesh.scale.copy(initScale);
+          }
+        } else {
+          mesh.scale.copy(initScale);
         }
 
         mesh.position.copy(pos);

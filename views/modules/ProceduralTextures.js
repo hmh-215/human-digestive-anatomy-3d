@@ -754,27 +754,29 @@ export class ProceduralTextures {
       result.colonSerosaTexture.wrapS = THREE.RepeatWrapping;
       result.colonSerosaTexture.wrapT = THREE.RepeatWrapping;
 
-      // 7B. Colon Longitudinal Muscle with Taeniae Coli (Figure 3: prominent longitudinal muscular bands)
+      // 7B. Colon Longitudinal Muscle with Taeniae Coli (Figure 3: warm muscular terracotta with 3 longitudinal bands)
       const canvasLM = createCanvas(512);
       const ctxLM = canvasLM.getContext('2d');
-      ctxLM.fillStyle = '#4d7c0f';
+      ctxLM.fillStyle = '#b91c1c';
       ctxLM.fillRect(0, 0, 512, 512);
-      // Background longitudinal fibers
-      ctxLM.lineWidth = 1.2;
+      // Background longitudinal muscle fibers
+      ctxLM.lineWidth = 1.4;
       for (let x = 0; x < 512; x += 4) {
-        ctxLM.strokeStyle = 'rgba(163, 230, 53, 0.25)';
+        ctxLM.strokeStyle = x % 8 === 0 ? 'rgba(252, 165, 165, 0.42)' : 'rgba(127, 29, 29, 0.45)';
         ctxLM.beginPath(); ctxLM.moveTo(x, 0); ctxLM.lineTo(x, 512); ctxLM.stroke();
       }
-      // TAENIAE COLI (3 Dải cơ dọc nổi gờ màu vàng nâu sáng như hình 3)
+      // TAENIAE COLI (3 Dải cơ dọc nổi gờ màu vàng kem sáng rõ trên nền cơ dọc)
       for (const tx of [128, 256, 384]) {
-        const tGrad = ctxLM.createLinearGradient(tx - 30, 0, tx + 30, 0);
-        tGrad.addColorStop(0, 'rgba(163, 230, 53, 0)');
-        tGrad.addColorStop(0.5, '#bef264');
-        tGrad.addColorStop(1, 'rgba(163, 230, 53, 0)');
+        const tGrad = ctxLM.createLinearGradient(tx - 32, 0, tx + 32, 0);
+        tGrad.addColorStop(0, 'rgba(253, 224, 71, 0)');
+        tGrad.addColorStop(0.2, 'rgba(253, 224, 71, 0.75)');
+        tGrad.addColorStop(0.5, '#fef08a');
+        tGrad.addColorStop(0.8, 'rgba(253, 224, 71, 0.75)');
+        tGrad.addColorStop(1, 'rgba(253, 224, 71, 0)');
         ctxLM.fillStyle = tGrad;
-        ctxLM.fillRect(tx - 30, 0, 60, 512);
-        // Striations inside taenia
-        ctxLM.strokeStyle = '#4d7c0f';
+        ctxLM.fillRect(tx - 32, 0, 64, 512);
+        // Dense longitudinal muscle bundle striations inside taenia
+        ctxLM.strokeStyle = 'rgba(180, 83, 9, 0.65)';
         ctxLM.lineWidth = 1.4;
         for (let ix = tx - 22; ix <= tx + 22; ix += 5) {
           ctxLM.beginPath(); ctxLM.moveTo(ix, 0); ctxLM.lineTo(ix, 512); ctxLM.stroke();
@@ -800,17 +802,23 @@ export class ProceduralTextures {
       result.colonLongitudinalMuscleBump.wrapS = THREE.RepeatWrapping;
       result.colonLongitudinalMuscleBump.wrapT = THREE.RepeatWrapping;
 
-      // 7C. Colon Circular Muscle & Haustra Folds (Figure 3: deep haustral rings)
+      // 7C. Colon Circular Muscle & Haustra Folds (Figure 3: warm salmon-terracotta circumferential muscle rings)
       const canvasCM = createCanvas(512);
       const ctxCM = canvasCM.getContext('2d');
-      ctxCM.fillStyle = '#365314';
+      ctxCM.fillStyle = '#9a3412';
       ctxCM.fillRect(0, 0, 512, 512);
+      // Fine circumferential smooth muscle fibers
+      for (let y = 0; y < 512; y += 4) {
+        ctxCM.strokeStyle = y % 8 === 0 ? 'rgba(253, 186, 116, 0.48)' : 'rgba(67, 20, 7, 0.45)';
+        ctxCM.lineWidth = 1.6;
+        ctxCM.beginPath(); ctxCM.moveTo(0, y); ctxCM.lineTo(512, y); ctxCM.stroke();
+      }
       // Haustral groove rings every 64px
       for (let y = 0; y < 512; y += 64) {
-        ctxCM.fillStyle = 'rgba(20, 83, 45, 0.85)';
-        ctxCM.fillRect(0, y + 20, 512, 24);
-        ctxCM.fillStyle = '#65a30d';
-        ctxCM.fillRect(0, y, 512, 20);
+        ctxCM.fillStyle = 'rgba(67, 20, 7, 0.45)';
+        ctxCM.fillRect(0, y + 24, 512, 14);
+        ctxCM.fillStyle = 'rgba(251, 146, 60, 0.40)';
+        ctxCM.fillRect(0, y, 512, 16);
       }
       result.colonCircularMuscleTexture = new THREE.CanvasTexture(canvasCM);
       result.colonCircularMuscleTexture.wrapS = THREE.RepeatWrapping;
@@ -832,14 +840,28 @@ export class ProceduralTextures {
       result.colonCircularMuscleBump.wrapS = THREE.RepeatWrapping;
       result.colonCircularMuscleBump.wrapT = THREE.RepeatWrapping;
 
-      // 7D. Colon Submucosa
+      // 7D. Colon Submucosa (Silvery-pearl connective tissue with submucosal vascular plexus)
       const canvasSub = createCanvas(512);
       const ctxSub = canvasSub.getContext('2d');
-      ctxSub.fillStyle = '#f3e8ff';
+      ctxSub.fillStyle = '#f1f5f9';
       ctxSub.fillRect(0, 0, 512, 512);
+      // Submucosal arterioles and venules
+      for (let i = 0; i < 40; i++) {
+        ctxSub.strokeStyle = i % 2 === 0 ? 'rgba(225, 29, 72, 0.35)' : 'rgba(37, 99, 235, 0.30)';
+        ctxSub.lineWidth = 1.5;
+        ctxSub.beginPath();
+        let vx = Math.random() * 512, vy = Math.random() * 512;
+        ctxSub.moveTo(vx, vy);
+        for (let s = 0; s < 4; s++) {
+          vx += (Math.random() - 0.5) * 50;
+          vy += (Math.random() - 0.5) * 50;
+          ctxSub.lineTo(vx, vy);
+        }
+        ctxSub.stroke();
+      }
       // Lymphoid solitary nodules
       for (let i = 0; i < 45; i++) {
-        ctxSub.fillStyle = '#d8b4fe';
+        ctxSub.fillStyle = 'rgba(192, 132, 252, 0.45)';
         ctxSub.beginPath();
         ctxSub.arc(Math.random() * 512, Math.random() * 512, 4, 0, Math.PI * 2);
         ctxSub.fill();
@@ -849,32 +871,32 @@ export class ProceduralTextures {
       result.colonSubmucosaTexture.wrapT = THREE.RepeatWrapping;
       result.colonSubmucosaBump = result.duodenumSubmucosaBump;
 
-      // 7E. Colon Mucosa with Plicae Semilunares (Figure 3: deep crescent folds inside haustra)
+      // 7E. Colon Mucosa with Plicae Semilunares (Figure 3: velvety rose-pink mucosa with subtle crescent folds)
       const canvasMuc = createCanvas(512);
       const ctxMuc = canvasMuc.getContext('2d');
       const gradMuc = ctxMuc.createLinearGradient(0, 0, 0, 512);
-      gradMuc.addColorStop(0, '#be123c');
-      gradMuc.addColorStop(0.5, '#e11d48');
-      gradMuc.addColorStop(1, '#9f1239');
+      gradMuc.addColorStop(0, '#e11d48');
+      gradMuc.addColorStop(0.5, '#f43f5e');
+      gradMuc.addColorStop(1, '#be123c');
       ctxMuc.fillStyle = gradMuc;
       ctxMuc.fillRect(0, 0, 512, 512);
-      // Plicae semilunares crescent folds (nếp gấp bán nguyệt)
+      // Soft Plicae semilunares crescent folds (nếp gấp bán nguyệt mềm mại)
       for (let y = 30; y < 512; y += 64) {
-        ctxMuc.strokeStyle = '#fda4af';
-        ctxMuc.lineWidth = 16;
+        ctxMuc.strokeStyle = 'rgba(254, 205, 211, 0.55)';
+        ctxMuc.lineWidth = 9;
         ctxMuc.beginPath();
         ctxMuc.moveTo(0, y);
         for (let x = 0; x <= 512; x += 32) {
-          ctxMuc.lineTo(x, y + Math.sin((x / 512) * Math.PI * 4) * 14);
+          ctxMuc.lineTo(x, y + Math.sin((x / 512) * Math.PI * 4) * 8);
         }
         ctxMuc.stroke();
 
-        ctxMuc.strokeStyle = 'rgba(76, 5, 25, 0.75)';
-        ctxMuc.lineWidth = 10;
+        ctxMuc.strokeStyle = 'rgba(136, 19, 55, 0.45)';
+        ctxMuc.lineWidth = 6;
         ctxMuc.beginPath();
-        ctxMuc.moveTo(0, y + 14);
+        ctxMuc.moveTo(0, y + 10);
         for (let x = 0; x <= 512; x += 32) {
-          ctxMuc.lineTo(x, y + 14 + Math.sin((x / 512) * Math.PI * 4) * 14);
+          ctxMuc.lineTo(x, y + 10 + Math.sin((x / 512) * Math.PI * 4) * 8);
         }
         ctxMuc.stroke();
       }

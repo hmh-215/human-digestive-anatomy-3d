@@ -231,8 +231,8 @@ export class UIView {
             this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Ruột Non (Trong → Ngoài):';
             this.explodeHelperText.textContent = 'Thanh mạc → Cơ dọc Auerbach → Cơ vòng → Dưới niêm mạc → Nhung mao Villi';
           } else if (organId === 'large_intestine') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Toàn Khung Đại Tràng:';
-            this.explodeHelperText.textContent = 'Toàn bộ Manh tràng, Đại tràng lên/ngang/xuống/Sigma & 3 dải cơ dọc Taeniae coli';
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Đại Tràng (Trong → Ngoài):';
+            this.explodeHelperText.textContent = 'Từ trong ra ngoài: Mucosa (Niêm mạc) > Submucosa (Dưới niêm) > Stratum (Cơ vòng & Cơ dọc) > Serosa (Thanh mạc)';
           } else if (organId === 'gallbladder_tree') {
             this.explodeModeLabel.textContent = '💥 Tách 4 Lớp Túi Mật & Đường Mật:';
             this.explodeHelperText.textContent = 'Thanh mạc & mô xơ quanh cơ → Lớp cơ trơn → Lớp đệm Lamina propria → Niêm mạc tổ ong';
@@ -347,23 +347,29 @@ export class UIView {
 
     let wallLayersHtml = '';
     if (organ.wallLayers && organ.wallLayers.length > 0) {
+      // Display wall layers ordered from INSIDE to OUTSIDE (Mucosa > Submucosa > Stratum > Serosa)
+      const orderedLayers = [...organ.wallLayers].reverse();
       wallLayersHtml = `
         <div class="drawer-section">
           <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
-            🔬 Cấu Tạo Mô Học Thành ${organ.vietnameseName} (${organ.wallLayers.length} Lớp):
+            🔬 Cấu Tạo Mô Học Thành ${organ.vietnameseName} (Trong → Ngoài: ${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
-            Bấm vào từng tầng để làm sáng lớp tương ứng trên mô hình 3D:
+            Thứ tự từ <strong>Trong ra Ngoài</strong> (Mucosa &gt; Submucosa &gt; Stratum &gt; Serosa). Bấm vào từng tầng để làm sáng lớp 3D:
           </p>
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${organ.wallLayers.map(l => `
+            ${orderedLayers.map((l, idx) => {
+              const posBadge = idx === 0
+                ? 'Trong cùng (Lòng ống)'
+                : (idx === orderedLayers.length - 1 ? 'Ngoài cùng (Bề mặt)' : `Tầng giữa (${idx + 1}/${orderedLayers.length})`);
+              return `
               <div class="wall-layer-card" id="card-${l.id}" data-layer-id="${l.id}">
                 <div class="wall-layer-card-header">
                   <span class="wall-layer-card-title">
                     <span class="layer-dot" style="background: ${l.color};"></span>
                     ${l.name}
                   </span>
-                  <span class="wall-layer-thickness-badge">${l.thickness}</span>
+                  <span class="wall-layer-thickness-badge">${posBadge} • ${l.thickness}</span>
                 </div>
                 <div class="wall-sub-block">
                   <strong>📍 Đại thể:</strong> ${l.description}
@@ -378,7 +384,8 @@ export class UIView {
                   <strong>⚠️ Lâm sàng ĐHYHN:</strong> ${l.clinicalNotes}
                 </div>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       `;
@@ -413,6 +420,9 @@ export class UIView {
     this.drawerContentEl.querySelectorAll('.wall-layer-card').forEach(card => {
       card.addEventListener('click', () => {
         const layerId = card.dataset.layerId;
+        if ((this.dissectionVM.state.explodeFactor || 0) < 0.01 && !this.dissectionVM.state.isCutawayOpen) {
+          this.dissectionVM.setCutawayOpen(true);
+        }
         this.dissectionVM.setActiveWallLayer(layerId);
       });
     });

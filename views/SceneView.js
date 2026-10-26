@@ -503,12 +503,14 @@ export class SceneView {
       const shortThickness = (mesh.userData.wallLayerThickness || '').split('(')[0].trim();
       const organTitle = mesh.userData.organTitle ? mesh.userData.organTitle.toUpperCase() : 'MÔ HỌC';
       const total = mesh.userData.totalLayers || (mesh.userData.organId === 'stomach' ? 6 : 5);
+      const idx = mesh.userData.wallLayerIndex !== undefined ? mesh.userData.wallLayerIndex : 0;
+      const insideOutOrder = total - idx;
       return {
         organId: mesh.userData.organId,
         wallLayerId: mesh.userData.wallLayerId,
         x: screenX,
         y: screenY,
-        tag: `MÔ HỌC ${organTitle} • LỚP ${mesh.userData.wallLayerOrder}/${total}`,
+        tag: `MÔ HỌC ${organTitle} • LỚP ${insideOutOrder}/${total} (TRONG → NGOÀI)`,
         badge: shortThickness,
         title: mesh.userData.wallLayerName,
         subtitle: mesh.userData.wallLayerDesc || '',
@@ -586,6 +588,17 @@ export class SceneView {
       // Ignore ghosted non-selected organs (opacity <= 0.15) when an organ is actively selected
       if (selectedId && obj.userData.organId !== selectedId && obj.material && obj.material.transparent && obj.material.opacity <= 0.15) {
         continue;
+      }
+      // Check shader-based 50% longitudinal tube cutaway attribute (aCutDist)
+      if (obj.material && obj.material.userData && obj.material.userData.uCutawayActive && obj.material.userData.uCutawayActive.value > 0.5) {
+        const cutAttr = obj.geometry && obj.geometry.attributes && obj.geometry.attributes.aCutDist;
+        const thresh = obj.material.userData.uCutThreshold ? obj.material.userData.uCutThreshold.value : 0.0;
+        if (cutAttr && hit.face) {
+          const dA = cutAttr.getX(hit.face.a);
+          const dB = cutAttr.getX(hit.face.b);
+          const dC = cutAttr.getX(hit.face.c);
+          if ((dA + dB + dC) / 3.0 > thresh) continue;
+        }
       }
       const planes = obj.material && obj.material.clippingPlanes;
       if (planes && planes.length > 0) {
@@ -805,6 +818,8 @@ export class SceneView {
   _updateOrganVisuals(selectedId) {
     const isIsolate = this.dissectionVM.state.isIsolateMode;
     const isXRay = this.dissectionVM.state.isXRayMode;
+    const isCutaway = this.dissectionVM.state.isCutawayOpen;
+    const explodeFactor = this.dissectionVM.state.explodeFactor || 0;
     const visibleLayers = this.dissectionVM.state.visibleLayers;
     const layerMap = this.layerMap || {
       esophagus: 1, peritoneum_omentum: 1,
@@ -824,6 +839,17 @@ export class SceneView {
       }
 
       if (isWallLayer) {
+        const layerIdx = mesh.userData.wallLayerIndex || 0;
+        const isClosedUnexploded = (explodeFactor < 0.005) && !isCutaway && !isXRay;
+
+        // When a hollow organ is completely closed (0% explode, no cutaway, no X-ray),
+        // or when viewing another organ in non-exploded mode, inner layers (idx > 0)
+        // are physically enclosed inside Serosa/Adventitia (idx === 0) and should not render on the exterior.
+        if (layerIdx > 0 && (isClosedUnexploded || (selectedId && selectedId !== organId))) {
+          mesh.visible = false;
+          return;
+        }
+
         if (!selectedId) {
           mesh.visible = true;
           mesh.material.transparent = isXRay;
@@ -928,8 +954,8 @@ export class SceneView {
       : new THREE.Vector3(0.0, -0.3, 0.0);
 
     this._smoothMoveCameraTarget(
-      [center.x - 0.25, center.y + 0.05, center.z],
-      [center.x - 0.25, center.y + 0.25, center.z + 10.6]
+      [center.x - 0.20, center.y + 0.05, center.z],
+      [center.x - 0.20, center.y + 0.25, center.z + 11.6]
     );
   }
 

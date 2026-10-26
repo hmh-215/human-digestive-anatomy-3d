@@ -7,13 +7,12 @@ import * as THREE from 'three';
  *   2. Duodenum (Tá tràng - 5 layers with Brunner's glands & Kerckring folds)
  *   3. Small Intestine (Ruột non - 5 layers with Auerbach plexus & Villi, tube-safe inset)
  *   4. Large Intestine / Colon (Đại tràng toàn khung - 5 layers merging Ascending, Transverse,
- *      Descending, Sigmoid, Appendix & 3 Taeniae coli bands)
+ *      Descending, Sigmoid, Appendix with Solidify inner-shell stripping for 100% outward normals)
  *   5. Gallbladder (Túi mật - 4 layers: Serosa/Fibrous, Muscularis, Lamina Propria, Honeycomb Mucosa)
  *   6. Esophagus (Thực quản - 5 layers: Adventitia, Longitudinal, Circular, Submucosa, Squamous Mucosa)
  *
- * Manages:
- *   - Per-Organ & Per-Layer Local 50% Longitudinal Coronal Cutaway Plane
- *   - Tube-Safe Normal Inset + PolygonOffset (zero mesh shredding on coiled intestines)
+ * Guarantees strict histological ordering from INSIDE to OUTSIDE:
+ *   Mucosa (innermost, smallest radius) -> Submucosa -> Stratum Circulare -> Stratum Longitudinale -> Serosa (outermost, largest radius)
  */
 export class StomachLayersBuilder {
   constructor(proceduralTextures) {
@@ -27,32 +26,175 @@ export class StomachLayersBuilder {
     this.gallbladderWallMeshes = [];
     this.esophagusWallMeshes = [];
     this.baseCenterWorld = new THREE.Vector3(0.688, 0.339, 0.206);
+
+    // Meshes in DigestiveSystem.glb that have a Blender Solidify inner duplicate shell (second half of vertices)
+    this.solidifyMeshNames = new Set([
+      'Ascending_colon',
+      'Transverse_colon',
+      'Descending_colon',
+      'Sigmoid_colon',
+      'Oesophagus'
+    ]);
+  }
+
+  /**
+   * Strips the Blender Solidify inner duplicate shell (vertices >= total/2) from meshes
+   * like Ascending_colon, Transverse_colon, Descending_colon, Sigmoid_colon, and Oesophagus.
+   * This ensures 100% of remaining vertices belong to the single-walled outer surface
+   * with strictly OUTWARD-pointing normals, so subtracting `normal * d` always shrinks
+   * inner layers (Mucosa < Submucosa < Stratum < Serosa) inward toward the lumen!
+   */
+  _extractOuterSurfaceGeometry(mesh) {
+    const srcGeo = mesh.geometry;
+    if (!srcGeo) return null;
+
+    const posAttr = srcGeo.attributes.position;
+    const normAttr = srcGeo.attributes.normal;
+    const totalVerts = posAttr.count;
+    const isSolidified = this.solidifyMeshNames.has(mesh.name) && (totalVerts % 2 === 0);
+
+    if (!isSolidified) {
+      const cloned = srcGeo.clone();
+      if (!cloned.attributes.normal) {
+        cloned.computeVertexNormals();
+      }
+      return cloned;
+    }
+
+    const half = totalVerts / 2;
+    const newPositions = new Float32Array(half * 3);
+    const newNormals = new Float32Array(half * 3);
+    for (let i = 0; i < half; i++) {
+      newPositions[i * 3]     = posAttr.getX(i);
+      newPositions[i * 3 + 1] = posAttr.getY(i);
+      newPositions[i * 3 + 2] = posAttr.getZ(i);
+      if (normAttr) {
+        newNormals[i * 3]     = normAttr.getX(i);
+        newNormals[i * 3 + 1] = normAttr.getY(i);
+        newNormals[i * 3 + 2] = normAttr.getZ(i);
+      }
+    }
+
+    const newIndices = [];
+    if (srcGeo.index) {
+      const idxArr = srcGeo.index.array;
+      for (let t = 0; t < idxArr.length; t += 3) {
+        const a = idxArr[t];
+        const b = idxArr[t + 1];
+        const c = idxArr[t + 2];
+        if (a < half && b < half && c < half) {
+          newIndices.push(a, b, c);
+        }
+      }
+    } else {
+      for (let t = 0; t < half; t += 3) {
+        newIndices.push(t, t + 1, t + 2);
+      }
+    }
+
+    const cleanGeo = new THREE.BufferGeometry();
+    cleanGeo.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+    if (normAttr) {
+      cleanGeo.setAttribute('normal', new THREE.BufferAttribute(newNormals, 3));
+    } else {
+      cleanGeo.computeVertexNormals();
+    }
+    cleanGeo.setIndex(newIndices);
+    cleanGeo.computeBoundingBox();
+    cleanGeo.computeBoundingSphere();
+    return cleanGeo;
+  }
+
+  /**
+   * Computes the local 50% anterior-posterior tube centerline Z (`aCutMidZ`) for each vertex
+   * of a single hollow segment using an O(N) 3x3 spatial bucket grid in (X, Y).
+   * This ensures that curved segments at different Z depths (e.g. Transverse Colon vs.
+   * Descending/Sigmoid Colon, or Duodenum D1-D4) are each cut at their own exact 50%
+   * longitudinal tube midline so no segment ever disappears when cutaway is active.
+   */
+  _computeSubMeshCutMidZ(posAttr) {
+    const count = posAttr.count;
+    const midZ = new Float32Array(count);
+    const cell = 2.5;
+    const buckets = new Map();
+
+    for (let i = 0; i < count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const z = posAttr.getZ(i);
+      const gx = Math.floor(x / cell);
+      const gy = Math.floor(y / cell);
+      const key = `${gx},${gy}`;
+      const b = buckets.get(key);
+      if (!b) {
+        buckets.set(key, { minZ: z, maxZ: z });
+      } else {
+        if (z < b.minZ) b.minZ = z;
+        if (z > b.maxZ) b.maxZ = z;
+      }
+    }
+
+    // Smooth the tube centerline Z across a 5x5 neighborhood so Haustral pouches
+    // never create notches along the 50% longitudinal cut edge.
+    for (let i = 0; i < count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const gx = Math.floor(x / cell);
+      const gy = Math.floor(y / cell);
+      let sumMid = 0;
+      let weightSum = 0;
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const b = buckets.get(`${gx + dx},${gy + dy}`);
+          if (b) {
+            const w = 1.0 / (1.0 + Math.hypot(dx, dy));
+            sumMid += 0.5 * (b.minZ + b.maxZ) * w;
+            weightSum += w;
+          }
+        }
+      }
+      midZ[i] = (weightSum > 0) ? (sumMid / weightSum) : posAttr.getZ(i);
+    }
+
+    return midZ;
   }
 
   /**
    * Merges an array of Three.js Meshes into a single unified BufferGeometry
-   * in their parent's local coordinate space.
+   * in their parent's local coordinate space, stripping any Solidify inner shells first
+   * and computing each sub-mesh's exact 50% tube centerline Z (`aCutMidZ`).
    */
   _mergeMeshesToGeometry(meshes) {
     const positions = [];
     const normals = [];
+    const cutMidZs = [];
     const indices = [];
     let vertexOffset = 0;
 
     meshes.forEach((m) => {
       if (!m || !m.geometry) return;
       m.updateMatrix();
-      const g = m.geometry.clone();
+      const g = this._extractOuterSurfaceGeometry(m);
+      if (!g) return;
+      g.applyMatrix4(m.matrix);
       if (!g.attributes.normal) {
         g.computeVertexNormals();
       }
-      g.applyMatrix4(m.matrix);
 
       const posAttr = g.attributes.position;
       const normAttr = g.attributes.normal;
+      const subMidZ = this._computeSubMeshCutMidZ(posAttr);
+      const isAppendix = (m.name || '').toLowerCase().includes('appendix');
+      const insetScale = isAppendix ? 0.22 : 1.0;
+
       for (let i = 0; i < posAttr.count; i++) {
         positions.push(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
-        normals.push(normAttr.getX(i), normAttr.getY(i), normAttr.getZ(i));
+        normals.push(
+          normAttr.getX(i) * insetScale,
+          normAttr.getY(i) * insetScale,
+          normAttr.getZ(i) * insetScale
+        );
+        cutMidZs.push(subMidZ[i]);
       }
 
       if (g.index) {
@@ -71,6 +213,7 @@ export class StomachLayersBuilder {
     const merged = new THREE.BufferGeometry();
     merged.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     merged.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    merged.setAttribute('aCutMidZ', new THREE.Float32BufferAttribute(cutMidZs, 1));
     merged.setIndex(indices);
     merged.computeBoundingSphere();
     merged.computeBoundingBox();
@@ -103,8 +246,15 @@ export class StomachLayersBuilder {
 
   /**
    * Builds 5 concentric histological layers for the ENTIRE Large Intestine (Colon) frame
-   * by merging Ascending, Transverse, Descending, Sigmoid colon & Vermiform appendix,
-   * and integrating the 3 Taeniae coli bands directly into Layer 2 (Longitudinal Muscle).
+   * by merging the pure single-walled outer surfaces of Ascending, Transverse, Descending,
+   * Sigmoid colon & Vermiform appendix.
+   *
+   * Strict concentric order from outside to inside:
+   *   idx = 0: Serosa (outermost, d = 0.00 cm)
+   *   idx = 1: Stratum Longitudinale & Taeniae Coli (d = 0.045 cm inward)
+   *   idx = 2: Stratum Circulare (d = 0.090 cm inward)
+   *   idx = 3: Submucosa (d = 0.135 cm inward)
+   *   idx = 4: Mucosa (innermost, d = 0.180 cm inward)
    */
   createColonCompositeLayers(colonWallMeshes, taeniaMeshes, organsData, parentGroup) {
     if (!colonWallMeshes || colonWallMeshes.length === 0) return [];
@@ -112,14 +262,7 @@ export class StomachLayersBuilder {
     const baseWallGeo = this._mergeMeshesToGeometry(colonWallMeshes);
     this._assignAnatomicalUVs(baseWallGeo);
 
-    // Layer 2 (idx = 1: Longitudinal Muscle) includes both the colon wall and the 3 raised Taeniae coli bands
-    let longitudinalGeo = null;
-    if (taeniaMeshes && taeniaMeshes.length > 0) {
-      longitudinalGeo = this._mergeMeshesToGeometry([...colonWallMeshes, ...taeniaMeshes]);
-      this._assignAnatomicalUVs(longitudinalGeo);
-    }
-
-    // Hide original separate colon & taenia meshes so only the 5 unified concentric layers render
+    // Hide original separate colon & taenia meshes so only the 5 concentric layers render without Z-fighting
     colonWallMeshes.forEach(m => { m.visible = false; });
     if (taeniaMeshes) {
       taeniaMeshes.forEach(m => { m.visible = false; });
@@ -131,16 +274,16 @@ export class StomachLayersBuilder {
     dummyMesh.scale.set(1, 1, 1);
     parentGroup.add(dummyMesh);
 
-    const layers = this.createLayers('large_intestine', dummyMesh, organsData, longitudinalGeo);
+    const layers = this.createLayers('large_intestine', dummyMesh, organsData);
     parentGroup.remove(dummyMesh);
     return layers;
   }
 
   /**
    * Builds concentric layer meshes from a base hollow organ mesh.
-   * Signature: createLayers(organId, baseMesh, organsData, customLayer1Geo)
+   * Signature: createLayers(organId, baseMesh, organsData)
    */
-  createLayers(arg1, arg2, arg3, customLayer1Geo = null) {
+  createLayers(arg1, arg2, arg3) {
     let organId = 'stomach';
     let baseMesh = null;
     let organsData = null;
@@ -157,12 +300,15 @@ export class StomachLayersBuilder {
 
     if (!baseMesh) return [];
 
-    const origGeo = baseMesh.geometry;
-    if (!origGeo.attributes.normal) {
-      origGeo.computeVertexNormals();
-    }
+    // Strip any Blender Solidify inner shell (e.g. Oesophagus) so all normals point strictly outward
+    const origGeo = this._extractOuterSurfaceGeometry(baseMesh);
     origGeo.computeBoundingSphere();
     origGeo.computeBoundingBox();
+
+    if (!origGeo.attributes.aCutMidZ) {
+      const midZ = this._computeSubMeshCutMidZ(origGeo.attributes.position);
+      origGeo.setAttribute('aCutMidZ', new THREE.Float32BufferAttribute(midZ, 1));
+    }
 
     const localCenter = new THREE.Vector3();
     const localSize = new THREE.Vector3(8, 8, 8);
@@ -176,17 +322,20 @@ export class StomachLayersBuilder {
     const wallLayersDef = (organData && organData.wallLayers) || [];
     const count = wallLayersDef.length || (organId === 'stomach' ? 6 : 5);
 
-    // Tube-safe maximum normal inset (in Z-Anatomy local centimeter units)
-    // Prevents narrow coiled tubes (like Jejunum/Small Intestine) from self-intersecting or shredding!
+    // Tube-safe maximum normal inset (in Z-Anatomy local centimeter units).
+    // Because all meshes now have strictly OUTWARD normals:
+    //   idx = 0 (Serosa/Adventitia) has inset = 0 (OUTERMOST, largest radius)
+    //   ...
+    //   idx = count - 1 (Mucosa) has inset = maxInset (INNERMOST, smallest radius)
     const safeMaxInsetMap = {
-      stomach: 0.26,
-      duodenum: 0.08,
-      small_intestine: 0.025,
-      large_intestine: 0.045,
-      gallbladder_tree: 0.055,
-      esophagus: 0.045
+      stomach: 0.28,
+      duodenum: 0.14,
+      small_intestine: 0.035,
+      large_intestine: 0.44,
+      gallbladder_tree: 0.08,
+      esophagus: 0.12
     };
-    const maxInset = safeMaxInsetMap[organId] !== undefined ? safeMaxInsetMap[organId] : 0.05;
+    const maxInset = safeMaxInsetMap[organId] !== undefined ? safeMaxInsetMap[organId] : 0.08;
 
     const insets = [];
     for (let i = 0; i < count; i++) {
@@ -210,26 +359,64 @@ export class StomachLayersBuilder {
 
     wallLayersDef.forEach((layerDef, idx) => {
       const d = insets[idx] || 0;
-      const sourceGeo = (idx === 1 && customLayer1Geo) ? customLayer1Geo : origGeo;
-      const geo = sourceGeo.clone();
+      const geo = origGeo.clone();
+      const posAttr = geo.attributes.position;
+      const normAttr = geo.attributes.normal;
+      const cutMidZAttr = geo.attributes.aCutMidZ;
+      const cutDistArr = new Float32Array(posAttr.count);
 
-      if (d > 0) {
-        const posAttr = geo.attributes.position;
-        const normAttr = geo.attributes.normal;
-        for (let i = 0; i < posAttr.count; i++) {
-          const px = posAttr.getX(i) - normAttr.getX(i) * d;
-          const py = posAttr.getY(i) - normAttr.getY(i) * d;
-          const pz = posAttr.getZ(i) - normAttr.getZ(i) * d;
-          posAttr.setXYZ(i, px, py, pz);
+      for (let i = 0; i < posAttr.count; i++) {
+        const x0 = posAttr.getX(i);
+        const y0 = posAttr.getY(i);
+        const z0 = posAttr.getZ(i);
+        const midZ = cutMidZAttr ? cutMidZAttr.getX(i) : localCenter.z;
+        // Use the un-displaced tube coordinate (z0 - midZ) for the 50% longitudinal cutaway
+        // so the posterior lumen wall of inner layers (Mucosa) is never clipped away!
+        cutDistArr[i] = z0 - midZ;
+
+        if (d > 0) {
+          posAttr.setXYZ(
+            i,
+            x0 - normAttr.getX(i) * d,
+            y0 - normAttr.getY(i) * d,
+            z0 - normAttr.getZ(i) * d
+          );
         }
+      }
+      if (d > 0) {
         posAttr.needsUpdate = true;
       }
+      geo.setAttribute('aCutDist', new THREE.BufferAttribute(cutDistArr, 1));
 
       const mat = (materials[idx] || materials[0]).clone();
-      // Depth bias so concentric layers never Z-fight even with small tube-safe normal insets
-      mat.polygonOffset = true;
-      mat.polygonOffsetFactor = -idx * 0.5;
-      mat.polygonOffsetUnits = -idx * 0.5;
+      // Do NOT use artificial polygonOffset, so the 24-bit hardware depth buffer uses true 3D vertex depths:
+      // - On the exterior, Serosa (d = 0) is physically outermost and wins naturally.
+      // - Inside the open cutaway lumen, Mucosa (d = maxInset) is physically innermost (closest to camera on the posterior wall) and wins naturally!
+      mat.polygonOffset = false;
+
+      mat.userData.uCutawayActive = { value: 0.0 };
+      mat.userData.uCutThreshold = { value: 0.0 };
+      mat.onBeforeCompile = (shader) => {
+        shader.uniforms.uCutawayActive = mat.userData.uCutawayActive;
+        shader.uniforms.uCutThreshold = mat.userData.uCutThreshold;
+        shader.vertexShader = `
+          attribute float aCutDist;
+          varying float vCutDist;
+        ` + shader.vertexShader.replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+           vCutDist = aCutDist;`
+        );
+        shader.fragmentShader = `
+          uniform float uCutawayActive;
+          uniform float uCutThreshold;
+          varying float vCutDist;
+        ` + shader.fragmentShader.replace(
+          '#include <clipping_planes_fragment>',
+          `#include <clipping_planes_fragment>
+           if (uCutawayActive > 0.5 && vCutDist > uCutThreshold) discard;`
+        );
+      };
 
       const mesh = new THREE.Mesh(geo, mat);
       mesh.name = layerDef.id;
@@ -460,8 +647,8 @@ export class StomachLayersBuilder {
         new THREE.MeshStandardMaterial({
           map: tex.colonLongitudinalMuscleTexture,
           bumpMap: tex.colonLongitudinalMuscleBump,
-          bumpScale: 0.030,
-          roughness: 0.50,
+          bumpScale: 0.035,
+          roughness: 0.48,
           metalness: 0.05,
           side: THREE.DoubleSide
         }),
@@ -571,7 +758,9 @@ export class StomachLayersBuilder {
   /**
    * Task 2: Updates per-organ and per-layer local 50% longitudinal cutaway clipping planes.
    * Each hollow organ layer is cut at its own exact 50% Z midpoint (worldCenter.z),
-   * preventing organs like Duodenum or Small Intestine from being over-clipped or disappearing.
+   * with a stepped histological rim when assembled so the order from inside to outside:
+   *   Mucosa (innermost) -> Submucosa -> Stratum -> Serosa (outermost)
+   * is clearly visible without any layer clipping.
    */
   updateClipping(selectedOrganId, isCutawayOpen, wallExplodeFactor) {
     if (typeof selectedOrganId === 'boolean') {
@@ -580,59 +769,35 @@ export class StomachLayersBuilder {
       selectedOrganId = null;
     }
 
-    // If Cutaway mode is OFF, remove all clipping planes from all hollow organs
-    if (!isCutawayOpen) {
-      this.organLayersMap.forEach((meshes) => {
-        meshes.forEach(mesh => {
-          if (mesh.material && mesh.material.clippingPlanes) {
-            mesh.material.clippingPlanes = null;
-            mesh.material.needsUpdate = true;
-          }
-        });
-      });
-      return;
-    }
-
-    // Coronal longitudinal cutaway normal: keeps posterior 50% (z <= d) and removes anterior 50% (z > d)
-    const coronalNormal = new THREE.Vector3(0, 0, -1);
-    const tempBox = new THREE.Box3();
-    const worldCenter = new THREE.Vector3();
     const t = Math.max(0, Math.min(1, wallExplodeFactor || 0));
 
     this.organLayersMap.forEach((meshes, organId) => {
-      // Clip either the currently selected hollow organ, or all hollow organs when in Whole-System view
-      const shouldClipThisOrgan = (!selectedOrganId) || (selectedOrganId === organId);
-
-      if (!shouldClipThisOrgan) {
-        meshes.forEach(mesh => {
-          if (mesh.material && mesh.material.clippingPlanes) {
-            mesh.material.clippingPlanes = null;
-            mesh.material.needsUpdate = true;
-          }
-        });
-        return;
-      }
-
+      const shouldClipThisOrgan = isCutawayOpen && ((!selectedOrganId) || (selectedOrganId === organId));
       const N = meshes.length;
+
       meshes.forEach((mesh, idx) => {
-        if (!mesh.visible) return;
+        if (!mesh.material) return;
+        mesh.material.clippingPlanes = null;
 
-        mesh.updateWorldMatrix(true, false);
-        tempBox.setFromObject(mesh);
-        tempBox.getCenter(worldCenter);
-        const sizeZ = Math.max(0.05, tempBox.max.z - tempBox.min.z);
+        const uActive = mesh.material.userData && mesh.material.userData.uCutawayActive;
+        const uThresh = mesh.material.userData && mesh.material.userData.uCutThreshold;
 
-        // When assembled (t < 0.08), add a subtle stepped offset around the 50% plane
-        // so concentric wall rims are visible like a histological staircase;
-        // when exploded (t >= 0.08), cut every layer at its exact 50.0% Z midpoint!
-        const assembleBlend = Math.max(0, 1 - (t / 0.08));
+        if (!shouldClipThisOrgan) {
+          if (uActive) uActive.value = 0.0;
+          if (uThresh) uThresh.value = 0.0;
+          return;
+        }
+
+        // When assembled (t < 0.15), terrace the cut edge from Serosa (outermost, idx=0, threshold > 0)
+        // down to Mucosa (innermost, idx=N-1, threshold < 0) so each outer layer wraps cleanly around
+        // the inner layers (inside -> outside: Mucosa > Submucosa > Stratum > Serosa, matching Figure 3).
+        // When exploded (t >= 0.15), cut every layer at its exact 50.0% tube midline (threshold = 0)!
+        const assembleBlend = Math.max(0, 1 - (t / 0.15));
         const centeredIdx = ((N - 1) / 2.0) - idx;
-        const stepOffset = assembleBlend * centeredIdx * (sizeZ * 0.022);
+        const rimStep = (organId === 'small_intestine') ? 0.02 : 0.06;
 
-        const planeConstant = worldCenter.z + stepOffset;
-        mesh.material.clippingPlanes = [new THREE.Plane(coronalNormal, planeConstant)];
-        mesh.material.clipShadows = true;
-        mesh.material.needsUpdate = true;
+        if (uActive) uActive.value = 1.0;
+        if (uThresh) uThresh.value = assembleBlend * centeredIdx * rimStep;
       });
     });
   }
