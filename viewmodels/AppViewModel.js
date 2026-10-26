@@ -60,6 +60,18 @@ export class AppViewModel extends Observable {
 
   setMode(mode) {
     this.state.activeMode = mode;
+    if (mode === 'pathology') {
+      // Khi chuyển sang Chế độ Điểm mốc lâm sàng:
+      // Reset toàn bộ các tạng và lớp mô học về trạng thái lắp ráp giải phẫu mặc định (0% explode, đóng mặt cắt)
+      this.dissectionVM.setExplodeFactor(0.0);
+      this.dissectionVM.setCutawayOpen(false);
+      this.dissectionVM.setState({
+        isIsolateMode: false,
+        visibleLayers: [1, 2, 3],
+        activeWallLayerId: null
+      });
+      this.sceneVM.selectOrgan(null);
+    }
   }
 
   setNavTab(tab) {

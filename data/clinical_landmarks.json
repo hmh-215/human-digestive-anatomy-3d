@@ -87,6 +87,28 @@
       "description": "Giao điểm của bờ ngoài cơ thẳng bụng phải với bờ sườn phải (sụn sườn 9). Là điểm đối chiếu của đáy túi mật lên thành bụng.",
       "clinicalSignificance": "Nghiệm pháp Murphy: Thầy thuốc ấn ngón tay vào điểm Murphy khi bệnh nhân hít sâu vào; đáy túi mật chạm vào tay thầy thuốc gây đau chói khiến bệnh nhân phải ngưng thở đột ngột. Dấu hiệu Murphy dương tính là triệu chứng kinh điển xác định Viêm túi mật cấp tính.",
       "cameraFocus": [-0.45, 0.05, 3.5]
+    },
+    {
+      "id": "mayo_robson_point",
+      "name": "Điểm Sườn Lưng Trái (Mayo-Robson) & Cơn Đau Tụy Lan Sau Lưng",
+      "category": "Cấp cứu Tụy Mật (Mặt Lưng Sau)",
+      "organId": "pancreas",
+      "targetSubId": "pancreas_tail",
+      "coordinates": [0.65, -0.15, -1.18],
+      "description": "Nằm ở MẶT LƯNG, tại góc sườn - cột sống trái (giao điểm giữa bờ dưới xương sườn 12 trái và bờ ngoài khối cơ dựng gai lưng trái). Là điểm đối chiếu của thân & đuôi tụy ra thành lưng sau.",
+      "clinicalSignificance": "Dấu hiệu Mayo-Robson (+): Thầy thuốc ấn ngón tay cái vào góc sườn cột sống trái, bệnh nhân đau chói nảy người — triệu chứng kinh điển xác định Viêm tụy cấp và Áp-xe tụy. Cơn đau tụy điển hình: Khởi phát dữ dội vùng thượng vị sau bữa ăn no nhiều mỡ/rượu bia, đau như dao đâm lan xuyên thẳng ra sau lưng (mức Th10–L1) do tụy nằm sau phúc mạc tì sát đám rối tạng và cột sống. Bệnh nhân có tư thế giảm đau đặc trưng: ngồi gập người ra trước hoặc nằm co quắp ôm gối (tư thế phủ phục / Tripod sign) để chùng mạc treo giảm đau.",
+      "cameraFocus": [0.65, -0.05, -6.6]
+    },
+    {
+      "id": "grey_turner_sign",
+      "name": "Dấu Hiệu Grey Turner (Bầm Tím Xuất Huyết Hông Lưng Do Hoại Tử Tụy)",
+      "category": "Cấp cứu Tụy Mật (Mặt Lưng & Mạn Sườn)",
+      "organId": "pancreas",
+      "targetSubId": "pancreas_body",
+      "coordinates": [1.32, -0.45, -0.75],
+      "description": "Mảng bầm tím xuất huyết đổi màu da (xanh tím hoặc nâu bầm) xuất hiện ở vùng hông lưng (Flanks) và mạng sườn sau bên trái.",
+      "clinicalSignificance": "Chỉ điểm lâm sàng của Viêm tụy cấp thể hoại tử chảy máu nặng. Các enzyme tiêu hóa của tụy (đặc biệt là Elastase phá hủy thành mạch) thoát ra khoang sau phúc mạc gây tiêu hủy mô mỡ và vỡ các mạch máu quanh tụy. Máu và dịch hoại tử len lỏi theo khoang sau phúc mạc qua cân ngang, thấm ra mô dưới da vùng hông lưng sau tạo nên mảng bầm tím sau 24-48 giờ. Tiên lượng rất nặng với tỷ lệ tử vong cao.",
+      "cameraFocus": [3.4, -0.25, -4.8]
     }
   ]
 }

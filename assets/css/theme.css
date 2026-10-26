@@ -778,8 +778,10 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .landmark-card.active {
-  border-color: var(--primary);
-  background: rgba(2, 132, 199, 0.06);
+  border-color: #0284c7;
+  border-left: 4px solid #0284c7;
+  background: rgba(2, 132, 199, 0.08);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
 }
 
 .landmark-badge {

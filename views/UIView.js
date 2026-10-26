@@ -195,6 +195,20 @@ export class UIView {
         this.dissectionVM.setTorsoSkinOpacity(val);
       });
     }
+
+    // 14. Quick Aspect Toggles (Front vs. Back)
+    this.viewFrontBtn = document.getElementById('btn-view-front');
+    this.viewBackBtn = document.getElementById('btn-view-back');
+    if (this.viewFrontBtn) {
+      this.viewFrontBtn.addEventListener('click', () => {
+        this.sceneVM.setCameraTarget([0.0, -0.15, 0.0], [0.0, 0.15, 9.8]);
+      });
+    }
+    if (this.viewBackBtn) {
+      this.viewBackBtn.addEventListener('click', () => {
+        this.sceneVM.setCameraTarget([0.0, -0.15, 0.0], [0.0, 0.15, -9.8]);
+      });
+    }
   }
 
   _bindViewModelEvents() {
@@ -206,6 +220,12 @@ export class UIView {
       });
 
       if (organId) {
+        if (this.appVM.state.activeMode === 'pathology') {
+          // Trong chế độ mốc lâm sàng: giữ màn hình thông thoáng, không che lấp tầm nhìn thân mình
+          this._hideOrganDrawer();
+          return;
+        }
+
         // Selecting an organ activates Tab 2 (Isolated Organ Mode) and enables Isolate Mode
         this._setDockTabUI('organ');
         if (!this.dissectionVM.state.isIsolateMode) {
@@ -322,10 +342,24 @@ export class UIView {
       if (mode === 'pathology') {
         this.landmarksPanel.classList.remove('hidden');
         if (this.dissectionDockEl) this.dissectionDockEl.classList.add('hidden');
+        this._hideOrganDrawer();
       } else {
         this.landmarksPanel.classList.add('hidden');
         if (this.dissectionDockEl) this.dissectionDockEl.classList.remove('hidden');
       }
+    });
+
+    // 8. Sync Active Landmark in Left List when selected (from list or direct 3D pin click)
+    this.landmarksVM.subscribe('activeLandmarkId', (activeId) => {
+      const listContainer = document.getElementById('landmarks-list');
+      if (!listContainer) return;
+      listContainer.querySelectorAll('.landmark-card').forEach(card => {
+        const isMatch = (card.dataset.id === activeId);
+        card.classList.toggle('active', isMatch);
+        if (isMatch) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
     });
   }
 
@@ -481,8 +515,16 @@ export class UIView {
     listContainer.innerHTML = this.appVM.landmarksData.map(lm => `
       <div class="landmark-card" data-id="${lm.id}">
         <div class="landmark-badge">${lm.category}</div>
-        <h5>${lm.name}</h5>
-        <p>${lm.description}</p>
+        <h5 style="margin: 4px 0 6px 0; font-size: 13px; font-weight: 700; color: var(--text-main);">${lm.name}</h5>
+        <p style="font-size: 11.5px; line-height: 1.45; color: var(--text-muted); margin-bottom: 6px;">${lm.description}</p>
+        ${lm.clinicalSignificance ? `
+          <div style="margin-top: 6px; padding: 7px 9px; background: rgba(225, 29, 72, 0.07); border-left: 3px solid #e11d48; border-radius: 4px; font-size: 11px; line-height: 1.45; color: var(--text-main);">
+            <strong style="color: #e11d48; display: flex; align-items: center; gap: 4px; margin-bottom: 3px;">
+              🩺 Ý Nghĩa Khám & Dấu Hiệu:
+            </strong>
+            ${lm.clinicalSignificance}
+          </div>
+        ` : ''}
       </div>
     `).join('');
 
@@ -490,8 +532,6 @@ export class UIView {
       card.addEventListener('click', () => {
         const id = card.dataset.id;
         this.landmarksVM.selectLandmark(id);
-        listContainer.querySelectorAll('.landmark-card').forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
       });
     });
   }

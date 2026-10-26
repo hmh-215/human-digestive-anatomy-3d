@@ -435,6 +435,7 @@ export class SceneView {
           }
         });
         this.torsoRoot.add(gltf.scene);
+        this._createDorsalBackMesh();
         this.torsoRoot.scale.set(10.0, 10.0, 10.0);
         if (this.masterRoot) {
           this.masterRoot.add(this.torsoRoot);
@@ -449,6 +450,82 @@ export class SceneView {
         console.warn('Không thể nạp TorsoAbdominalWall.glb:', err);
       }
     );
+  }
+
+  /**
+   * Generates a continuous parametric dorsal back wall mesh (Mặt lưng phần thân trên).
+   * Spans Y from pelvis/waist (8.85) to upper thorax/neck (14.55),
+   * seamlessly joining lateral borders of External Obliques & Serratus Anterior,
+   * with realistic spinal furrow, erector spinae ridges, and left costovertebral angle for Mayo-Robson sign.
+   */
+  _createDorsalBackMesh() {
+    if (!this.torsoRoot) return;
+    const nx = 42;
+    const ny = 42;
+    const positions = [];
+    const uvs = [];
+    const indices = [];
+
+    const yMin = 8.85;
+    const yMax = 14.55;
+
+    for (let j = 0; j <= ny; j++) {
+      const v = j / ny;
+      const y = yMin + v * (yMax - yMin);
+      const vNorm = (y - yMin) / (yMax - yMin);
+      const halfW = 1.40 + 0.45 * Math.pow(vNorm, 1.4);
+
+      for (let i = 0; i <= nx; i++) {
+        const u = (i / nx) * 2.0 - 1.0; // [-1.0, 1.0]
+        const x = u * halfW;
+
+        // Base posterior depth profile along the spine (Th1 to L5)
+        const zBase = -0.78 - 0.27 * vNorm - 0.08 * Math.sin(Math.PI * vNorm);
+        // Posterior median furrow (Rãnh gai sống)
+        const spineFurrow = 0.06 * Math.exp(-Math.pow(x / 0.16, 2));
+        const absX = Math.abs(x);
+        // Erector spinae muscular columns (Khối cơ dựng gai hai bên cột sống)
+        const erectorSpinae = -0.09 * Math.exp(-Math.pow((absX - 0.38) / 0.22, 2)) * (1.0 - 0.3 * vNorm);
+
+        // Upper thoracic scapular fullness (Vùng dưới vai & liên bả vai)
+        const scapProgress = Math.max(0, Math.min(1, (y - 12.0) / 2.2));
+        const scapula = (y > 12.0)
+          ? -0.07 * Math.exp(-Math.pow((absX - 0.85) / 0.35, 2)) * Math.sin(Math.PI * scapProgress)
+          : 0;
+
+        // Flank curvature meeting anterior abdominal oblique muscles at lateral borders
+        const flankWrap = 0.48 * Math.pow(Math.abs(u), 2.6);
+
+        const z = zBase + spineFurrow + erectorSpinae + scapula + flankWrap;
+
+        positions.push(x, y, z);
+        uvs.push(i / nx, j / ny);
+      }
+    }
+
+    for (let j = 0; j < ny; j++) {
+      for (let i = 0; i < nx; i++) {
+        const a = j * (nx + 1) + i;
+        const b = (j + 1) * (nx + 1) + i;
+        const c = (j + 1) * (nx + 1) + (i + 1);
+        const d = j * (nx + 1) + (i + 1);
+        // Faces outward toward -Z (posterior)
+        indices.push(a, b, d);
+        indices.push(d, b, c);
+      }
+    }
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+
+    const backMesh = new THREE.Mesh(geo, this.torsoSkinMaterial);
+    backMesh.name = 'Dorsal_Back_Wall_Mesh';
+    backMesh.castShadow = true;
+    backMesh.receiveShadow = true;
+    this.torsoRoot.add(backMesh);
   }
 
   _updateTorsoSkinOpacity(opacity) {
@@ -473,20 +550,30 @@ export class SceneView {
 
   _buildClinicalLandmarks() {
     this.landmarksRoot = new THREE.Group();
+    this.landmarksRoot.name = 'Clinical_Landmarks_Root';
     this.scene.add(this.landmarksRoot);
 
-    const pinGeo = new THREE.SphereGeometry(0.11, 24, 24);
+    const pinGeo = new THREE.SphereGeometry(0.12, 24, 24);
     this.appVM.landmarksData.forEach(lm => {
+      const isBackLandmark = (lm.coordinates && lm.coordinates[2] < 0);
       const pinMat = new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
-        emissive: 0x0284c7,
-        roughness: 0.2,
+        color: isBackLandmark ? 0xf59e0b : 0x38bdf8,
+        emissive: isBackLandmark ? 0xd97706 : 0x0284c7,
+        emissiveIntensity: 0.6,
+        roughness: 0.25,
         depthTest: true,
         depthWrite: true
       });
       const pinMesh = new THREE.Mesh(pinGeo, pinMat);
       pinMesh.position.set(...lm.coordinates);
-      pinMesh.userData = { landmarkId: lm.id, name: lm.name };
+      pinMesh.userData = {
+        isLandmarkPin: true,
+        landmarkId: lm.id,
+        name: lm.name,
+        category: lm.category,
+        description: lm.description,
+        isBack: isBackLandmark
+      };
 
       this.landmarksRoot.add(pinMesh);
       this.landmarkMarkers.set(lm.id, pinMesh);
@@ -669,6 +756,26 @@ export class SceneView {
       const { x, y, screenX, screenY } = getCoords(e);
       this.mouse.set(x, y);
       this.raycaster.setFromCamera(this.mouse, this.camera);
+
+      // In Pathology mode, check landmark pin intersections first
+      if (this.appVM.state.activeMode === 'pathology' && this.landmarksRoot && this.landmarksRoot.visible) {
+        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, false);
+        if (landmarkHits.length > 0) {
+          const hitPin = landmarkHits[0].object;
+          this.renderer.domElement.style.cursor = 'pointer';
+          this.hoverCallout.update({
+            x: screenX,
+            y: screenY,
+            tag: hitPin.userData.category || 'ĐIỂM MỐC LÂM SÀNG',
+            badge: hitPin.userData.isBack ? 'MẶT LƯNG' : 'THÀNH BỤNG',
+            title: hitPin.userData.name,
+            subtitle: hitPin.userData.description,
+            color: hitPin.userData.isBack ? '#f59e0b' : '#0284c7'
+          });
+          return;
+        }
+      }
+
       const rawHits = this.raycaster.intersectObjects(this.clickableMeshes, true);
       const validHit = this._getFirstVisibleHit(rawHits);
 
@@ -707,6 +814,19 @@ export class SceneView {
       const { x, y } = getCoords(e);
       this.mouse.set(x, y);
       this.raycaster.setFromCamera(this.mouse, this.camera);
+
+      // In Pathology mode, clicking a landmark pin activates it
+      if (this.appVM.state.activeMode === 'pathology' && this.landmarksRoot && this.landmarksRoot.visible) {
+        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, false);
+        if (landmarkHits.length > 0) {
+          const hitPin = landmarkHits[0].object;
+          if (hitPin.userData && hitPin.userData.landmarkId && this.appVM.landmarksVM) {
+            this.appVM.landmarksVM.selectLandmark(hitPin.userData.landmarkId);
+            return;
+          }
+        }
+      }
+
       const rawHits = this.raycaster.intersectObjects(this.clickableMeshes, true);
       const validHit = this._getFirstVisibleHit(rawHits);
 
@@ -797,6 +917,11 @@ export class SceneView {
       this.landmarksRoot.visible = (mode === 'pathology');
       if (mode === 'pathology') {
         this._ensureTorsoLoaded();
+        this._syncExplosion();
+        this._updateOrganVisuals(null);
+        this._smoothMoveCameraTarget([0.0, -0.15, 0.0], [0.0, 0.15, 9.8]);
+      } else {
+        if (this.torsoRoot) this.torsoRoot.visible = false;
       }
       if (this.torsoRoot) {
         this.torsoRoot.visible = (mode === 'pathology') && (this.dissectionVM.state.torsoSkinOpacity > 0.02);
@@ -1054,9 +1179,20 @@ export class SceneView {
 
     if (this.landmarksRoot && this.landmarksRoot.visible) {
       const time = Date.now() * 0.003;
-      const pulseScale = 1.0 + 0.15 * Math.sin(time);
-      this.landmarkMarkers.forEach((mesh) => {
+      const activeId = this.appVM.landmarksVM ? this.appVM.landmarksVM.state.activeLandmarkId : null;
+      this.landmarkMarkers.forEach((mesh, id) => {
+        const isActive = (id === activeId);
+        const pulseScale = isActive ? (1.35 + 0.25 * Math.sin(time * 2.0)) : (1.0 + 0.12 * Math.sin(time));
         mesh.scale.set(pulseScale, pulseScale, pulseScale);
+        if (mesh.material && mesh.material.emissive) {
+          if (isActive) {
+            mesh.material.emissive.setHex(0xef4444); // Active selected landmark glows bright coral-red
+          } else if (mesh.userData.isBack) {
+            mesh.material.emissive.setHex(0xd97706); // Dorsal back landmarks glow warm amber
+          } else {
+            mesh.material.emissive.setHex(0x0284c7); // Anterior abdominal wall landmarks glow sky blue
+          }
+        }
       });
     }
 
