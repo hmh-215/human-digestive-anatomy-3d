@@ -66,6 +66,30 @@ export class DissectionViewModel extends Observable {
     this.setExplodeFactor(factor);
   }
 
+  setState(partial) {
+    if (!partial || typeof partial !== 'object') return;
+    this.batch(() => {
+      Object.entries(partial).forEach(([k, v]) => {
+        if (k === 'explodeFactor') {
+          const clamped = Math.max(0, Math.min(1, v));
+          this.state.explodeFactor = clamped;
+          this.state.localExplodeFactor = clamped;
+          this.state.stomachWallExplodeFactor = clamped;
+        } else {
+          this.state[k] = v;
+        }
+      });
+    });
+  }
+
+  setIsolateMode(val) {
+    this.state.isIsolateMode = Boolean(val);
+  }
+
+  setCutawayOpen(val) {
+    this.state.isCutawayOpen = Boolean(val);
+  }
+
   toggleIsolateMode() {
     this.state.isIsolateMode = !this.state.isIsolateMode;
   }

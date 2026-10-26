@@ -909,6 +909,202 @@ export class ProceduralTextures {
       result.colonMucosaBump.wrapT = THREE.RepeatWrapping;
     }
 
+    // =========================================================================
+    // 8. TÚI MẬT (GALLBLADDER - 4 HISTOLOGICAL LAYERS MATCHING REFERENCE IMG 3)
+    // =========================================================================
+    {
+      // 8A. Gallbladder Serosa & Perimuscular Fibrous Tissue (Outer green-olive sheen + fibrous mesh)
+      const canvasSer = createCanvas(256);
+      const ctxSer = canvasSer.getContext('2d');
+      const gradSer = ctxSer.createLinearGradient(0, 0, 256, 256);
+      gradSer.addColorStop(0, '#65a30d');
+      gradSer.addColorStop(0.5, '#84cc16');
+      gradSer.addColorStop(1, '#4d7c0f');
+      ctxSer.fillStyle = gradSer;
+      ctxSer.fillRect(0, 0, 256, 256);
+
+      // Perimuscular fibrous connective strands
+      ctxSer.strokeStyle = 'rgba(236, 252, 203, 0.35)';
+      ctxSer.lineWidth = 1.2;
+      for (let i = 0; i < 45; i++) {
+        ctxSer.beginPath();
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        ctxSer.moveTo(x, y);
+        ctxSer.lineTo(x + (Math.random() - 0.5) * 60, y + (Math.random() - 0.5) * 60);
+        ctxSer.stroke();
+      }
+      result.gbSerosaTexture = new THREE.CanvasTexture(canvasSer);
+      result.gbSerosaTexture.wrapS = THREE.RepeatWrapping;
+      result.gbSerosaTexture.wrapT = THREE.RepeatWrapping;
+
+      // 8B. Gallbladder Muscular Layer (Crisscrossing longitudinal, circular, oblique smooth muscle bundles)
+      const canvasMus = createCanvas(512);
+      const ctxMus = canvasMus.getContext('2d');
+      ctxMus.fillStyle = '#be123c';
+      ctxMus.fillRect(0, 0, 512, 512);
+      for (let i = -512; i < 512; i += 8) {
+        ctxMus.strokeStyle = 'rgba(251, 113, 133, 0.45)';
+        ctxMus.lineWidth = 2.0;
+        ctxMus.beginPath();
+        ctxMus.moveTo(i, 0);
+        ctxMus.lineTo(i + 512, 512);
+        ctxMus.stroke();
+
+        ctxMus.strokeStyle = 'rgba(136, 19, 55, 0.55)';
+        ctxMus.beginPath();
+        ctxMus.moveTo(i + 512, 0);
+        ctxMus.lineTo(i, 512);
+        ctxMus.stroke();
+      }
+      result.gbMuscleTexture = new THREE.CanvasTexture(canvasMus);
+      result.gbMuscleTexture.wrapS = THREE.RepeatWrapping;
+      result.gbMuscleTexture.wrapT = THREE.RepeatWrapping;
+      result.gbMuscleBump = result.obliqueMuscleBump;
+
+      // 8C. Gallbladder Lamina Propria / Submucosa (Light pink connective tissue + rich capillaries)
+      const canvasLP = createCanvas(512);
+      const ctxLP = canvasLP.getContext('2d');
+      ctxLP.fillStyle = '#ffe4e6';
+      ctxLP.fillRect(0, 0, 512, 512);
+      for (let i = 0; i < 60; i++) {
+        ctxLP.strokeStyle = i % 2 === 0 ? 'rgba(225, 29, 72, 0.45)' : 'rgba(37, 99, 235, 0.35)';
+        ctxLP.lineWidth = 1.5;
+        ctxLP.beginPath();
+        let x = Math.random() * 512;
+        let y = Math.random() * 512;
+        ctxLP.moveTo(x, y);
+        for (let s = 0; s < 4; s++) {
+          x += (Math.random() - 0.5) * 45;
+          y += (Math.random() - 0.5) * 45;
+          ctxLP.lineTo(x, y);
+        }
+        ctxLP.stroke();
+      }
+      result.gbSubmucosaTexture = new THREE.CanvasTexture(canvasLP);
+      result.gbSubmucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.gbSubmucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.gbSubmucosaBump = result.submucosaBump;
+
+      // 8D. Gallbladder Epithelium / Mucosa (Honeycomb polygonal rugae folds matching Image 3)
+      const canvasGbMuc = createCanvas(512);
+      const ctxGbMuc = canvasGbMuc.getContext('2d');
+      ctxGbMuc.fillStyle = '#881337';
+      ctxGbMuc.fillRect(0, 0, 512, 512);
+
+      const bumpGbMuc = createCanvas(256);
+      const bCtxGbMuc = bumpGbMuc.getContext('2d');
+      bCtxGbMuc.fillStyle = '#202020';
+      bCtxGbMuc.fillRect(0, 0, 256, 256);
+
+      // Draw honeycomb mucosal ridges
+      const hexR = 28;
+      for (let row = 0; row < 22; row++) {
+        for (let col = 0; col < 22; col++) {
+          const cx = col * hexR * 1.65 + (row % 2) * hexR * 0.82;
+          const cy = row * hexR * 1.45;
+          ctxGbMuc.strokeStyle = '#fda4af';
+          ctxGbMuc.lineWidth = 5.5;
+          ctxGbMuc.beginPath();
+          for (let k = 0; k < 6; k++) {
+            const ang = (k * Math.PI) / 3;
+            const vx = cx + Math.cos(ang) * hexR * 0.85;
+            const vy = cy + Math.sin(ang) * hexR * 0.85;
+            if (k === 0) ctxGbMuc.moveTo(vx, vy);
+            else ctxGbMuc.lineTo(vx, vy);
+          }
+          ctxGbMuc.closePath();
+          ctxGbMuc.stroke();
+
+          bCtxGbMuc.strokeStyle = '#ffffff';
+          bCtxGbMuc.lineWidth = 3.5;
+          bCtxGbMuc.beginPath();
+          for (let k = 0; k < 6; k++) {
+            const ang = (k * Math.PI) / 3;
+            const vx = (cx * 0.5) + Math.cos(ang) * (hexR * 0.42);
+            const vy = (cy * 0.5) + Math.sin(ang) * (hexR * 0.42);
+            if (k === 0) bCtxGbMuc.moveTo(vx, vy);
+            else bCtxGbMuc.lineTo(vx, vy);
+          }
+          bCtxGbMuc.closePath();
+          bCtxGbMuc.stroke();
+        }
+      }
+      result.gbMucosaTexture = new THREE.CanvasTexture(canvasGbMuc);
+      result.gbMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.gbMucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.gbMucosaBump = new THREE.CanvasTexture(bumpGbMuc);
+      result.gbMucosaBump.wrapS = THREE.RepeatWrapping;
+      result.gbMucosaBump.wrapT = THREE.RepeatWrapping;
+    }
+
+    // =========================================================================
+    // 9. THỰC QUẢN (ESOPHAGUS - 5 HISTOLOGICAL LAYERS)
+    // =========================================================================
+    {
+      // 9A. Esophagus Adventitia (Loose fibrous outer coat)
+      const canvasAdv = createCanvas(256);
+      const ctxAdv = canvasAdv.getContext('2d');
+      const gradAdv = ctxAdv.createLinearGradient(0, 0, 256, 256);
+      gradAdv.addColorStop(0, '#fbcfe8');
+      gradAdv.addColorStop(0.5, '#f9a8d4');
+      gradAdv.addColorStop(1, '#f472b6');
+      ctxAdv.fillStyle = gradAdv;
+      ctxAdv.fillRect(0, 0, 256, 256);
+      ctxAdv.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctxAdv.lineWidth = 1.2;
+      for (let i = 0; i < 40; i++) {
+        ctxAdv.beginPath();
+        const x = Math.random() * 256;
+        const y = Math.random() * 256;
+        ctxAdv.moveTo(x, y);
+        ctxAdv.lineTo(x + (Math.random() - 0.5) * 45, y + (Math.random() - 0.5) * 45);
+        ctxAdv.stroke();
+      }
+      result.esoAdventitiaTexture = new THREE.CanvasTexture(canvasAdv);
+      result.esoAdventitiaTexture.wrapS = THREE.RepeatWrapping;
+      result.esoAdventitiaTexture.wrapT = THREE.RepeatWrapping;
+
+      // 9B & 9C. Esophagus Longitudinal & Circular Muscle (Reuse high-contrast muscle fibers)
+      result.esoLongitudinalMuscleTexture = result.longitudinalMuscleTexture;
+      result.esoLongitudinalMuscleBump = result.longitudinalMuscleBump;
+      result.esoCircularMuscleTexture = result.circularMuscleTexture;
+      result.esoCircularMuscleBump = result.circularMuscleBump;
+
+      // 9D. Esophagus Submucosa with Esophageal Glands & Venous Plexus
+      result.esoSubmucosaTexture = result.submucosaTexture;
+      result.esoSubmucosaBump = result.submucosaBump;
+
+      // 9E. Esophagus Mucosa (Non-keratinized Stratified Squamous pale pink longitudinal folds)
+      const canvasEsoMuc = createCanvas(512);
+      const ctxEsoMuc = canvasEsoMuc.getContext('2d');
+      ctxEsoMuc.fillStyle = '#fda4af';
+      ctxEsoMuc.fillRect(0, 0, 512, 512);
+      for (let x = 16; x < 512; x += 32) {
+        ctxEsoMuc.strokeStyle = '#ffe4e6';
+        ctxEsoMuc.lineWidth = 10;
+        ctxEsoMuc.beginPath();
+        ctxEsoMuc.moveTo(x, 0);
+        for (let y = 0; y <= 512; y += 32) {
+          ctxEsoMuc.lineTo(x + Math.sin((y / 512) * Math.PI * 4) * 5, y);
+        }
+        ctxEsoMuc.stroke();
+
+        ctxEsoMuc.strokeStyle = '#e11d48';
+        ctxEsoMuc.lineWidth = 4;
+        ctxEsoMuc.beginPath();
+        ctxEsoMuc.moveTo(x + 10, 0);
+        for (let y = 0; y <= 512; y += 32) {
+          ctxEsoMuc.lineTo(x + 10 + Math.sin((y / 512) * Math.PI * 4) * 5, y);
+        }
+        ctxEsoMuc.stroke();
+      }
+      result.esoMucosaTexture = new THREE.CanvasTexture(canvasEsoMuc);
+      result.esoMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.esoMucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.esoMucosaBump = result.longitudinalMuscleBump;
+    }
+
     return result;
   }
 }

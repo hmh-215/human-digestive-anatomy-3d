@@ -1,13 +1,13 @@
 /**
  * UIView.js
- * Simplified DOM UI Controller for Human Digestive Anatomy 3D.
+ * 2-Tab Context-Aware DOM UI Controller for Human Digestive Anatomy 3D.
  *
  * Features:
- * - Minimal Context-Aware Dissection Dock (Whole System vs. Selected Organ)
+ * - Tab 1 (🌐 Toàn Hệ Thống): Whole-System 4-Row Knolling Catalog Grid
+ * - Tab 2 (🔬 Cô Lập Bộ Phận): Isolated Organ Concentric Layer Telescoping (with auto-isolation)
+ * - Per-Organ 50% Longitudinal Cutaway Toggle (works on any hollow organ)
  * - Single Unified Explode Slider (0% - 100%) + One-Click Animated Explode Button
- * - Quick Organ Chips & Instant Search Bar
  * - Medical Info Drawer (Right side) with ĐHYHN clinical & histological cards
- * - Clean separation between Mode 1 (Dissection Dock) and Mode 2 (Clinical Landmarks Panel)
  */
 export class UIView {
   constructor(appVM) {
@@ -17,6 +17,12 @@ export class UIView {
     this.landmarksVM = appVM.landmarksVM;
 
     this.dissectionDockEl = document.getElementById('dissection-dock');
+    this.tabBtnSystem = document.getElementById('tab-btn-system');
+    this.tabBtnOrgan = document.getElementById('tab-btn-organ');
+    this.tabPaneSystem = document.getElementById('tab-pane-system');
+    this.tabPaneOrgan = document.getElementById('tab-pane-organ');
+
+    this.contextSubEl = document.getElementById('dock-context-sub');
     this.contextTitleEl = document.getElementById('dock-context-title');
     this.backSystemBtn = document.getElementById('btn-back-system');
     this.organChips = document.querySelectorAll('.organ-chip');
@@ -53,7 +59,33 @@ export class UIView {
     this._renderLandmarksList();
   }
 
+  _setDockTabUI(tabName) {
+    const isOrganTab = (tabName === 'organ');
+    if (this.tabBtnSystem) this.tabBtnSystem.classList.toggle('active', !isOrganTab);
+    if (this.tabBtnOrgan) this.tabBtnOrgan.classList.toggle('active', isOrganTab);
+    if (this.tabPaneSystem) this.tabPaneSystem.classList.toggle('hidden', isOrganTab);
+    if (this.tabPaneOrgan) this.tabPaneOrgan.classList.toggle('hidden', !isOrganTab);
+  }
+
   _bindDOMEvents() {
+    // 0. Task 1: 2-Tab Switcher (Tab 1: Whole System Knolling vs. Tab 2: Isolated Organ)
+    if (this.tabBtnSystem) {
+      this.tabBtnSystem.addEventListener('click', () => {
+        this._setDockTabUI('system');
+        this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
+        this.sceneVM.resetCamera();
+      });
+    }
+
+    if (this.tabBtnOrgan) {
+      this.tabBtnOrgan.addEventListener('click', () => {
+        this._setDockTabUI('organ');
+        this.dissectionVM.setState({ isIsolateMode: true, explodeFactor: 0 });
+        const currentOrgan = this.sceneVM.state.selectedOrganId || 'stomach';
+        this.sceneVM.selectOrgan(currentOrgan);
+      });
+    }
+
     // 1. Unified Context-Aware Explode Slider
     if (this.explodeSlider) {
       this.explodeSlider.addEventListener('input', (e) => {
@@ -74,28 +106,31 @@ export class UIView {
     // 3. Back to Whole System Button
     if (this.backSystemBtn) {
       this.backSystemBtn.addEventListener('click', () => {
+        this._setDockTabUI('system');
+        this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
         this.sceneVM.resetCamera();
       });
     }
 
-    // 4. Quick Organ Chips
+    // 4. Quick Organ Chips (Tab 2)
     this.organChips.forEach((chip) => {
       chip.addEventListener('click', () => {
         const organId = chip.dataset.organ || null;
         if (!organId) {
+          this._setDockTabUI('system');
+          this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
           this.sceneVM.resetCamera();
         } else {
+          this._setDockTabUI('organ');
+          this.dissectionVM.setState({ isIsolateMode: true });
           this.sceneVM.selectOrgan(organId);
         }
       });
     });
 
-    // 5. Cutaway Window Toggle
+    // 5. Task 2: Per-Organ 50% Longitudinal Cutaway Toggle (works on any hollow organ!)
     if (this.cutawayBtn) {
       this.cutawayBtn.addEventListener('click', () => {
-        if (this.sceneVM.state.selectedOrganId !== 'stomach') {
-          this.sceneVM.selectOrgan('stomach');
-        }
         this.dissectionVM.toggleCutaway();
       });
     }
@@ -117,6 +152,8 @@ export class UIView {
     // 8. Reset Camera
     if (this.resetCameraBtn) {
       this.resetCameraBtn.addEventListener('click', () => {
+        this._setDockTabUI('system');
+        this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
         this.sceneVM.resetCamera();
       });
     }
@@ -161,44 +198,61 @@ export class UIView {
   }
 
   _bindViewModelEvents() {
-    // 1. Update Context Header, Explode Labels, and Right Info Drawer on Organ Selection
+    // 1. Update 2-Tab state, Context Header, Explode Labels, and Right Info Drawer on Organ Selection
     this.sceneVM.subscribe('selectedOrganId', (organId) => {
-      // Sync quick chips
       this.organChips.forEach((chip) => {
         const chipOrgan = chip.dataset.organ || null;
         chip.classList.toggle('active', chipOrgan === organId);
       });
 
       if (organId) {
+        // Selecting an organ activates Tab 2 (Isolated Organ Mode) and enables Isolate Mode
+        this._setDockTabUI('organ');
+        if (!this.dissectionVM.state.isIsolateMode) {
+          this.dissectionVM.setState({ isIsolateMode: true });
+        }
+
         const organ = this.appVM.organsData.find(o => o.id === organId);
         if (organ) {
+          if (this.contextSubEl) this.contextSubEl.textContent = 'CHẾ ĐỘ CÔ LẬP TỪNG BỘ PHẬN';
           this.contextTitleEl.textContent = organ.vietnameseName;
           this.backSystemBtn.classList.remove('hidden');
 
           if (organId === 'stomach') {
-            this.explodeModeLabel.textContent = '💥 Tách 6 Lớp Vỏ Dạ Dày:';
-            this.explodeHelperText.textContent = 'Tách 5 mảnh vỏ cong (Thanh mạc → Dưới niêm mạc) khỏi lõi Niêm mạc Rugae';
+            this.explodeModeLabel.textContent = '💥 Tách 6 Lớp Dạ Dày (Trong → Ngoài):';
+            this.explodeHelperText.textContent = 'Các lớp trong tiến về phía người xem, nằm gọn trong lòng lớp ngoài tương ứng';
+          } else if (organId === 'esophagus') {
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Thực Quản (Trong → Ngoài):';
+            this.explodeHelperText.textContent = 'Vỏ xơ Adventitia → Cơ dọc → Cơ vòng → Dưới niêm mạc → Biểu mô lát tầng';
           } else if (organId === 'duodenum') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Tá Tràng:';
-            this.explodeHelperText.textContent = 'Tách 5 lớp mô học tá tràng (Tuyến Brunner, nếp Kerckring, cơ trơn)';
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Tá Tràng (Trong → Ngoài):';
+            this.explodeHelperText.textContent = 'Thanh mạc → Cơ dọc → Cơ vòng → Tuyến Brunner dưới niêm → Nếp vòng Kerckring';
           } else if (organId === 'small_intestine') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Ruột Non:';
-            this.explodeHelperText.textContent = 'Tách 5 lớp mô học ruột non (Đám rối Auerbach, nhung mao Villi, cơ trơn)';
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Ruột Non (Trong → Ngoài):';
+            this.explodeHelperText.textContent = 'Thanh mạc → Cơ dọc Auerbach → Cơ vòng → Dưới niêm mạc → Nhung mao Villi';
           } else if (organId === 'large_intestine') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Đại Tràng:';
-            this.explodeHelperText.textContent = 'Tách 5 lớp mô học đại tràng (Dải cơ dọc Taeniae coli, túi phình Haustra, nếp bán nguyệt)';
+            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Toàn Khung Đại Tràng:';
+            this.explodeHelperText.textContent = 'Toàn bộ Manh tràng, Đại tràng lên/ngang/xuống/Sigma & 3 dải cơ dọc Taeniae coli';
+          } else if (organId === 'gallbladder_tree') {
+            this.explodeModeLabel.textContent = '💥 Tách 4 Lớp Túi Mật & Đường Mật:';
+            this.explodeHelperText.textContent = 'Thanh mạc & mô xơ quanh cơ → Lớp cơ trơn → Lớp đệm Lamina propria → Niêm mạc tổ ong';
+          } else if (organId === 'liver') {
+            this.explodeModeLabel.textContent = '💥 Phân Tách 8 Hạ Phân Thùy Gan (Couinaud):';
+            this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) chuẩn phẫu thuật gan mật (không trùng lặp)';
           } else {
             this.explodeModeLabel.textContent = `💥 Tách Cấu Trúc ${organ.vietnameseName}:`;
-            this.explodeHelperText.textContent = 'Tách rời các hạ phân thùy / cấu trúc con để rê chuột xem nhãn';
+            this.explodeHelperText.textContent = 'Tách rời các cấu trúc con để rê chuột xem nhãn giải phẫu chi tiết';
           }
 
           this._showOrganDrawer(organ);
         }
       } else {
+        this._setDockTabUI('system');
+        if (this.contextSubEl) this.contextSubEl.textContent = 'CHẾ ĐỘ TOÀN HỆ THỐNG';
         this.contextTitleEl.textContent = 'Toàn Hệ Tiêu Hóa';
         this.backSystemBtn.classList.add('hidden');
-        this.explodeModeLabel.textContent = '💥 Tách Rời Các Cơ Quan:';
-        this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để bung mô hình, sau đó rê chuột lên từng lớp để xem nhãn';
+        this.explodeModeLabel.textContent = '💥 Xếp Hàng Toàn Hệ Thống (4 Hàng):';
+        this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang';
         this._hideOrganDrawer();
       }
     });
@@ -227,7 +281,7 @@ export class UIView {
     this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
       if (this.cutawayBtn) {
         this.cutawayBtn.classList.toggle('active', isOpen);
-        this.cutawayBtn.textContent = isOpen ? '✖ Đóng Lòng' : '✂️ Cắt Mở Lòng';
+        this.cutawayBtn.textContent = isOpen ? '✖ Đóng Mặt Cắt' : '✂️ Mặt Cắt Dọc 50%';
       }
     });
 
@@ -401,6 +455,8 @@ export class UIView {
     this.searchResultsBox.querySelectorAll('.search-item').forEach(item => {
       item.addEventListener('click', () => {
         const id = item.dataset.id;
+        this._setDockTabUI('organ');
+        this.dissectionVM.setState({ isIsolateMode: true });
         this.sceneVM.selectOrgan(id);
         this.searchInput.value = '';
         this.searchResultsBox.classList.add('hidden');

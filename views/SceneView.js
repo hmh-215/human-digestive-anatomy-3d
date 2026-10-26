@@ -215,8 +215,9 @@ export class SceneView {
     };
 
     const inferOrganId = (name, userData) => {
-      if (userData && userData.organId) return userData.organId;
       const low = (name || '').toLowerCase();
+      if (low.includes('omentum') || low.includes('peritoneum') || low.includes('meso')) return 'peritoneum_omentum';
+      if (userData && userData.organId) return userData.organId;
       if (low.includes('liver')) return 'liver';
       if (low.includes('gallbladder') || low.includes('bile') || low.includes('cystic')) return 'gallbladder_tree';
       if (low.includes('stomach') || low.includes('gaster')) return 'stomach';
@@ -225,13 +226,27 @@ export class SceneView {
       if (low.includes('jejunum') || low.includes('ileum') || low.includes('small intestine') || low.includes('intestine')) return 'small_intestine';
       if (low.includes('colon') || low.includes('cecum') || low.includes('caecum') || low.includes('appendix') || low.includes('taenia')) return 'large_intestine';
       if (low.includes('oesophagus') || low.includes('esophagus')) return 'esophagus';
-      if (low.includes('omentum') || low.includes('peritoneum') || low.includes('meso')) return 'peritoneum_omentum';
       return 'small_intestine';
     };
 
     this.clickableMeshes = [];
     this.allVisceralMeshes = [];
     const meshesToProcess = [];
+    const colonBaseMeshes = [];
+    const taeniaMeshes = [];
+
+    const colonWallNames = new Set([
+      'Ascending_colon',
+      'Transverse_colon',
+      'Descending_colon',
+      'Sigmoid_colon',
+      'Vermiform_appendix'
+    ]);
+    const taeniaNames = new Set([
+      'Omental_taenia',
+      'Free_taenia',
+      'Mesocolic_taenia'
+    ]);
 
     rootGroup.traverse((child) => {
       if (child.isMesh) {
@@ -243,7 +258,24 @@ export class SceneView {
       const organId = inferOrganId(child.name, child.userData);
       const low = (child.name || '').toLowerCase();
 
-      // Synthesize 5/6 Concentric Histological Layers for all Hollow Visceral Organs
+      // Task 5: Hide unsegmented duplicate whole-liver shell (Node 0: 'Liver')
+      // so only the 8 Couinaud segments (Nodes 1..8) represent the liver!
+      if (child.name === 'Liver') {
+        child.visible = false;
+        return;
+      }
+
+      // Task 4: Collect all Large Intestine wall segments & Taeniae coli bands for composite 5-layer synthesis
+      if (colonWallNames.has(child.name)) {
+        colonBaseMeshes.push(child);
+        return;
+      }
+      if (taeniaNames.has(child.name)) {
+        taeniaMeshes.push(child);
+        return;
+      }
+
+      // Synthesize Concentric Histological Layers for all 6 Hollow Visceral Organs
       if (child.name === 'Stomach' || organId === 'stomach') {
         const layers = this.stomachBuilder.createLayers('stomach', child, this.appVM.organsData);
         this.stomachWallMeshes = layers;
@@ -274,9 +306,21 @@ export class SceneView {
         return;
       }
 
-      if (child.name === 'Transverse_colon') {
-        const layers = this.stomachBuilder.createLayers('large_intestine', child, this.appVM.organsData);
-        this.colonWallMeshes = layers;
+      // Task 3: Synthesize 4 Concentric Histological Layers for Gallbladder
+      if (child.name === 'Gallbladder') {
+        const layers = this.stomachBuilder.createLayers('gallbladder_tree', child, this.appVM.organsData);
+        this.gallbladderWallMeshes = layers;
+        layers.forEach((lMesh) => {
+          this.clickableMeshes.push(lMesh);
+          this.allVisceralMeshes.push(lMesh);
+        });
+        return;
+      }
+
+      // Task 3: Synthesize 5 Concentric Histological Layers for Esophagus
+      if (child.name === 'Oesophagus' || organId === 'esophagus') {
+        const layers = this.stomachBuilder.createLayers('esophagus', child, this.appVM.organsData);
+        this.esophagusWallMeshes = layers;
         layers.forEach((lMesh) => {
           this.clickableMeshes.push(lMesh);
           this.allVisceralMeshes.push(lMesh);
@@ -288,7 +332,8 @@ export class SceneView {
       child.userData = {
         organId,
         rawName: child.name,
-        initialPos: child.position.clone()
+        initialPos: child.position.clone(),
+        initialScale: child.scale.clone()
       };
 
       const baseMat = materials[organId] || materials.stomach;
@@ -307,6 +352,21 @@ export class SceneView {
       this.clickableMeshes.push(child);
       this.allVisceralMeshes.push(child);
     });
+
+    // Task 4: Build 5 unified concentric layers across the ENTIRE Colon frame + Taeniae coli
+    if (colonBaseMeshes.length > 0) {
+      const colonLayers = this.stomachBuilder.createColonCompositeLayers(
+        colonBaseMeshes,
+        taeniaMeshes,
+        this.appVM.organsData,
+        rootGroup
+      );
+      this.colonWallMeshes = colonLayers;
+      colonLayers.forEach((lMesh) => {
+        this.clickableMeshes.push(lMesh);
+        this.allVisceralMeshes.push(lMesh);
+      });
+    }
 
     // Normalize bounding box of digestive system to target height 8.5 centered at origin
     this.masterRoot.updateMatrixWorld(true);
@@ -329,11 +389,11 @@ export class SceneView {
     );
     this.masterRoot.updateMatrixWorld(true);
 
-    // Record normalized world center of stomach after masterRoot transform is finalized
+    // Record normalized world center of all hollow organs after masterRoot transform is finalized
     this.stomachBuilder.recordBaseCenterWorld();
 
-    // Assign 3D explosion vectors for both whole-system and sub-assembly explosion
-    this.explosionManager.assignExplosionVectors(this.clickableMeshes);
+    // Assign 3D explosion vectors for both Whole-System Knolling Grid and Isolated Organ explosion
+    this.explosionManager.assignExplosionVectors(this.clickableMeshes, center);
 
     this.layerMap = {
       esophagus: 1, peritoneum_omentum: 1,
@@ -674,13 +734,26 @@ export class SceneView {
         this.focusSmallIntestine();
       } else if (selectedId === 'large_intestine') {
         this.focusColon();
+      } else if (selectedId === 'gallbladder_tree') {
+        this.focusGallbladder();
+      } else if (selectedId === 'esophagus') {
+        this.focusEsophagus();
+      } else if (selectedId === 'liver') {
+        this.focusLiver();
       } else if (selectedId) {
         this.focusOrgan(selectedId);
       }
     });
 
-    this.dissectionVM.subscribe('explodeFactor', () => {
+    this.dissectionVM.subscribe('explodeFactor', (factor) => {
       this._syncExplosion();
+      // In Whole-System Knolling Grid mode, frame the 4 horizontal rows comfortably
+      if (!this.sceneVM.state.selectedOrganId && factor >= 0.85) {
+        this.controls.target.set(0.0, -0.35, 0.0);
+        if (this.camera.position.z < 16.5) {
+          this.camera.position.set(0.0, 0.0, 17.2);
+        }
+      }
     });
 
     this.dissectionVM.subscribe('visibleLayers', (layers) => {
@@ -789,10 +862,8 @@ export class SceneView {
         }
       } else if (organId === selectedId) {
         mesh.visible = true;
-        const isColonFrame = (organId === 'large_intestine');
-        const explodeFactor = this.dissectionVM.state.explodeFactor || 0;
-        mesh.material.transparent = isXRay || (isColonFrame && explodeFactor > 0.15);
-        mesh.material.opacity = isXRay ? 0.45 : ((isColonFrame && explodeFactor > 0.15) ? 0.18 : 1.0);
+        mesh.material.transparent = isXRay;
+        mesh.material.opacity = isXRay ? 0.45 : 1.0;
         if (mesh.material.emissive) mesh.material.emissive.setHex(0x221508);
       } else {
         if (isIsolate) {
@@ -823,10 +894,9 @@ export class SceneView {
       ? this.stomachBuilder.getBaseCenter('stomach')
       : new THREE.Vector3(0.688, 0.339, 0.206);
 
-    // Frame stomach center with generous viewport width & depth so all 6 exploded layers fit cleanly without overlap
     this._smoothMoveCameraTarget(
-      [center.x - 0.45, center.y + 0.15, center.z],
-      [center.x - 0.45, center.y + 0.35, center.z + 8.4]
+      [center.x - 0.25, center.y + 0.10, center.z],
+      [center.x - 0.25, center.y + 0.30, center.z + 8.6]
     );
   }
 
@@ -835,10 +905,9 @@ export class SceneView {
       ? this.stomachBuilder.getBaseCenter('duodenum')
       : new THREE.Vector3(-0.3, 0.1, 0.0);
 
-    // Frame C-loop of duodenum and its 5 exploded layers cleanly
     this._smoothMoveCameraTarget(
-      [center.x - 0.35, center.y + 0.05, center.z],
-      [center.x - 0.35, center.y + 0.20, center.z + 6.2]
+      [center.x - 0.20, center.y + 0.05, center.z],
+      [center.x - 0.20, center.y + 0.20, center.z + 6.4]
     );
   }
 
@@ -847,22 +916,57 @@ export class SceneView {
       ? this.stomachBuilder.getBaseCenter('small_intestine')
       : new THREE.Vector3(0.0, -0.6, 0.0);
 
-    // Frame small intestine quays and its 5 exploded layers cleanly
     this._smoothMoveCameraTarget(
-      [center.x - 0.40, center.y + 0.1, center.z],
-      [center.x - 0.40, center.y + 0.25, center.z + 7.8]
+      [center.x - 0.25, center.y + 0.05, center.z],
+      [center.x - 0.25, center.y + 0.25, center.z + 8.4]
     );
   }
 
   focusColon() {
     const center = this.stomachBuilder
       ? this.stomachBuilder.getBaseCenter('large_intestine')
-      : new THREE.Vector3(0.0, 0.2, 0.0);
+      : new THREE.Vector3(0.0, -0.3, 0.0);
 
-    // Frame colon arch and its 5 exploded layers cleanly
     this._smoothMoveCameraTarget(
-      [center.x - 0.40, center.y + 0.15, center.z],
-      [center.x - 0.40, center.y + 0.30, center.z + 8.2]
+      [center.x - 0.25, center.y + 0.05, center.z],
+      [center.x - 0.25, center.y + 0.25, center.z + 10.6]
+    );
+  }
+
+  focusGallbladder() {
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('gallbladder_tree')
+      : new THREE.Vector3(-0.6, 0.3, 0.2);
+
+    this._smoothMoveCameraTarget(
+      [center.x - 0.15, center.y + 0.05, center.z],
+      [center.x - 0.15, center.y + 0.18, center.z + 4.4]
+    );
+  }
+
+  focusEsophagus() {
+    const center = this.stomachBuilder
+      ? this.stomachBuilder.getBaseCenter('esophagus')
+      : new THREE.Vector3(0.1, 2.2, -0.2);
+
+    this._smoothMoveCameraTarget(
+      [center.x - 0.15, center.y, center.z],
+      [center.x - 0.15, center.y + 0.15, center.z + 8.2]
+    );
+  }
+
+  focusLiver() {
+    const meshes = this.clickableMeshes.filter(m => m.userData.organId === 'liver');
+    const bbox = new THREE.Box3();
+    meshes.forEach(m => {
+      m.updateWorldMatrix(true, false);
+      bbox.expandByObject(m);
+    });
+    const center = meshes.length > 0 ? bbox.getCenter(new THREE.Vector3()) : new THREE.Vector3(-0.6, 0.8, 0.0);
+
+    this._smoothMoveCameraTarget(
+      [center.x - 0.25, center.y + 0.05, center.z],
+      [center.x - 0.25, center.y + 0.25, center.z + 9.2]
     );
   }
 

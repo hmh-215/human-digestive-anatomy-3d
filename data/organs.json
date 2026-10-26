@@ -141,8 +141,58 @@
         { "id": "biliary_choledochus", "name": "Ống mật chủ (Common Bile Duct)", "explodeVector": [-0.1, -0.3, -0.1] },
         { "id": "biliary_sphincter_oddi", "name": "Bóng Vater & Cơ vòng Oddi", "explodeVector": [-0.2, -0.5, 0] }
       ],
+      "wallLayers": [
+        {
+          "id": "gb_serosa_fibrous",
+          "name": "Lớp 1: Thanh Mạc & Mô Xơ Quanh Cơ (Serosa & Perimuscular Fibrous Tissue)",
+          "latinName": "Tunica Serosa & Tela Subserosa Fibrosa",
+          "layerOrder": 1,
+          "thickness": "0.3 - 0.6 mm",
+          "color": "#65a30d",
+          "description": "Lớp vỏ ngoài cùng bao bọc túi mật. Mặt dưới và đáy túi mật được phủ bởi lá thanh mạc phúc mạc (Serosa) liên tục với phúc mạc mặt tạng của gan; mặt trên dính trực tiếp vào hố túi mật của gan bằng mô liên kết xơ quanh cơ (Perimuscular fibrous connective tissue).",
+          "histology": "Lớp biểu mô vảy đơn (Mesothelium) ở mặt tự do và lớp mô liên kết đặc giàu sợi collagen, sợi chun đan chéo cùng các nhánh mạch máu, bạch huyết và thần kinh.",
+          "physiology": "Bảo vệ cơ học cho túi mật khi căng đầy dịch mật, đồng thời neo giữ chắc chắn thân túi mật vào giường túi mật ở mặt dưới gan.",
+          "clinicalNotes": "Trong phẫu thuật cắt túi mật nội soi, phẫu tích đúng lớp mô xơ quanh cơ ở giường túi mật giúp bóc tách túi mật khỏi nhu mô gan an toàn, hạn chế chảy máu giường túi mật."
+        },
+        {
+          "id": "gb_muscular_layer",
+          "name": "Lớp 2: Lớp Cơ Trơn Đan Chéo (Muscular Layer / Tunica Muscularis)",
+          "latinName": "Tunica Muscularis Vesicae Biliaris",
+          "layerOrder": 2,
+          "thickness": "0.5 - 1.0 mm",
+          "color": "#be123c",
+          "description": "Lớp cơ trơn mỏng nhưng dẻo dai của thành túi mật, không phân tách thành các tầng riêng biệt rõ rệt như ống tiêu hóa mà gồm các bó sợi cơ trơn chạy dọc, chạy vòng và chạy chéo đan lưới vào nhau.",
+          "histology": "Các bó tế bào cơ trơn đan chéo đa hướng, xen giữa các bó cơ là mạng lưới sợi chun (elastic fibers) và sợi collagen phong phú.",
+          "physiology": "Khi thức ăn có mỡ xuống tá tràng kích thích tiết hormone Cholecystokinin (CCK) và thần kinh lang thang (CN X), lớp cơ này co bóp đồng bộ làm giảm thể tích túi mật, tống dịch mật cô đặc qua ống túi mật vào ống mật chủ.",
+          "clinicalNotes": "Viêm túi mật mạn tính do sỏi làm lớp cơ trơn phì đại dày lên kèm hiện tượng thoát vị niêm mạc xuyên qua kẽ cơ (Xoang Rokitansky-Aschoff)."
+        },
+        {
+          "id": "gb_lamina_propria",
+          "name": "Lớp 3: Lớp Đệm Dưới Niêm Mạc (Lamina Propria / Submucosa)",
+          "latinName": "Lamina Propria Mucosae",
+          "layerOrder": 3,
+          "thickness": "0.4 - 0.8 mm",
+          "color": "#fda4af",
+          "description": "Lớp mô liên kết thưa nằm ngay dưới biểu mô. Điểm đặc trưng mô học của túi mật là KHÔNG có lớp cơ niêm (Muscularis mucosae), nên lớp đệm tiếp giáp trực tiếp với lớp cơ trơn.",
+          "histology": "Mô liên kết lỏng lẻo giàu sợi chun, mao mạch có cửa sổ (fenestrated capillaries) và tiểu tĩnh mạch dày đặc phục vụ dẫn lưu lượng lớn nước tái hấp thu từ dịch mật. Ở cổ túi mật có các tuyến tiết nhầy ống - túi.",
+          "physiology": "Đóng vai trò trung chuyển nước và điện giải (Na+, Cl-, HCO3-) được biểu mô bơm từ lòng túi mật vào hệ mao mạch máu để cô đặc dịch mật.",
+          "clinicalNotes": "Khi sỏi kẹt ở cổ túi mật, muối mật ứ đọng gây kích ứng hóa học và phù nề xung huyết dữ dội tại lớp đệm, khởi phát cơn viêm túi mật cấp tính."
+        },
+        {
+          "id": "gb_epithelium_mucosa",
+          "name": "Lớp 4: Niêm Mạc Biểu Mô Trụ Đơn Dạng Tổ Ong (Epithelium / Mucosa)",
+          "latinName": "Tunica Mucosa & Plicae Tunicae Mucosae",
+          "layerOrder": 4,
+          "thickness": "0.6 - 1.2 mm",
+          "color": "#881337",
+          "description": "Lớp trong cùng tiếp xúc trực tiếp với dịch mật. Khi túi mật rỗng, niêm mạc xếp thành vô số nếp gấp cao đan chéo nhau tạo hình mạng lưới tổ ong (Honeycomb appearance) đặc trưng.",
+          "histology": "Biểu mô trụ đơn cao (Simple columnar epithelium) có vi nhung mao (Microvilli) dày đặc ở cực ngọn, giàu ti thể và bơm Na+/K+-ATPase ở màng bên để vận chuyển tích cực nước và ion.",
+          "physiology": "Hấp thu tới 90% lượng nước trong dịch mật gan, giúp cô đặc muối mật, cholesterol và bilirubin lên gấp 5 - 10 lần trong dung tích chỉ 30 - 50 ml.",
+          "clinicalNotes": "Tình trạng ứ đọng cholesterol quá bão hòa tại bề mặt các hốc niêm mạc tạo thành tinh thể cholesterol lắng đọng trên biểu mô (Bệnh túi mật hình quả dâu tây - Cholesterolosis) và hình thành sỏi túi mật."
+        }
+      ],
       "location": "Túi mật hình quả lê dài 7 - 10 cm, dung tích 30 - 50 ml, nằm trong hố túi mật ở mặt dưới gan. Ống mật chủ dài 7 - 8 cm chạy trong cuống gan sau D1 tá tràng và đầu tụy đổ vào D2 tá tràng.",
-      "structure": "Túi mật gồm 4 phần: Đáy (nhô ra khỏi bờ dưới gan tại điểm giao giữa bờ ngoài cơ thẳng bụng phải và bờ sườn phải - Điểm Murphy), Thân, Phễu (nơi hay kẹt sỏi tạo túi Hartmann) và Cổ. Ống túi mật dài 3 - 4 cm có nếp van xoắn Heister. Đường mật ngoài gan: Ống gan phải + Ống gan trái $\\rightarrow$ Ống gan chung. Ống gan chung + Ống túi mật $\\rightarrow$ Ống mật chủ (Ductus choledochus). Ống mật chủ hợp lưu với Ống tụy chính tạo thành Bóng gan tụy (Ampulla of Vater), bao quanh bởi Cơ thắt Oddi tại Nhú tá lớn.",
+      "structure": "Túi mật gồm 4 phần: Đáy (nhô ra khỏi bờ dưới gan tại điểm giao giữa bờ ngoài cơ thẳng bụng phải và bờ sườn phải - Điểm Murphy), Thân, Phễu (nơi hay kẹt sỏi tạo túi Hartmann) và Cổ. Ống túi mật dài 3 - 4 cm có nếp van xoắn Heister. Đường mật ngoài gan: Ống gan phải + Ống gan trái → Ống gan chung. Ống gan chung + Ống túi mật → Ống mật chủ (Ductus choledochus). Ống mật chủ hợp lưu với Ống tụy chính tạo thành Bóng gan tụy (Ampulla of Vater), bao quanh bởi Cơ thắt Oddi tại Nhú tá lớn.",
       "vasculature": "Động mạch túi mật thường tách từ nhánh phải của ĐM gan riêng trong Tam giác gan mật Calot (giới hạn bởi Ống túi mật, Ống gan chung và Bờ dưới gan). Máu tĩnh mạch đổ về tĩnh mạch cửa.",
       "physiology": "Dự trữ và cô đặc dịch mật gấp 5 - 10 lần (hấp thu bớt nước và ion). Khi thức ăn giàu chất béo vào tá tràng, tá tràng tiết hormone Cholecystokinin (CCK) kích thích túi mật co bóp tống mật vào tá tràng để nhũ hóa lipid và tạo micelle giúp hấp thu vitamin tan trong dầu (A, D, E, K).",
       "clinicalNotes": "Sỏi túi mật rất phổ biến. Sỏi kẹt ở cổ túi mật gây cơn đau quặn mật và viêm túi mật cấp (dấu hiệu Murphy dương tính). Tam giác Calot là mốc phẫu thuật sống còn trong cắt túi mật nội soi để phẫu tích an toàn ĐM túi mật và tránh cắt nhầm vào Ống mật chủ. Sỏi ống mật chủ rơi xuống kẹt tại cơ vòng Oddi gây Tam chứng Charcot (Đau - Sốt - Vàng da) và Viêm tụy cấp do trào ngược dịch mật vào ống tụy."
@@ -430,7 +480,69 @@
       "system": "hollow_gi",
       "layer": 1,
       "color": "#e2e8f0",
-      "canLocalExplode": false,
+      "canLocalExplode": true,
+      "wallLayers": [
+        {
+          "id": "eso_adventitia",
+          "name": "Lớp 1: Áo Ngoài / Ngoại Mạc & Thanh Mạc (Tunica Adventitia & Serosa)",
+          "latinName": "Tunica Adventitia (Thoracica) & Tunica Serosa (Abdominalis)",
+          "layerOrder": 1,
+          "thickness": "0.4 - 0.7 mm",
+          "color": "#f9a8d4",
+          "description": "Lớp bao ngoài cùng của thực quản. Ở đoạn cổ và đoạn ngực (chiếm 90% chiều dài), thực quản không có thanh mạc mà được bao bọc bởi mô liên kết thưa (Ngoại mạc / Adventitia) gắn kết lỏng lẻo với khí quản, động mạch chủ và trung thất. Chỉ có đoạn bụng ngắn (2-3 cm dưới cơ hoành) mới được phủ bởi lá thanh mạc phúc mạc (Serosa).",
+          "histology": "Mô liên kết sợi giàu sợi chun, sợi collagen, mạch máu, hạch bạch huyết và mạng lưới thần kinh thực quản (Đám rối thực quản của dây thần kinh lang thang CN X).",
+          "physiology": "Cho phép thực quản trượt và giãn nở linh hoạt trong trung thất khi nuốt viên thức ăn lớn hoặc khi lồng ngực hô hấp.",
+          "clinicalNotes": "Do đoạn ngực chỉ có lớp ngoại mạc lỏng lẻo (không có thanh mạc che chắn), ung thư thực quản rất dễ xâm lấn sớm ra các tạng trung thất (khí quản, động mạch chủ), và khâu nối thực quản khó liền hơn dạ dày - ruột."
+        },
+        {
+          "id": "eso_muscle_longitudinal",
+          "name": "Lớp 2A: Thớ Cơ Dọc Ngoài (Stratum Longitudinale)",
+          "latinName": "Stratum Longitudinale Tunicae Muscularis",
+          "layerOrder": 2,
+          "thickness": "0.8 - 1.4 mm",
+          "color": "#e11d48",
+          "description": "Lớp cơ dày nằm phía ngoài, các thớ cơ chạy dọc suốt chiều dài ống thực quản từ bờ dưới sụn nhẫn (C6) xuống nối tiếp với lớp cơ dọc của tâm vị dạ dày.",
+          "histology": "Có sự chuyển tiếp mô học đặc biệt theo 3 đoạn: 1/3 trên hoàn toàn là Cơ vân (Striated muscle - nuốt có ý thức); 1/3 giữa là sự pha trộn cơ vân và cơ trơn; 1/3 dưới hoàn toàn là Cơ trơn (Smooth muscle - nhu động tự chủ).",
+          "physiology": "Co rút làm ngắn chiều dài đoạn thực quản ngay phía trước viên thức ăn (bolus), phối hợp nhịp nhàng với lớp cơ vòng tạo sóng nhu động nguyên phát.",
+          "clinicalNotes": "Bệnh xơ cứng bì toàn thể (Scleroderma) gây xơ hóa teo lớp cơ trơn ở 2/3 dưới thực quản, làm mất sóng nhu động và suy yếu cơ thắt dưới gây trào ngược nặng."
+        },
+        {
+          "id": "eso_muscle_circular",
+          "name": "Lớp 2B: Thớ Cơ Vòng Trong (Stratum Circulare & Sphincters)",
+          "latinName": "Stratum Circulare Tunicae Muscularis",
+          "layerOrder": 3,
+          "thickness": "1.0 - 1.8 mm",
+          "color": "#9f1239",
+          "description": "Lớp cơ nằm bên trong chạy vòng khép kín quanh lòng thực quản. Ở hai đầu thực quản, lớp cơ vòng dày lên tạo thành Cơ thắt thực quản trên (UES - cơ nhẫn hầu) và Cơ thắt thực quản dưới (LES - tại lỗ cơ hoành / tâm vị).",
+          "histology": "Các vòng sợi cơ đồng tâm; nằm kẹp giữa lớp cơ dọc ngoài và lớp cơ vòng trong là Đám rối thần kinh cơ Auerbach điều hòa phản xạ giãn cơ tiếp nhận thức ăn.",
+          "physiology": "Co thắt tuần tự từ trên xuống dưới đẩy viên thức ăn xuống dạ dày trong 5 - 9 giây. Cơ thắt thực quản dưới (LES) luôn duy trì áp lực nghỉ 15 - 30 mmHg như van một chiều ngăn dịch vị axit trào ngược.",
+          "clinicalNotes": "Co thắt tâm vị (Achalasia): Thoái hóa tế bào hạch đám rối Auerbach làm cơ thắt thực quản dưới (LES) không giãn ra được khi nuốt, gây ứ đọng thức ăn và giãn to thực quản phía trên (hình mỏ chim trên X-quang)."
+        },
+        {
+          "id": "eso_submucosa",
+          "name": "Lớp 3: Tầng Dưới Niêm Mạc & Đám Rối Tĩnh Mạch (Tela Submucosa)",
+          "latinName": "Tela Submucosa & Glandulae Oesophageae",
+          "layerOrder": 4,
+          "thickness": "0.8 - 1.5 mm",
+          "color": "#fde68a",
+          "description": "Tầng mô liên kết giàu sợi chun và collagen bền chắc nhất của thành thực quản, chứa các Tuyến thực quản chính thức (tiết nhầy) và mạng lưới tĩnh mạch dưới niêm mạc dày đặc (đặc biệt ở 1/3 dưới).",
+          "histology": "Mô liên kết chứa các tuyến ống - túi phân nhánh tiết chất nhầy bôi trơn, đám rối thần kinh Meissner và vòng nối tĩnh mạch giữa hệ tĩnh mạch cửa (qua TM vị trái) và hệ tĩnh mạch chủ (qua TM đơn).",
+          "physiology": "Cùng với lớp niêm mạc tạo thành các nếp gấp dọc lớn khi thực quản rỗng; khi nuốt, tầng dưới niêm mạc đàn hồi giãn phẳng giúp lòng thực quản mở rộng tới 2 - 3 cm.",
+          "clinicalNotes": "Trong bệnh xơ gan tăng áp lực tĩnh mạch cửa, máu từ tĩnh mạch cửa dồn ngược lên đám rối tĩnh mạch dưới niêm mạc 1/3 dưới thực quản gây Giãn tĩnh mạch thực quản (Esophageal varices) — khi vỡ gây xuất huyết tiêu hóa trên tối cấp."
+        },
+        {
+          "id": "eso_mucosa",
+          "name": "Lớp 4: Tầng Niêm Mạc Biểu Mô Lát Tầng (Tunica Mucosa)",
+          "latinName": "Tunica Mucosa & Epithelium Stratificatum Squamosum",
+          "layerOrder": 5,
+          "thickness": "0.5 - 0.8 mm",
+          "color": "#fb7185",
+          "description": "Lớp lót trong cùng màu hồng nhạt trơn láng, xếp thành các nếp gấp dọc sâu dọc theo chiều dài lòng thực quản. Tại chỗ nối thực quản - dạ dày có đường ranh giới hình chữ Z (Đường Z / Ora serrata) chuyển đột ngột sang biểu mô trụ đơn đỏ sẫm của dạ dày.",
+          "histology": "Biểu mô lát tầng không sừng hóa (25 - 30 hàng tế bào vảy chịu ma sát cao), lớp đệm và lớp cơ niêm (Muscularis mucosae) rất dày chạy dọc.",
+          "physiology": "Bảo vệ thành thực quản khỏi tổn thương cơ học và nhiệt độ do thức ăn thô cứng đi qua với tốc độ cao.",
+          "clinicalNotes": "Trào ngược dạ dày - thực quản (GERD) mạn tính làm axit dịch vị ăn mòn biểu mô lát tầng ở đoạn dưới, buộc niêm mạc phải chuyển sản thành biểu mô trụ kiểu ruột (Thực quản Barrett) — yếu tố nguy cơ chính dẫn tới Ung thư biểu mô tuyến thực quản."
+        }
+      ],
       "location": "Ống cơ dài khoảng 25 cm nối tiếp hầu (tương ứng bờ dưới sụn nhẫn C6) chạy qua trung thất sau và chui qua cơ hoành (ngang T10) đổ vào tâm vị dạ dày (T11).",
       "structure": "Chia làm 3 đoạn: Đoạn cổ (dài 5 cm, sau khí quản), Đoạn ngực (dài 16-18 cm, trong trung thất sau), Đoạn bụng (ngắn 2-3 cm, dưới cơ hoành). Có 3 chỗ hẹp sinh lý quan trọng: 1. Chỗ bắt đầu nối với hầu (cách cung răng 15 cm); 2. Chỗ bắt chéo cung ĐM chủ và phế quản gốc trái (cách cung răng 25 cm); 3. Chỗ chui qua lỗ cơ hoành (cách cung răng 40 cm). Thành gồm lớp cơ (1/3 trên cơ vân, 1/3 giữa hỗn hợp, 1/3 dưới cơ trơn) và lớp niêm mạc lót biểu mô lát tầng không sừng hóa.",
       "vasculature": "Đoạn cổ nhận máu từ ĐM giáp dưới; Đoạn ngực nhận từ các nhánh phế quản và nhánh thực quản của ĐM chủ ngực; Đoạn bụng nhận từ ĐM vị trái và ĐM hoành dưới. Tĩnh mạch thực quản đổ về cả TM đơn (hệ chủ) và TM vị trái (hệ cửa) tạo nên vòng nối cửa - chủ ngực bụng.",
