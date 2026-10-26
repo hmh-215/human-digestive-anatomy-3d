@@ -367,6 +367,13 @@ export class ExplosionManager {
     }
   }
 
+  stopAnimation() {
+    if (this._animFrameId) {
+      cancelAnimationFrame(this._animFrameId);
+      this._animFrameId = null;
+    }
+  }
+
   /**
    * Smoothly animates explosion factor from current value to target (0 or 1).
    */

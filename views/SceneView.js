@@ -413,29 +413,36 @@ export class SceneView {
     this.torsoRoot = new THREE.Group();
     this.torsoRoot.name = 'Torso_Abdominal_Wall_Root';
     this.torsoRoot.visible = (this.appVM.state.activeMode === 'pathology');
-
-    this.torsoSkinMaterial = new THREE.MeshStandardMaterial({
-      color: 0xd4a373,
-      roughness: 0.42,
-      metalness: 0.06,
-      transparent: true,
-      opacity: this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.65,
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
+    this.torsoMuscleMeshes = [];
 
     gltfLoader.load(
       './assets/models/TorsoAbdominalWall.glb',
       (gltf) => {
+        const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.65;
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
-            child.material = this.torsoSkinMaterial;
+            const info = this._getTorsoMuscleInfo(child.name);
+            const mat = new THREE.MeshStandardMaterial({
+              color: info.color,
+              roughness: 0.44,
+              metalness: 0.05,
+              transparent: true,
+              opacity: curOpacity,
+              side: THREE.DoubleSide,
+              depthWrite: false
+            });
+            child.material = mat;
             child.castShadow = true;
             child.receiveShadow = true;
+            child.userData = {
+              isTorsoMuscle: true,
+              muscleName: child.name,
+              info
+            };
+            this.torsoMuscleMeshes.push(child);
           }
         });
         this.torsoRoot.add(gltf.scene);
-        this._createDorsalBackMesh();
         this.torsoRoot.scale.set(10.0, 10.0, 10.0);
         if (this.masterRoot) {
           this.masterRoot.add(this.torsoRoot);
@@ -453,99 +460,206 @@ export class SceneView {
   }
 
   /**
-   * Generates a continuous parametric dorsal back wall mesh (Mặt lưng phần thân trên).
-   * Spans Y from pelvis/waist (8.85) to upper thorax/neck (14.55),
-   * seamlessly joining lateral borders of External Obliques & Serratus Anterior,
-   * with realistic spinal furrow, erector spinae ridges, and left costovertebral angle for Mayo-Robson sign.
+   * Anatomical PBR styling and clinical annotations for individual muscles
+   * extracted directly from the official Z-Anatomy muscular system.
    */
-  _createDorsalBackMesh() {
-    if (!this.torsoRoot) return;
-    const nx = 42;
-    const ny = 42;
-    const positions = [];
-    const uvs = [];
-    const indices = [];
+  _getTorsoMuscleInfo(rawName) {
+    const low = rawName.toLowerCase();
 
-    const yMin = 8.85;
-    const yMax = 14.55;
-
-    for (let j = 0; j <= ny; j++) {
-      const v = j / ny;
-      const y = yMin + v * (yMax - yMin);
-      const vNorm = (y - yMin) / (yMax - yMin);
-      const halfW = 1.40 + 0.45 * Math.pow(vNorm, 1.4);
-
-      for (let i = 0; i <= nx; i++) {
-        const u = (i / nx) * 2.0 - 1.0; // [-1.0, 1.0]
-        const x = u * halfW;
-
-        // Base posterior depth profile along the spine (Th1 to L5)
-        const zBase = -0.78 - 0.27 * vNorm - 0.08 * Math.sin(Math.PI * vNorm);
-        // Posterior median furrow (Rãnh gai sống)
-        const spineFurrow = 0.06 * Math.exp(-Math.pow(x / 0.16, 2));
-        const absX = Math.abs(x);
-        // Erector spinae muscular columns (Khối cơ dựng gai hai bên cột sống)
-        const erectorSpinae = -0.09 * Math.exp(-Math.pow((absX - 0.38) / 0.22, 2)) * (1.0 - 0.3 * vNorm);
-
-        // Upper thoracic scapular fullness (Vùng dưới vai & liên bả vai)
-        const scapProgress = Math.max(0, Math.min(1, (y - 12.0) / 2.2));
-        const scapula = (y > 12.0)
-          ? -0.07 * Math.exp(-Math.pow((absX - 0.85) / 0.35, 2)) * Math.sin(Math.PI * scapProgress)
-          : 0;
-
-        // Flank curvature meeting anterior abdominal oblique muscles at lateral borders
-        const flankWrap = 0.48 * Math.pow(Math.abs(u), 2.6);
-
-        const z = zBase + spineFurrow + erectorSpinae + scapula + flankWrap;
-
-        positions.push(x, y, z);
-        uvs.push(i / nx, j / ny);
-      }
+    // 1. Erector spinae (Khối cơ dựng gai lưng - Mốc Mayo-Robson)
+    if (low.includes('iliocostalis')) {
+      return {
+        color: 0xc92a2a,
+        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
+        badge: 'Mốc Mayo-Robson',
+        title: low.includes('lumborum')
+          ? 'Cơ Chậu Sườn Thắt Lưng (Iliocostalis Lumborum)'
+          : 'Cơ Chậu Sườn Ngực (Iliocostalis Thoracis)',
+        subtitle: 'Bờ ngoài khối cơ dựng gai lưng trái cắt bờ dưới xương sườn 12 tạo thành Điểm Mayo-Robson (đau trong Viêm tụy cấp).'
+      };
+    }
+    if (low.includes('longissimus')) {
+      return {
+        color: 0xb02a37,
+        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
+        badge: 'Erector Spinae',
+        title: 'Cơ Dài Ngực (Longissimus Thoracis)',
+        subtitle: 'Dải cơ trung tâm khỏe nhất của khối cơ dựng gai chạy dọc suốt cột sống ngực và thắt lưng.'
+      };
+    }
+    if (low.includes('spinalis')) {
+      return {
+        color: 0x9b1c2e,
+        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
+        badge: 'Cạnh Gai Sống',
+        title: 'Cơ Gai Ngực (Spinalis Thoracis)',
+        subtitle: 'Dải cơ trong cùng của khối dựng gai, bám sát các mỏm gai đốt sống ngực.'
+      };
     }
 
-    for (let j = 0; j < ny; j++) {
-      for (let i = 0; i < nx; i++) {
-        const a = j * (nx + 1) + i;
-        const b = (j + 1) * (nx + 1) + i;
-        const c = (j + 1) * (nx + 1) + (i + 1);
-        const d = j * (nx + 1) + (i + 1);
-        // Faces outward toward -Z (posterior)
-        indices.push(a, b, d);
-        indices.push(d, b, c);
-      }
+    // 2. Thành bụng sau & sâu (Khoang sau phúc mạc)
+    if (low.includes('quadratus_lumborum')) {
+      return {
+        color: 0x721c47,
+        tag: 'THÀNH BỤNG SAU • KHOANG SAU PHÚC MẠC',
+        badge: 'Sàn Sau Tụy & Thận',
+        title: 'Cơ Vuông Thắt Lưng (Quadratus Lumborum)',
+        subtitle: 'Cơ dẹt hình tứ giác nối mào chậu lên sườn 12, tạo sàn thành sau ổ bụng ngay sau tụy và thận.'
+      };
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    geo.setIndex(indices);
-    geo.computeVertexNormals();
+    // 3. Cơ lưng rộng (Latissimus dorsi)
+    if (low.includes('latissimus')) {
+      return {
+        color: 0x842029,
+        tag: 'CƠ MẶT LƯNG NÔNG',
+        badge: 'Cơ Lưng Rộng',
+        title: 'Cơ Lưng Rộng (Latissimus Dorsi)',
+        subtitle: 'Cơ dẹt rộng nhất cơ thể, bao phủ toàn bộ vùng lưng dưới và mạn sườn thắt lưng.'
+      };
+    }
 
-    const backMesh = new THREE.Mesh(geo, this.torsoSkinMaterial);
-    backMesh.name = 'Dorsal_Back_Wall_Mesh';
-    backMesh.castShadow = true;
-    backMesh.receiveShadow = true;
-    this.torsoRoot.add(backMesh);
+    // 4. Cơ thang (Trapezius)
+    if (low.includes('trapezius')) {
+      let part = 'Cơ Thang';
+      if (low.includes('ascending')) part = 'Cơ Thang (Phần Lên)';
+      else if (low.includes('transverse')) part = 'Cơ Thang (Phần Ngang)';
+      else if (low.includes('descending')) part = 'Cơ Thang (Phần Xuống)';
+      return {
+        color: 0xa61e4d,
+        tag: 'CƠ MẶT LƯNG NÔNG',
+        badge: 'Vùng Cổ - Lưng',
+        title: part + ' (Trapezius)',
+        subtitle: 'Cơ nông hình thang phủ rộng từ xương chẩm, gáy xuống tận đốt sống ngực 12 (Th12).'
+      };
+    }
+
+    // 5. Cơ răng sau (Serratus posterior)
+    if (low.includes('serratus_posterior')) {
+      return {
+        color: 0xd9480f,
+        tag: 'CƠ MẶT LƯNG TRUNG GIAN',
+        badge: 'Sườn 9-12',
+        title: low.includes('inferior')
+          ? 'Cơ Răng Sau Dưới (Serratus Posterior Inferior)'
+          : 'Cơ Răng Sau Trên (Serratus Posterior Superior)',
+        subtitle: 'Cơ răng sau dưới bám vào 4 xương sườn cuối (9-12), nằm ngay trên diện chiếu của góc sườn cột sống.'
+      };
+    }
+
+    // 6. Cơ trám & cơ nâng vai (Rhomboids & Levator scapulae)
+    if (low.includes('rhomboid')) {
+      return {
+        color: 0x9c36b5,
+        tag: 'CƠ MẶT LƯNG TRUNG GIAN',
+        badge: 'Liên Bả Vai',
+        title: low.includes('minor') ? 'Cơ Trám Bé (Rhomboid Minor)' : 'Cơ Trám Lớn (Rhomboid Major)',
+        subtitle: 'Kéo xương bả vai vào trong và lên trên về phía cột sống ngực.'
+      };
+    }
+    if (low.includes('levator_scapulae')) {
+      return {
+        color: 0xae3ec9,
+        tag: 'CƠ VÙNG CỔ - VAI SAU',
+        badge: 'Nâng Bả Vai',
+        title: 'Cơ Nâng Vai (Levator Scapulae)',
+        subtitle: 'Nối từ các mỏm ngang đốt sống cổ trên xuống góc trên xương bả vai.'
+      };
+    }
+
+    // 7. Cơ bả vai sau (Infraspinatus & Teres major)
+    if (low.includes('infraspinatus') || low.includes('teres')) {
+      return {
+        color: 0x862e9c,
+        tag: 'CƠ VÙNG VAI SAU',
+        badge: 'Đai Khớp Vai',
+        title: low.includes('infraspinatus') ? 'Cơ Dưới Gai (Infraspinatus)' : 'Cơ Tròn Lớn (Teres Major)',
+        subtitle: 'Cơ chóp xoay và đai vai bọc mặt sau xương bả vai.'
+      };
+    }
+
+    // 8. Cân mạc & Gân xơ
+    if (low.includes('fascia') || low.includes('linea_alba') || low.includes('ligament')) {
+      return {
+        color: 0xdbe4ee,
+        tag: 'MÀNG CÂN & GÂN XƠ NÔNG',
+        badge: 'Mô Xơ Trắng',
+        title: low.includes('fascia')
+          ? 'Cân Ngực Thắt Lưng (Thoracolumbar Fascia)'
+          : (low.includes('linea_alba') ? 'Đường Trắng Giữa Bụng (Linea Alba)' : 'Dây Chằng Bẹn (Inguuid Ligament)'),
+        subtitle: 'Lớp cân xơ dai chắc, cố định thành ngực bụng và bao bọc các khối cơ.'
+      };
+    }
+
+    // 9. Thành bụng trước
+    if (low.includes('rectus_abdominis')) {
+      return {
+        color: 0xb02a37,
+        tag: 'THÀNH BỤNG TRƯỚC',
+        badge: 'Cơ Thẳng Bụng',
+        title: 'Cơ Thẳng Bụng (Rectus Abdominis)',
+        subtitle: 'Bờ ngoài cơ thẳng bụng là mốc xác định điểm túi mật Murphy và điểm ruột thừa McBurney.'
+      };
+    }
+    if (low.includes('oblique') || low.includes('transversus')) {
+      return {
+        color: 0x902b35,
+        tag: 'THÀNH BỤNG BÊN & TRƯỚC',
+        badge: 'Cơ Thành Bụng',
+        title: low.includes('transversus')
+          ? 'Cơ Ngang Bụng (Transversus Abdominis)'
+          : (low.includes('external') ? 'Cơ Chéo Bụng Ngoài (External Oblique)' : 'Cơ Chéo Bụng Trong (Internal Oblique)'),
+        subtitle: 'Bao bọc thành bên ổ bụng, bảo vệ các tạng tiêu hóa bên trong.'
+      };
+    }
+    if (low.includes('pectoralis')) {
+      return {
+        color: 0x7c2438,
+        tag: 'THÀNH NGỰC TRƯỚC',
+        badge: 'Cơ Ngực Lớn',
+        title: 'Cơ Ngực Lớn (Pectoralis Major)',
+        subtitle: 'Cơ dày hình quạt phủ mặt trước lồng ngực.'
+      };
+    }
+    if (low.includes('serratus_anterior')) {
+      return {
+        color: 0x9a3442,
+        tag: 'THÀNH NGỰC BÊN',
+        badge: 'Cơ Răng Trước',
+        title: 'Cơ Răng Trước (Serratus Anterior)',
+        subtitle: 'Các búp cơ hình răng cưa ôm lấy các xương sườn bên sườn.'
+      };
+    }
+
+    // Default muscle tone
+    return {
+      color: 0xa83244,
+      tag: 'CƠ THÂN MÌNH (Z-ANATOMY)',
+      badge: 'Cơ Bắp',
+      title: rawName.replace(/_/g, ' '),
+      subtitle: 'Mô cơ giải phẫu chuẩn Z-Anatomy.'
+    };
   }
 
   _updateTorsoSkinOpacity(opacity) {
-    if (!this.torsoSkinMaterial) return;
-    this.torsoSkinMaterial.opacity = opacity;
-    if (opacity <= 0.02) {
-      if (this.torsoRoot) this.torsoRoot.visible = false;
-    } else {
-      if (this.torsoRoot && this.appVM.state.activeMode === 'pathology') {
+    const isTransp = opacity < 0.98;
+    if (this.torsoMuscleMeshes) {
+      this.torsoMuscleMeshes.forEach(mesh => {
+        if (mesh.material) {
+          mesh.material.opacity = opacity;
+          mesh.material.transparent = isTransp;
+          mesh.material.depthWrite = !isTransp;
+          mesh.material.needsUpdate = true;
+        }
+      });
+    }
+    if (this.torsoRoot) {
+      if (opacity <= 0.02) {
+        this.torsoRoot.visible = false;
+      } else if (this.appVM.state.activeMode === 'pathology') {
         this.torsoRoot.visible = true;
       }
-      if (opacity >= 0.98) {
-        this.torsoSkinMaterial.transparent = false;
-        this.torsoSkinMaterial.depthWrite = true;
-      } else {
-        this.torsoSkinMaterial.transparent = true;
-        this.torsoSkinMaterial.depthWrite = false;
-      }
     }
-    this.torsoSkinMaterial.needsUpdate = true;
   }
 
   _buildClinicalLandmarks() {
@@ -774,6 +888,26 @@ export class SceneView {
           });
           return;
         }
+
+        // Also check if any torso or back muscle is hovered
+        if (this.torsoMuscleMeshes && this.torsoMuscleMeshes.length > 0) {
+          const muscleHits = this.raycaster.intersectObjects(this.torsoMuscleMeshes, false);
+          if (muscleHits.length > 0) {
+            const hitMuscle = muscleHits[0].object;
+            const info = hitMuscle.userData.info || this._getTorsoMuscleInfo(hitMuscle.name);
+            this.renderer.domElement.style.cursor = 'pointer';
+            this.hoverCallout.update({
+              x: screenX,
+              y: screenY,
+              tag: info.tag,
+              badge: info.badge,
+              title: info.title,
+              subtitle: info.subtitle,
+              color: '#' + info.color.toString(16).padStart(6, '0')
+            });
+            return;
+          }
+        }
       }
 
       const rawHits = this.raycaster.intersectObjects(this.clickableMeshes, true);
@@ -916,9 +1050,31 @@ export class SceneView {
     this.appVM.subscribe('activeMode', (mode) => {
       this.landmarksRoot.visible = (mode === 'pathology');
       if (mode === 'pathology') {
-        this._ensureTorsoLoaded();
-        this._syncExplosion();
+        if (this.explosionManager) {
+          this.explosionManager.stopAnimation();
+        }
+        this.dissectionVM.setExplodeFactor(0.0);
+        this.dissectionVM.setCutawayOpen(false);
+        this.dissectionVM.setState({
+          isIsolateMode: false,
+          visibleLayers: [1, 2, 3],
+          activeWallLayerId: null
+        });
+        this.sceneVM.selectOrgan(null);
+
+        // Force synchronous explosion update to factor 0.0 IMMEDIATELY
+        if (this.explosionManager) {
+          this.explosionManager.updateExplosion({
+            explodeFactor: 0.0,
+            selectedOrganId: null,
+            isCutawayOpen: false,
+            clickableMeshes: this.clickableMeshes,
+            stomachWallMeshes: this.stomachWallMeshes,
+            organLayersMap: this.stomachBuilder ? this.stomachBuilder.organLayersMap : null
+          });
+        }
         this._updateOrganVisuals(null);
+        this._ensureTorsoLoaded();
         this._smoothMoveCameraTarget([0.0, -0.15, 0.0], [0.0, 0.15, 9.8]);
       } else {
         if (this.torsoRoot) this.torsoRoot.visible = false;

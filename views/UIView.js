@@ -184,6 +184,19 @@ export class UIView {
     this.modePills.forEach((pill) => {
       pill.addEventListener('click', () => {
         const mode = pill.dataset.mode;
+        if (mode === 'pathology') {
+          if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView && window.__DIGESTIVE_APP__.sceneView.explosionManager) {
+            window.__DIGESTIVE_APP__.sceneView.explosionManager.stopAnimation();
+          }
+          this.dissectionVM.setExplodeFactor(0.0);
+          this.dissectionVM.setCutawayOpen(false);
+          this.dissectionVM.setState({
+            isIsolateMode: false,
+            visibleLayers: [1, 2, 3],
+            activeWallLayerId: null
+          });
+          this.sceneVM.selectOrgan(null);
+        }
         this.appVM.setMode(mode);
       });
     });
