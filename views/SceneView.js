@@ -418,7 +418,7 @@ export class SceneView {
     gltfLoader.load(
       './assets/models/TorsoAbdominalWall.glb',
       (gltf) => {
-        const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.65;
+        const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.50;
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
             const info = this._getTorsoMuscleInfo(child.name);
@@ -462,14 +462,21 @@ export class SceneView {
   /**
    * Anatomical PBR styling and clinical annotations for individual muscles
    * extracted directly from the official Z-Anatomy muscular system.
+   * Rendered in natural human skin tone (màu da) at 50% opacity.
    */
   _getTorsoMuscleInfo(rawName) {
     const low = rawName.toLowerCase();
 
+    // Natural skin tone palette (màu da tự nhiên)
+    const skinToneBase = 0xd4a373;      // Màu da chuẩn
+    const skinToneDeep = 0xcca17c;      // Màu da ấm sâu (khối cơ dựng gai, cơ thành sau)
+    const skinToneMedium = 0xd29d71;    // Màu da cơ trung gian
+    const skinToneFascia = 0xe6d1be;    // Màu cân gân xơ sáng nhẹ
+
     // 1. Erector spinae (Khối cơ dựng gai lưng - Mốc Mayo-Robson)
     if (low.includes('iliocostalis')) {
       return {
-        color: 0xc92a2a,
+        color: skinToneDeep,
         tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
         badge: 'Mốc Mayo-Robson',
         title: low.includes('lumborum')
@@ -480,7 +487,7 @@ export class SceneView {
     }
     if (low.includes('longissimus')) {
       return {
-        color: 0xb02a37,
+        color: skinToneDeep,
         tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
         badge: 'Erector Spinae',
         title: 'Cơ Dài Ngực (Longissimus Thoracis)',
@@ -489,7 +496,7 @@ export class SceneView {
     }
     if (low.includes('spinalis')) {
       return {
-        color: 0x9b1c2e,
+        color: skinToneDeep,
         tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
         badge: 'Cạnh Gai Sống',
         title: 'Cơ Gai Ngực (Spinalis Thoracis)',
@@ -500,7 +507,7 @@ export class SceneView {
     // 2. Thành bụng sau & sâu (Khoang sau phúc mạc)
     if (low.includes('quadratus_lumborum')) {
       return {
-        color: 0x721c47,
+        color: skinToneDeep,
         tag: 'THÀNH BỤNG SAU • KHOANG SAU PHÚC MẠC',
         badge: 'Sàn Sau Tụy & Thận',
         title: 'Cơ Vuông Thắt Lưng (Quadratus Lumborum)',
@@ -511,7 +518,7 @@ export class SceneView {
     // 3. Cơ lưng rộng (Latissimus dorsi)
     if (low.includes('latissimus')) {
       return {
-        color: 0x842029,
+        color: skinToneBase,
         tag: 'CƠ MẶT LƯNG NÔNG',
         badge: 'Cơ Lưng Rộng',
         title: 'Cơ Lưng Rộng (Latissimus Dorsi)',
@@ -526,7 +533,7 @@ export class SceneView {
       else if (low.includes('transverse')) part = 'Cơ Thang (Phần Ngang)';
       else if (low.includes('descending')) part = 'Cơ Thang (Phần Xuống)';
       return {
-        color: 0xa61e4d,
+        color: skinToneBase,
         tag: 'CƠ MẶT LƯNG NÔNG',
         badge: 'Vùng Cổ - Lưng',
         title: part + ' (Trapezius)',
@@ -537,7 +544,7 @@ export class SceneView {
     // 5. Cơ răng sau (Serratus posterior)
     if (low.includes('serratus_posterior')) {
       return {
-        color: 0xd9480f,
+        color: skinToneMedium,
         tag: 'CƠ MẶT LƯNG TRUNG GIAN',
         badge: 'Sườn 9-12',
         title: low.includes('inferior')
@@ -550,7 +557,7 @@ export class SceneView {
     // 6. Cơ trám & cơ nâng vai (Rhomboids & Levator scapulae)
     if (low.includes('rhomboid')) {
       return {
-        color: 0x9c36b5,
+        color: skinToneMedium,
         tag: 'CƠ MẶT LƯNG TRUNG GIAN',
         badge: 'Liên Bả Vai',
         title: low.includes('minor') ? 'Cơ Trám Bé (Rhomboid Minor)' : 'Cơ Trám Lớn (Rhomboid Major)',
@@ -559,7 +566,7 @@ export class SceneView {
     }
     if (low.includes('levator_scapulae')) {
       return {
-        color: 0xae3ec9,
+        color: skinToneMedium,
         tag: 'CƠ VÙNG CỔ - VAI SAU',
         badge: 'Nâng Bả Vai',
         title: 'Cơ Nâng Vai (Levator Scapulae)',
@@ -570,7 +577,7 @@ export class SceneView {
     // 7. Cơ bả vai sau (Infraspinatus & Teres major)
     if (low.includes('infraspinatus') || low.includes('teres')) {
       return {
-        color: 0x862e9c,
+        color: skinToneMedium,
         tag: 'CƠ VÙNG VAI SAU',
         badge: 'Đai Khớp Vai',
         title: low.includes('infraspinatus') ? 'Cơ Dưới Gai (Infraspinatus)' : 'Cơ Tròn Lớn (Teres Major)',
@@ -581,12 +588,12 @@ export class SceneView {
     // 8. Cân mạc & Gân xơ
     if (low.includes('fascia') || low.includes('linea_alba') || low.includes('ligament')) {
       return {
-        color: 0xdbe4ee,
+        color: skinToneFascia,
         tag: 'MÀNG CÂN & GÂN XƠ NÔNG',
         badge: 'Mô Xơ Trắng',
         title: low.includes('fascia')
           ? 'Cân Ngực Thắt Lưng (Thoracolumbar Fascia)'
-          : (low.includes('linea_alba') ? 'Đường Trắng Giữa Bụng (Linea Alba)' : 'Dây Chằng Bẹn (Inguuid Ligament)'),
+          : (low.includes('linea_alba') ? 'Đường Trắng Giữa Bụng (Linea Alba)' : 'Dây Chằng Bẹn (Inguinal Ligament)'),
         subtitle: 'Lớp cân xơ dai chắc, cố định thành ngực bụng và bao bọc các khối cơ.'
       };
     }
@@ -594,7 +601,7 @@ export class SceneView {
     // 9. Thành bụng trước
     if (low.includes('rectus_abdominis')) {
       return {
-        color: 0xb02a37,
+        color: skinToneBase,
         tag: 'THÀNH BỤNG TRƯỚC',
         badge: 'Cơ Thẳng Bụng',
         title: 'Cơ Thẳng Bụng (Rectus Abdominis)',
@@ -603,7 +610,7 @@ export class SceneView {
     }
     if (low.includes('oblique') || low.includes('transversus')) {
       return {
-        color: 0x902b35,
+        color: skinToneBase,
         tag: 'THÀNH BỤNG BÊN & TRƯỚC',
         badge: 'Cơ Thành Bụng',
         title: low.includes('transversus')
@@ -614,7 +621,7 @@ export class SceneView {
     }
     if (low.includes('pectoralis')) {
       return {
-        color: 0x7c2438,
+        color: skinToneBase,
         tag: 'THÀNH NGỰC TRƯỚC',
         badge: 'Cơ Ngực Lớn',
         title: 'Cơ Ngực Lớn (Pectoralis Major)',
@@ -623,7 +630,7 @@ export class SceneView {
     }
     if (low.includes('serratus_anterior')) {
       return {
-        color: 0x9a3442,
+        color: skinToneMedium,
         tag: 'THÀNH NGỰC BÊN',
         badge: 'Cơ Răng Trước',
         title: 'Cơ Răng Trước (Serratus Anterior)',
@@ -631,9 +638,9 @@ export class SceneView {
       };
     }
 
-    // Default muscle tone
+    // Default skin tone
     return {
-      color: 0xa83244,
+      color: skinToneBase,
       tag: 'CƠ THÂN MÌNH (Z-ANATOMY)',
       badge: 'Cơ Bắp',
       title: rawName.replace(/_/g, ' '),

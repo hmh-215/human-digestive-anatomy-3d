@@ -16,7 +16,7 @@ export class DissectionViewModel extends Observable {
       isIsolateMode: false,
       isXRayMode: false,
       isCutawayOpen: false,
-      torsoSkinOpacity: 0.65,
+      torsoSkinOpacity: 0.50,
       stomachWallLayers: {
         stomach_serosa: true,
         stomach_muscle_longitudinal: true,
