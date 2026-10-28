@@ -1139,3 +1139,104 @@ input[type="range"]::-webkit-slider-thumb:hover {
   flex-wrap: wrap;
   gap: 5px;
 }
+
+/* ========================================================
+   COMPACT DISPLAY MODE TOGGLE SWITCH (MÔ HỌC <-> PHÂN VÙNG)
+   ======================================================== */
+.organ-display-mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 5px 12px;
+  margin-bottom: 6px;
+}
+
+.mode-toggle-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.mode-toggle-text:hover {
+  color: var(--text-main);
+}
+
+.mode-toggle-text.active {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+#label-mode-layers.active {
+  color: #0284c7;
+}
+
+#label-mode-regions.active {
+  color: #15803d;
+}
+
+/* iOS-Style Toggle Switch (Matching Green User Reference) */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ios-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ios-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.ios-slider::before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Checked state: Vibrant Green matching user photo */
+.ios-switch input:checked + .ios-slider {
+  background-color: #15803d;
+}
+
+.ios-switch input:checked + .ios-slider::before {
+  transform: translateX(20px);
+}
+
+[data-theme="dark"] .ios-slider {
+  background-color: #475569;
+}
+
+[data-theme="dark"] .ios-switch input:checked + .ios-slider {
+  background-color: #16a34a;
+}

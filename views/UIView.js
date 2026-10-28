@@ -36,8 +36,9 @@ export class UIView {
     this.cutawayBtn = document.getElementById('btn-stomach-cutaway');
     this.isolateBtn = document.getElementById('btn-isolate');
     this.xrayBtn = document.getElementById('btn-xray');
-    this.btnModeLayers = document.getElementById('btn-mode-layers');
-    this.btnModeRegions = document.getElementById('btn-mode-regions');
+    this.toggleDisplayMode = document.getElementById('toggle-display-mode');
+    this.labelModeLayers = document.getElementById('label-mode-layers');
+    this.labelModeRegions = document.getElementById('label-mode-regions');
     this.resetCameraBtn = document.getElementById('btn-reset-camera');
     this.themeToggleBtn = document.getElementById('btn-theme-toggle');
 
@@ -172,14 +173,19 @@ export class UIView {
       });
     }
 
-    // 7b. Organ Display Mode Switcher (Layers vs Functional Regions)
-    if (this.btnModeLayers) {
-      this.btnModeLayers.addEventListener('click', () => {
+    // 7b. Organ Display Mode Switcher (Compact Switch: Layers <-> Regions)
+    if (this.toggleDisplayMode) {
+      this.toggleDisplayMode.addEventListener('change', (e) => {
+        this.dissectionVM.setOrganDisplayMode(e.target.checked ? 'regions' : 'layers');
+      });
+    }
+    if (this.labelModeLayers) {
+      this.labelModeLayers.addEventListener('click', () => {
         this.dissectionVM.setOrganDisplayMode('layers');
       });
     }
-    if (this.btnModeRegions) {
-      this.btnModeRegions.addEventListener('click', () => {
+    if (this.labelModeRegions) {
+      this.labelModeRegions.addEventListener('click', () => {
         this.dissectionVM.setOrganDisplayMode('regions');
       });
     }
@@ -377,14 +383,17 @@ export class UIView {
       }
     });
 
-    // 3b. Sync Organ Display Mode (Layers vs Regions)
+    // 3b. Sync Organ Display Mode (Compact Switch: Layers vs Regions)
     this.dissectionVM.subscribe('organDisplayMode', (mode) => {
       const isLayers = (mode === 'layers');
-      if (this.btnModeLayers) {
-        this.btnModeLayers.classList.toggle('active', isLayers);
+      if (this.toggleDisplayMode) {
+        this.toggleDisplayMode.checked = !isLayers;
       }
-      if (this.btnModeRegions) {
-        this.btnModeRegions.classList.toggle('active', !isLayers);
+      if (this.labelModeLayers) {
+        this.labelModeLayers.classList.toggle('active', isLayers);
+      }
+      if (this.labelModeRegions) {
+        this.labelModeRegions.classList.toggle('active', !isLayers);
       }
       if (this.explodeHelperText) {
         if (!isLayers) {
