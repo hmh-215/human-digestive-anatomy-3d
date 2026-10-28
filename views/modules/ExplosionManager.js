@@ -107,6 +107,36 @@ export class ExplosionManager {
         else if (low.includes('greater')) subVec.set(0.0, -4.0, 8.0);
         else if (low.includes('mesocolon')) subVec.set(0.0, 2.0, -5.0);
         else subVec.set(-6.0, -6.0, 4.0);
+      } else if (organId === 'portal_system') {
+        if (low.includes('superior_mesenteric')) subVec.set(0.0, -3.5, 2.5);
+        else if (low.includes('splenic')) subVec.set(4.0, 1.0, 1.5);
+        else if (low.includes('inferior_mesenteric')) subVec.set(-2.5, -4.0, 2.0);
+        else subVec.set(0.0, 2.0, 3.0);
+      } else if (organId === 'hepatic_artery') {
+        if (low.includes('coeliac')) subVec.set(0.0, 1.0, -2.0);
+        else if (low.includes('common')) subVec.set(2.0, 1.5, 0.5);
+        else if (low.includes('proper')) subVec.set(1.5, 3.5, 2.0);
+        else subVec.set(1.0, 2.0, 1.0);
+      } else if (organId === 'hepatic_veins') {
+        subVec.set(0.0, 4.0, -2.0);
+      } else if (organId === 'pharynx') {
+        if (low.includes('naso')) subVec.set(0.0, 4.0, 0.0);
+        else if (low.includes('oro')) subVec.set(0.0, 1.5, 1.0);
+        else if (low.includes('laryngo')) subVec.set(0.0, -2.0, 1.0);
+        else if (low.includes('palate') || low.includes('uvula')) subVec.set(0.0, 1.0, -2.0);
+        else if (low.includes('epiglottis')) subVec.set(0.0, -1.0, 2.0);
+        else subVec.set(0.0, 1.0, 0.0);
+      } else if (organId === 'teeth_and_jaw') {
+        if (low.includes('mandib')) subVec.set(0.0, -2.5, 3.5);
+        else if (low.includes('maxill')) subVec.set(0.0, 2.5, 2.5);
+        else if (low.includes('gingiva')) subVec.set(0.0, 0.0, 3.0);
+        else subVec.set(0.0, 0.0, 4.0);
+      } else if (organId === 'salivary_glands') {
+        if (low.includes('parotid')) subVec.set(low.includes('r') ? -4.5 : 4.5, 2.0, -1.0);
+        else if (low.includes('submandibular')) subVec.set(low.includes('r') ? -3.5 : 3.5, -2.0, 1.0);
+        else subVec.set(0.0, -3.0, 3.0);
+      } else if (organId === 'tongue') {
+        subVec.set(0.0, -1.0, 2.5);
       }
 
       mesh.userData.subExplodeVec = subVec;
@@ -115,8 +145,50 @@ export class ExplosionManager {
     // =========================================================================
     // BUILD 4-ROW KNOLLING CATALOG GRID (Human Atlas 2D Row Layout)
     // =========================================================================
-    const row1 = []; // Upper GI: Esophagus (5) -> Stomach (6) -> Duodenum (5)
-    const row2 = []; // Hepatobiliary & Pancreas: Liver (8) -> Gallbladder (4 + duct) -> Pancreas (3)
+    // Identify compound anatomical structures that move as a unified exhibit in knolling:
+    // 1. Teeth and gums follow Mandible (lower arch) or Maxilla (upper arch)
+    const mandibleMesh = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('mandib'));
+    const maxillaMesh = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('maxillal') || (m.userData.rawName || m.name || '').toLowerCase().includes('maxilla'));
+    
+    // 2. Portal venous branches follow Hepatic_portal_vein
+    const portalAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('portal_vein') || (m.userData.rawName || m.name || '').toLowerCase().includes('portal'));
+    
+    // 3. Hepatic arterial branches follow Coeliac_trunk
+    const celiacAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('coeliac') || (m.userData.rawName || m.name || '').toLowerCase().includes('celiac'));
+    
+    // 4. Hepatic veins follow Inferior_vena_cava
+    const ivcAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('cava'));
+
+    clickableMeshes.forEach((mesh) => {
+      const organId = mesh.userData.organId;
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+
+      // Clear any prior knolling anchor
+      mesh.userData.knollingAnchor = null;
+
+      if (organId === 'teeth_and_jaw') {
+        const isLower = low.includes('inferior') || low.includes('mandib') || (!low.includes('superior') && !low.includes('maxill'));
+        const anchor = isLower ? mandibleMesh : maxillaMesh;
+        if (anchor && mesh !== anchor) {
+          mesh.userData.knollingAnchor = anchor;
+        }
+      } else if (organId === 'portal_system') {
+        if (portalAnchor && mesh !== portalAnchor) {
+          mesh.userData.knollingAnchor = portalAnchor;
+        }
+      } else if (organId === 'hepatic_artery') {
+        if (celiacAnchor && mesh !== celiacAnchor) {
+          mesh.userData.knollingAnchor = celiacAnchor;
+        }
+      } else if (organId === 'hepatic_veins') {
+        if (ivcAnchor && mesh !== ivcAnchor) {
+          mesh.userData.knollingAnchor = ivcAnchor;
+        }
+      }
+    });
+
+    const row1 = []; // Upper GI: Teeth/Jaws -> Salivary -> Tongue -> Pharynx -> Esophagus (5) -> Stomach (6) -> Duodenum (5)
+    const row2 = []; // Hepatobiliary, Pancreas & Hepatic Vascular System: Liver (8) -> Gallbladder (4 + duct) -> Pancreas (3) -> Portal Tree -> Hepatic Artery Tree -> Hepatic Vein Tree
     const row3 = []; // Small Intestine (5) + Peritoneum/Omentum (4)
     const row4 = []; // Large Intestine / Whole Colon Frame (5)
 
@@ -127,16 +199,36 @@ export class ExplosionManager {
       return (a.name || '').localeCompare(b.name || '');
     };
 
-    const byOrgan = (id) => clickableMeshes.filter(m => m.userData.organId === id).sort(sortByLayerOrName);
+    // Filter out anchored dependent meshes so only primary knolling anchors hold a grid slot
+    const byOrganPrimary = (id) => clickableMeshes
+      .filter(m => m.userData.organId === id && !m.userData.knollingAnchor)
+      .sort(sortByLayerOrName);
 
-    row1.push(...byOrgan('esophagus'), ...byOrgan('stomach'), ...byOrgan('duodenum'));
-    row2.push(...byOrgan('liver'), ...byOrgan('gallbladder_tree'), ...byOrgan('pancreas'));
-    row3.push(...byOrgan('small_intestine'), ...byOrgan('peritoneum_omentum'));
-    row4.push(...byOrgan('large_intestine'));
+    row1.push(
+      ...byOrganPrimary('teeth_and_jaw'),
+      ...byOrganPrimary('salivary_glands'),
+      ...byOrganPrimary('tongue'),
+      ...byOrganPrimary('pharynx'),
+      ...byOrganPrimary('esophagus'),
+      ...byOrganPrimary('stomach'),
+      ...byOrganPrimary('duodenum')
+    );
+
+    row2.push(
+      ...byOrganPrimary('liver'),
+      ...byOrganPrimary('gallbladder_tree'),
+      ...byOrganPrimary('pancreas'),
+      ...byOrganPrimary('portal_system'),
+      ...byOrganPrimary('hepatic_artery'),
+      ...byOrganPrimary('hepatic_veins')
+    );
+
+    row3.push(...byOrganPrimary('small_intestine'), ...byOrganPrimary('peritoneum_omentum'));
+    row4.push(...byOrganPrimary('large_intestine'));
 
     const rowsConfig = [
-      { items: row1, yOffset: 22.5, xShift: 2.0,  maxCellDim: 8.2, gapX: 2.0, minSlotW: 5.4 },
-      { items: row2, yOffset: 8.0,  xShift: 4.0,  maxCellDim: 8.2, gapX: 2.0, minSlotW: 5.4 },
+      { items: row1, yOffset: 24.0, xShift: 0.0,  maxCellDim: 7.5, gapX: 1.8, minSlotW: 4.8 },
+      { items: row2, yOffset: 8.5,  xShift: 2.0,  maxCellDim: 7.8, gapX: 1.8, minSlotW: 5.0 },
       { items: row3, yOffset: -7.5, xShift: 15.0, maxCellDim: 10.2, gapX: 2.6, minSlotW: 8.2 },
       { items: row4, yOffset: -23.5, xShift: 16.0, maxCellDim: 13.0, gapX: 4.5, minSlotW: 13.8 }
     ];
@@ -168,6 +260,20 @@ export class ExplosionManager {
           refCenter.z
         );
       });
+    });
+
+    // Synchronize knolling coordinates for all dependent anchored structures (teeth in jaws, vessels in vascular tree)
+    clickableMeshes.forEach((mesh) => {
+      const anchor = mesh.userData.knollingAnchor;
+      if (!anchor || !anchor.userData.knollingTargetCenter) return;
+
+      const anchorInitPos = anchor.userData.initialPos || anchor.position;
+      const meshInitPos = mesh.userData.initialPos || mesh.position;
+      const offset = meshInitPos.clone().sub(anchorInitPos);
+
+      const kScale = anchor.userData.knollingScale || 1.0;
+      mesh.userData.knollingScale = kScale;
+      mesh.userData.knollingTargetCenter = anchor.userData.knollingTargetCenter.clone().add(offset.multiplyScalar(kScale));
     });
   }
 

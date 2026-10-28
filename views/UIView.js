@@ -271,7 +271,28 @@ export class UIView {
             this.explodeHelperText.textContent = 'Thanh mạc & mô xơ quanh cơ → Lớp cơ trơn → Lớp đệm Lamina propria → Niêm mạc tổ ong';
           } else if (organId === 'liver') {
             this.explodeModeLabel.textContent = '💥 Phân Tách 8 Hạ Phân Thùy Gan (Couinaud):';
-            this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) chuẩn phẫu thuật gan mật (không trùng lặp)';
+            this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) với nhu mô bán trong suốt lộ cây mạch máu gan';
+          } else if (organId === 'portal_system') {
+            this.explodeModeLabel.textContent = '💥 Hệ Tĩnh Mạch Cửa Gan (Portal Venous System):';
+            this.explodeHelperText.textContent = 'TMC hợp bởi TM mạc treo tràng trên (SMV) & TM tỳ (Splenic), chia nhánh vào 8 hạ phân thùy gan';
+          } else if (organId === 'hepatic_artery') {
+            this.explodeModeLabel.textContent = '💥 Động Mạch Thân Tạng & Cây Động Mạch Gan:';
+            this.explodeHelperText.textContent = 'Thân tạng → ĐM gan chung (CHA) → ĐM gan riêng (PHA) chia 2 ngành P/T cấp máu dinh dưỡng gan';
+          } else if (organId === 'hepatic_veins') {
+            this.explodeModeLabel.textContent = '💥 Các Tĩnh Mạch Gan & Tĩnh Mạch Chủ Dưới:';
+            this.explodeHelperText.textContent = '3 tĩnh mạch gan (Phải, Giữa, Trái) dẫn lưu máu khử oxy từ các hạ phân thùy gan đổ trực tiếp vào TMC dưới';
+          } else if (organId === 'pharynx') {
+            this.explodeModeLabel.textContent = '💥 Hệ Thống Hầu - Họng (3 Tầng):';
+            this.explodeHelperText.textContent = 'Tỵ hầu (Nasopharynx) → Khẩu hầu (Oropharynx) → Thanh hầu (Laryngopharynx) nối tiếp miệng thực quản tại C6';
+          } else if (organId === 'tongue') {
+            this.explodeModeLabel.textContent = '💥 Lưỡi & Gai Vị Giác (Lingua):';
+            this.explodeHelperText.textContent = 'Khối cơ vân linh hoạt đảm nhiệm nhai, đảo thức ăn, nuốt và thụ cảm vị giác';
+          } else if (organId === 'teeth_and_jaw') {
+            this.explodeModeLabel.textContent = '💥 Cung Răng & Khung Xương Hàm:';
+            this.explodeHelperText.textContent = 'Bộ 32 răng vĩnh viễn (cửa, nanh, cối) cắm sâu vào cung huyệt răng của xương hàm trên và xương hàm dưới';
+          } else if (organId === 'salivary_glands') {
+            this.explodeModeLabel.textContent = '💥 Các Tuyến Nước Bọt Lớn (Salivary Glands):';
+            this.explodeHelperText.textContent = '3 cặp tuyến đối xứng: Tuyến mang tai (ống Stensen), Tuyến dưới hàm (ống Wharton), Tuyến dưới lưỡi (ống Rivinus)';
           } else {
             this.explodeModeLabel.textContent = `💥 Tách Cấu Trúc ${organ.vietnameseName}:`;
             this.explodeHelperText.textContent = 'Tách rời các cấu trúc con để rê chuột xem nhãn giải phẫu chi tiết';

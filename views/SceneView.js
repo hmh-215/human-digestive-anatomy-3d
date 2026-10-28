@@ -157,37 +157,37 @@ export class SceneView {
 
   _loadDigestiveGLB() {
     const loader = new GLTFLoader();
-    this._updateLoadingProgress(25, 'Đang nạp mô hình DigestiveSystem.glb...');
+    this._updateLoadingProgress(20, 'Đang nạp mô hình giải phẫu 3D (Z-Anatomy)...');
 
-    loader.load(
-      './assets/models/DigestiveSystem.glb',
-      (gltf) => {
-        this._updateLoadingProgress(85, 'Đang khởi tạo các lớp giải phẫu & vật liệu PBR...');
-        this._processDigestiveScene(gltf.scene);
-        this._hideLoadingOverlay();
+    const loadModel = (url) => new Promise((resolve, reject) => {
+      loader.load(url, resolve, undefined, reject);
+    });
 
-        // Stage 2: Lazy-load TorsoAbdominalWall.glb during browser idle time
-        const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
-        schedule(() => this._ensureTorsoLoaded());
-      },
-      (xhr) => {
-        if (xhr.lengthComputable) {
-          const percent = Math.min(80, Math.round((xhr.loaded / xhr.total) * 80));
-          this._updateLoadingProgress(percent, `Đang tải mô hình 3D (${percent}%)...`);
-        }
-      },
-      (err) => {
-        console.error('Lỗi nạp DigestiveSystem.glb:', err);
-        this._updateLoadingProgress(100, 'Lỗi nạp mô hình 3D.');
-      }
-    );
+    Promise.all([
+      loadModel('./assets/models/DigestiveSystem.glb'),
+      loadModel('./assets/models/UpperDigestiveTract.glb'),
+      loadModel('./assets/models/HepaticVessels.glb')
+    ]).then(([digestiveGltf, upperGltf, hepaticGltf]) => {
+      this._updateLoadingProgress(85, 'Đang khởi tạo các tầng mô học & mạch máu gan PBR...');
+      this._processDigestiveScene(digestiveGltf.scene, upperGltf.scene, hepaticGltf.scene);
+      this._hideLoadingOverlay();
+
+      // Stage 2: Lazy-load TorsoAbdominalWall.glb during browser idle time
+      const schedule = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
+      schedule(() => this._ensureTorsoLoaded());
+    }).catch((err) => {
+      console.error('Lỗi nạp mô hình 3D:', err);
+      this._updateLoadingProgress(100, 'Lỗi nạp mô hình 3D.');
+    });
   }
 
-  _processDigestiveScene(rootGroup) {
+  _processDigestiveScene(rootGroup, upperGroup, hepaticGroup) {
     this.masterRoot = new THREE.Group();
     this.masterRoot.name = 'ZAnatomy_Visceral_Master';
     this.scene.add(this.masterRoot);
     this.masterRoot.add(rootGroup);
+    if (upperGroup) this.masterRoot.add(upperGroup);
+    if (hepaticGroup) this.masterRoot.add(hepaticGroup);
 
     this.explosionManager = new ExplosionManager(this.scene, this.masterRoot, this.stomachBuilder);
 
@@ -200,7 +200,28 @@ export class SceneView {
       small_intestine: new THREE.MeshStandardMaterial({ color: 0xf87171, roughness: 0.5, metalness: 0.08, side: THREE.DoubleSide }),
       large_intestine: new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.48, metalness: 0.1, side: THREE.DoubleSide }),
       esophagus: new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide }),
-      peritoneum_omentum: new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.65, transparent: true, opacity: 0.45, side: THREE.DoubleSide })
+      peritoneum_omentum: new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.65, transparent: true, opacity: 0.45, side: THREE.DoubleSide }),
+
+      // Upper GI PBR Materials
+      pharynx: new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.42, metalness: 0.08, side: THREE.DoubleSide }),
+      tongue: new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.40, metalness: 0.08, side: THREE.DoubleSide }),
+      palate: new THREE.MeshStandardMaterial({ color: 0xfb7185, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide }),
+      epiglottis: new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.50, metalness: 0.05, side: THREE.DoubleSide }),
+      salivary_gland: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.52, metalness: 0.12, side: THREE.DoubleSide }),
+      salivary_glands: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.52, metalness: 0.12, side: THREE.DoubleSide }),
+      gingiva: new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide }),
+      teeth: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.18, metalness: 0.06, side: THREE.DoubleSide }),
+      teeth_and_jaw: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.05, side: THREE.DoubleSide }),
+      mandible: new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      maxilla: new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      hyoid_bone: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }),
+
+      // Hepatic & Circulatory PBR Materials
+      portal_system: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),
+      portal_vein: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),
+      hepatic_artery: new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.30, metalness: 0.20, side: THREE.DoubleSide }),
+      hepatic_veins: new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide }),
+      inferior_vena_cava: new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide })
     };
 
     const couinaudColors = {
@@ -215,9 +236,28 @@ export class SceneView {
     };
 
     const inferOrganId = (name, userData) => {
-      const low = (name || '').toLowerCase();
+      let rawId = (userData && userData.organId) || '';
+      const low = ((name || '') + ' ' + rawId).toLowerCase();
+
+      if (rawId === 'portal_vein' || low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein')) return 'portal_system';
+      if (rawId === 'inferior_vena_cava' || low.includes('hepatic_vein') || low.includes('cava')) return 'hepatic_veins';
+      if (rawId === 'hepatic_artery' || low.includes('artery') || low.includes('coeliac') || low.includes('celiac')) return 'hepatic_artery';
+
+      if (['teeth', 'mandible', 'maxilla', 'gingiva'].includes(rawId) ||
+          low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar') ||
+          low.includes('tooth') || low.includes('teeth') || low.includes('mandib') || low.includes('maxill') || low.includes('gingiva')) {
+        return 'teeth_and_jaw';
+      }
+
+      if (['salivary_gland', 'salivary_glands'].includes(rawId) || low.includes('gland')) return 'salivary_glands';
+
+      if (['pharynx', 'palate', 'epiglottis', 'hyoid_bone'].includes(rawId) ||
+          low.includes('pharynx') || low.includes('palate') || low.includes('uvula') || low.includes('epiglottis') || low.includes('hyoid')) {
+        return 'pharynx';
+      }
+
+      if (low.includes('tongue')) return 'tongue';
       if (low.includes('omentum') || low.includes('peritoneum') || low.includes('meso')) return 'peritoneum_omentum';
-      if (userData && userData.organId) return userData.organId;
       if (low.includes('liver')) return 'liver';
       if (low.includes('gallbladder') || low.includes('bile') || low.includes('cystic')) return 'gallbladder_tree';
       if (low.includes('stomach') || low.includes('gaster')) return 'stomach';
@@ -248,9 +288,13 @@ export class SceneView {
       'Mesocolic_taenia'
     ]);
 
-    rootGroup.traverse((child) => {
-      if (child.isMesh) {
-        meshesToProcess.push(child);
+    [rootGroup, upperGroup, hepaticGroup].forEach((grp) => {
+      if (grp) {
+        grp.traverse((child) => {
+          if (child.isMesh) {
+            meshesToProcess.push(child);
+          }
+        });
       }
     });
 
@@ -336,7 +380,29 @@ export class SceneView {
         initialScale: child.scale.clone()
       };
 
-      const baseMat = materials[organId] || materials.stomach;
+      let baseMat = materials[organId] || materials.stomach;
+      if (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')) {
+        baseMat = materials.teeth;
+      } else if (low.includes('mandib') || low.includes('maxill')) {
+        baseMat = materials.mandible;
+      } else if (low.includes('gingiva')) {
+        baseMat = materials.gingiva;
+      } else if (low.includes('epiglottis')) {
+        baseMat = materials.epiglottis;
+      } else if (low.includes('palate') || low.includes('uvula')) {
+        baseMat = materials.palate;
+      } else if (low.includes('gland')) {
+        baseMat = materials.salivary_glands;
+      } else if (low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein')) {
+        baseMat = materials.portal_vein;
+      } else if (low.includes('hepatic_vein')) {
+        baseMat = materials.hepatic_veins;
+      } else if (low.includes('cava')) {
+        baseMat = materials.inferior_vena_cava;
+      } else if (low.includes('artery') || low.includes('coeliac') || low.includes('celiac')) {
+        baseMat = materials.hepatic_artery;
+      }
+
       const mat = baseMat.clone();
       for (const [k, hex] of Object.entries(couinaudColors)) {
         if (low.includes(k)) {
@@ -368,7 +434,7 @@ export class SceneView {
       });
     }
 
-    // Normalize bounding box of digestive system to target height 8.5 centered at origin
+    // Normalize bounding box of digestive system to target height 9.8 centered at origin
     this.masterRoot.updateMatrixWorld(true);
     const digestiveBBox = new THREE.Box3();
     this.clickableMeshes.forEach((mesh) => {
@@ -378,7 +444,7 @@ export class SceneView {
 
     const center = digestiveBBox.getCenter(new THREE.Vector3());
     const size = digestiveBBox.getSize(new THREE.Vector3());
-    const targetHeight = 8.5;
+    const targetHeight = 8.6;
     const scaleFactor = targetHeight / Math.max(size.y, 1);
 
     this.masterRoot.scale.setScalar(scaleFactor);
@@ -396,9 +462,11 @@ export class SceneView {
     this.explosionManager.assignExplosionVectors(this.clickableMeshes, center);
 
     this.layerMap = {
+      pharynx: 1, tongue: 1, teeth_and_jaw: 1, salivary_glands: 1,
       esophagus: 1, peritoneum_omentum: 1,
       liver: 2, stomach: 2, large_intestine: 2,
-      gallbladder_tree: 3, pancreas: 3, duodenum: 3, small_intestine: 3
+      gallbladder_tree: 3, pancreas: 3, duodenum: 3, small_intestine: 3,
+      portal_system: 2, hepatic_artery: 2, hepatic_veins: 2
     };
 
     this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
@@ -740,7 +808,14 @@ export class SceneView {
       small_intestine: '#f87171',
       large_intestine: '#84cc16',
       esophagus: '#ec4899',
-      peritoneum_omentum: '#eab308'
+      peritoneum_omentum: '#eab308',
+      pharynx: '#ec4899',
+      tongue: '#e11d48',
+      teeth_and_jaw: '#64748b',
+      salivary_glands: '#f59e0b',
+      portal_system: '#2563eb',
+      hepatic_artery: '#ef4444',
+      hepatic_veins: '#1d4ed8'
     };
 
     // Translate specific sub-mesh names into clear Vietnamese medical labels
@@ -764,6 +839,43 @@ export class SceneView {
     } else if (organId === 'small_intestine') {
       if (low.includes('jejunum')) subPartTitle = 'Hỗng Tràng (Jejunum)';
       else if (low.includes('ileum')) subPartTitle = 'Hồi Tràng (Ileum)';
+    } else if (organId === 'pharynx') {
+      if (low.includes('naso')) subPartTitle = 'Hầu Mũi (Nasopharynx - Tỵ hầu)';
+      else if (low.includes('oro')) subPartTitle = 'Hầu Miệng (Oropharynx - Khẩu hầu)';
+      else if (low.includes('laryngo')) subPartTitle = 'Hầu Thanh Quản (Laryngopharynx - Thanh hầu)';
+      else if (low.includes('palate') || low.includes('uvula')) subPartTitle = 'Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)';
+      else if (low.includes('epiglottis')) subPartTitle = 'Nắp Thanh Môn (Epiglottis)';
+      else if (low.includes('hyoid')) subPartTitle = 'Xương Móng (Hyoid Bone)';
+    } else if (organId === 'teeth_and_jaw') {
+      if (low.includes('mandib')) subPartTitle = 'Xương Hàm Dưới (Mandible)';
+      else if (low.includes('maxill')) subPartTitle = 'Xương Hàm Trên (Maxilla)';
+      else if (low.includes('gingiva')) subPartTitle = 'Nướu Răng (Gingiva)';
+      else if (low.includes('incisor')) subPartTitle = 'Răng Cửa (Incisor)';
+      else if (low.includes('canine')) subPartTitle = 'Răng Nanh (Canine)';
+      else if (low.includes('premolar')) subPartTitle = 'Răng Tiền Cối (Premolar)';
+      else if (low.includes('molar')) subPartTitle = 'Răng Cối (Molar)';
+      else subPartTitle = 'Cung Răng & Khung Hàm';
+    } else if (organId === 'salivary_glands') {
+      if (low.includes('parotid')) subPartTitle = 'Tuyến Mang Tai (Parotid Gland)';
+      else if (low.includes('submandibular')) subPartTitle = 'Tuyến Dưới Hàm (Submandibular Gland)';
+      else if (low.includes('sublingual')) subPartTitle = 'Tuyến Dưới Lưỡi (Sublingual Gland)';
+      else subPartTitle = 'Tuyến Nước Bọt Lớn';
+    } else if (organId === 'portal_system') {
+      if (low.includes('superior_mesenteric')) subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Trên (SMV)';
+      else if (low.includes('splenic')) subPartTitle = 'Tĩnh Mạch Tỳ / Lách (Splenic Vein)';
+      else if (low.includes('inferior_mesenteric')) subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Dưới (IMV)';
+      else subPartTitle = 'Thân Tĩnh Mạch Cửa Gan (Portal Vein)';
+    } else if (organId === 'hepatic_artery') {
+      if (low.includes('coeliac')) subPartTitle = 'Động Mạch Thân Tạng (Coeliac Trunk)';
+      else if (low.includes('common_hepatic')) subPartTitle = 'Động Mạch Gan Chung (CHA)';
+      else if (low.includes('proper_hepatic')) subPartTitle = 'Động Mạch Gan Riêng (PHA)';
+      else if (low.includes('splenic_artery')) subPartTitle = 'Động Mạch Lách (Splenic Artery)';
+      else if (low.includes('gastric_artery')) subPartTitle = 'Động Mạch Vị Trái (LGA)';
+      else if (low.includes('superior_mesenteric')) subPartTitle = 'Động Mạch Mạc Treo Tràng Trên (SMA)';
+      else subPartTitle = 'Cây Động Mạch Gan & Thân Tạng';
+    } else if (organId === 'hepatic_veins') {
+      if (low.includes('cava')) subPartTitle = 'Tĩnh Mạch Chủ Dưới (IVC - Đoạn ổ bụng)';
+      else subPartTitle = 'Các Tĩnh Mạch Gan (Hepatic Veins - 3 Thân đổ TMC)';
     }
 
     const subtitle = organ
@@ -1109,15 +1221,19 @@ export class SceneView {
     const isCutaway = this.dissectionVM.state.isCutawayOpen;
     const explodeFactor = this.dissectionVM.state.explodeFactor || 0;
     const visibleLayers = this.dissectionVM.state.visibleLayers;
+    const isLiverOrVascular = (id) => ['liver', 'portal_system', 'hepatic_artery', 'hepatic_veins'].includes(id);
     const layerMap = this.layerMap || {
+      pharynx: 1, tongue: 1, teeth_and_jaw: 1, salivary_glands: 1,
       esophagus: 1, peritoneum_omentum: 1,
       liver: 2, stomach: 2, large_intestine: 2,
-      gallbladder_tree: 3, pancreas: 3, duodenum: 3, small_intestine: 3
+      gallbladder_tree: 3, pancreas: 3, duodenum: 3, small_intestine: 3,
+      portal_system: 2, hepatic_artery: 2, hepatic_veins: 2
     };
     const activeWallLayerId = this.dissectionVM.state.activeWallLayerId;
 
     this.clickableMeshes.forEach((mesh) => {
       const organId = mesh.userData.organId;
+      const rawNameLow = (mesh.userData.rawName || mesh.name || '').toLowerCase();
       const isWallLayer = !!(mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer);
       const layer = layerMap[organId] || 3;
 
@@ -1167,18 +1283,39 @@ export class SceneView {
         return;
       }
 
+      const isBone = rawNameLow.includes('mandib') || rawNameLow.includes('maxill');
+
       if (!selectedId) {
         mesh.visible = true;
-        mesh.material.transparent = isXRay || organId === 'peritoneum_omentum';
-        mesh.material.opacity = isXRay ? 0.35 : (organId === 'peritoneum_omentum' ? 0.45 : 1.0);
+        mesh.material.transparent = isXRay || organId === 'peritoneum_omentum' || isBone;
+        mesh.material.opacity = isXRay ? 0.35 : (organId === 'peritoneum_omentum' ? 0.45 : (isBone ? 0.85 : 1.0));
         if (mesh.material.emissive) {
           mesh.material.emissive.setHex(organId === 'gallbladder_tree' ? 0x064e3b : 0x000000);
         }
       } else if (organId === selectedId) {
         mesh.visible = true;
-        mesh.material.transparent = isXRay;
-        mesh.material.opacity = isXRay ? 0.45 : 1.0;
+        // In Liver selection, make liver segments semi-transparent (0.38) so internal vascular tree shines through
+        mesh.material.transparent = isXRay || (selectedId === 'liver');
+        mesh.material.opacity = isXRay ? 0.45 : (selectedId === 'liver' ? 0.38 : (isBone ? 0.85 : 1.0));
         if (mesh.material.emissive) mesh.material.emissive.setHex(0x221508);
+      } else if (selectedId === 'liver' && isLiverOrVascular(organId)) {
+        // When Liver is selected, keep portal system, hepatic arteries & veins solid and sharp inside the liver segments!
+        mesh.visible = true;
+        mesh.material.transparent = false;
+        mesh.material.opacity = 1.0;
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+      } else if (isLiverOrVascular(selectedId) && organId === 'liver') {
+        // When viewing portal system or hepatic artery/vein, keep liver parenchyma ghosted (opacity 0.22)
+        mesh.visible = true;
+        mesh.material.transparent = true;
+        mesh.material.opacity = 0.22;
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+      } else if (isLiverOrVascular(selectedId) && isLiverOrVascular(organId)) {
+        // Related vascular branches remain visible
+        mesh.visible = true;
+        mesh.material.transparent = false;
+        mesh.material.opacity = 0.95;
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
       } else {
         if (isIsolate) {
           mesh.visible = false;

@@ -568,6 +568,149 @@
       "vasculature": "Được cấp máu bởi các nhánh động mạch vị mạc nối và động mạch thành bụng; mạng lưới mạch máu và bạch huyết cực kỳ phong phú có khả năng tái hấp thu dịch ổ bụng rất nhanh.",
       "physiology": "Bảo vệ và chống nhiễm trùng: Mạc nối lớn được mệnh danh là 'Người cảnh sát của ổ bụng' (The Policeman of the Abdomen) vì giàu tế bào mỡ, mạch máu và đại thực bào; có khả năng tự động di chuyển đến bọc kín và cô lập các ổ viêm nhiễm (như ổ viêm ruột thừa, thủng dạ dày) để ngăn viêm phúc mạc toàn thể.",
       "clinicalNotes": "Viêm phúc mạc toàn thể là tối cấp cứu ngoại khoa bụng (dấu hiệu bụng cứng như gỗ, co cứng thành bụng và cảm ứng phúc mạc - Blumberg dương tính). Dính ruột sau phẫu thuật là biến chứng do phúc mạc phản ứng xơ hóa. Túi cùng Douglas (túi cùng trực tràng - tử cung ở nữ / trực tràng - bàng quang ở nam) là điểm thấp nhất của ổ phúc mạc, nơi đọng dịch/mủ đầu tiên; thăm khám trực tràng/âm đạo thấy túi cùng Douglas phồng và đau nhói ('tiếng kêu Douglas')."
+    },
+    {
+      "id": "pharynx",
+      "vietnameseName": "Hầu (Họng 3 Tầng)",
+      "latinName": "Pharynx",
+      "englishName": "Pharynx (Throat)",
+      "system": "upper_gi",
+      "layer": 1,
+      "color": "#f472b6",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "laryngopharynx", "name": "Hạ Hầu / Hầu Thanh Quản (Laryngopharynx)", "explodeVector": [0, -0.2, 0.4] },
+        { "id": "oropharynx", "name": "Khẩu Hầu / Hầu Miệng (Oropharynx)", "explodeVector": [0, 0.2, 0.4] },
+        { "id": "nasopharynx", "name": "Tỵ Hầu / Hầu Mũi (Nasopharynx)", "explodeVector": [0, 0.5, 0.3] }
+      ],
+      "location": "Ống cơ - màng hình phễu dài 12 - 14 cm, nằm trước cột sống cổ từ nền sọ xuống đến bờ dưới sụn nhẫn (ngang đốt sống C6), nơi tiếp nối liên tục với thực quản.",
+      "structure": "Gồm 3 tầng giải phẫu từ trên xuống dưới: 1. Hầu mũi (Tỵ hầu / Nasopharynx): Nằm sau ổ mũi, trên khẩu cái mềm, có lỗ vòi tai Eustache và hạnh nhân hầu (Amiđan Luschka / VA); 2. Hầu miệng (Khẩu hầu / Oropharynx): Ngã tư tiêu hóa - hô hấp sau khoang miệng và gốc lưỡi, chứa hạnh nhân khẩu cái (Amiđan); 3. Hầu thanh quản (Hạ hầu / Laryngopharynx): Nối tiếp thực quản, nằm sau thanh quản, có 2 xoang lê (Fossa piriformis) dẫn thức ăn trượt xuống thực quản. Thành hầu gồm 3 cơ khít hầu (trên, giữa, dưới) dạng quạt lồng nhau và niêm mạc lót.",
+      "vasculature": "Cấp máu bởi ĐM hầu lên (nhánh của ĐM cảnh ngoài), ĐM giáp trên và ĐM mặt. Tĩnh mạch hầu đổ về đám rối tĩnh mạch hầu rồi vào tĩnh mạch cảnh trong.",
+      "physiology": "Đảm nhận giai đoạn 2 của phản xạ Nuốt (Giai đoạn hầu - không chủ ý, kéo dài < 1 giây): Khẩu cái mềm nâng lên đóng kín tỵ hầu, nắp thanh môn (Epiglottis) hạ xuống đậy kín đường thở, các cơ khít hầu co thắt theo làn sóng nhu động từ trên xuống dưới để đẩy viên thức ăn (bolus) rơi thẳng vào thực quản.",
+      "clinicalNotes": "Viêm VA ở trẻ em gây nghẹt mũi mạn tính, thở miệng và bộ mặt VA; phì đại amiđan gây ngủ ngáy và hội chứng ngưng thở khi ngủ (OSAS). Hóc dị vật đường ăn (xương cá) hay cắm vào hố amiđan hoặc xoang lê. Ung thư vòm họng (Nasopharyngeal Carcinoma - NPC) liên quan mật thiết với virus EBV."
+    },
+    {
+      "id": "tongue",
+      "vietnameseName": "Lưỡi & Vòm Khẩu Cái",
+      "latinName": "Lingua & Palatum",
+      "englishName": "Tongue & Palate",
+      "system": "upper_gi",
+      "layer": 1,
+      "color": "#e11d48",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "tongue_body", "name": "Thân & Đỉnh Lưỡi (Corpus & Apex Linguae)", "explodeVector": [0, 0, 0.5] },
+        { "id": "tongue_root", "name": "Gốc & Đáy Lưỡi (Radix Linguae)", "explodeVector": [0, -0.2, 0.2] },
+        { "id": "soft_palate", "name": "Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)", "explodeVector": [0, 0.3, 0.2] }
+      ],
+      "location": "Nằm trong khoang miệng chính thức và sàn miệng, tựa trên xương móng và xương hàm dưới.",
+      "structure": "Cơ quan cơ - niêm mạc hình nón dẹt gồm Đỉnh, Thân và Gốc lưỡi. Rãnh tận cùng hình chữ V (Sulcus terminalis) chia mặt lưng lưỡi thành 2/3 trước (phần miệng) và 1/3 sau (phần hầu). Mặt lưng 2/3 trước phủ đầy các gai lưỡi (gai chỉ, gai nấm, gai đài) chứa các chồi vị giác. Cơ lưỡi gồm nhóm cơ nội tại (thay đổi hình dạng lưỡi) và ngoại lai (vận động vị trí: Cơ cằm lưỡi, móng lưỡi, trâm lưỡi, khẩu cái lưỡi).",
+      "vasculature": "Cấp máu bởi Động mạch lưỡi (nhánh của ĐM cảnh ngoài). Vận động bởi dây thần kinh hạ thiệt (CN XII); cảm giác vị giác 2/3 trước bởi thừng nhĩ (CN VII qua dây V3), 1/3 sau bởi dây thiệt hầu (CN IX).",
+      "physiology": "Nhào trộn thức ăn với nước bọt, tạo thành viên thức ăn (bolus), khởi động thì 1 của phản xạ Nuốt (thì chủ ý: đẩy thức ăn ra sau họng), cảm nhận 5 vị giác cơ bản (ngọt, chua, mặn, đắng, umami) và tham gia phát âm tạo tiếng nói.",
+      "clinicalNotes": "Liệt dây thần kinh XII làm lưỡi teo bên liệt và khi thè lưỡi sẽ lệch về bên liệt. Viêm loét áp-tơ (nhiệt miệng) gây đau đớn dữ dội khi ăn. Ung thư lưỡi (chiếm 30-40% ung thư khoang miệng) thường gặp ở bờ tự do của lưỡi do kích thích mạn tính từ răng sắc nhọn hoặc thuốc lá."
+    },
+    {
+      "id": "teeth_and_jaw",
+      "vietnameseName": "Hàm Răng & Xương Hàm",
+      "latinName": "Dentes & Mandibula / Maxilla",
+      "englishName": "Teeth & Jaws",
+      "system": "upper_gi",
+      "layer": 1,
+      "color": "#f8fafc",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "mandible", "name": "Xương Hàm Dưới (Mandible)", "explodeVector": [0, -0.3, 0.4] },
+        { "id": "maxilla", "name": "Xương Hàm Trên (Maxilla)", "explodeVector": [0, 0.3, 0.2] },
+        { "id": "teeth_upper", "name": "Cung Răng Hàm Trên (16 răng)", "explodeVector": [0, 0.1, 0.3] },
+        { "id": "teeth_lower", "name": "Cung Răng Hàm Dưới (16 răng)", "explodeVector": [0, -0.1, 0.3] }
+      ],
+      "location": "Nằm ở tầng dưới và giữa khối xương sọ mặt, hình thành bộ máy cắn xé nghiền nát thức ăn của khoang miệng.",
+      "structure": "Bộ răng người trưởng thành gồm 32 chiếc phân bố đối xứng trên 2 cung hàm (mỗi phần tư hàm gồm: 2 răng cửa, 1 răng nanh, 2 răng tiền cối, 3 răng cối). Mỗi răng gồm Thân răng (Crown), Cổ răng (Neck) và Chân răng (Root). Men răng (Enamel) là mô cứng nhất cơ thể bao bọc ngoài thân răng, bên dưới là ngà răng (Dentin) và tủy răng (Pulp) chứa mạch máu thần kinh. Xương hàm dưới là xương duy nhất cử động được của khối sọ nhờ khớp thái dương hàm (TMJ).",
+      "vasculature": "Cấp máu bởi ĐM huyệt răng dưới (từ ĐM hàm) cho hàm dưới và ĐM huyệt răng trên (từ ĐM hàm) cho hàm trên. Dẫn truyền cảm giác bởi nhánh hàm trên (V2) và nhánh hàm dưới (V3) của dây thần kinh sinh ba.",
+      "physiology": "Cắn xé (răng cửa và răng nanh) và nghiền mịn (răng tiền cối và răng cối) thức ăn dạng cơ học, tăng diện tích tiếp xúc với các enzym amylase nước bọt trước khi nuốt.",
+      "clinicalNotes": "Sâu răng (Dental caries) do vi khuẩn chuyển hóa đường sinh axit phá hủy men răng và ngà răng, ăn vào tủy gây viêm tủy răng cấp tính (đau buốt giật theo nhịp mạch). Răng khôn (Răng cối lớn thứ ba số 8) hay mọc ngầm, mọc lệch gây viêm lợi trùm và xô lệch cung hàm."
+    },
+    {
+      "id": "salivary_glands",
+      "vietnameseName": "Các Tuyến Nước Bọt Chính",
+      "latinName": "Glandulae Salivariae Majores",
+      "englishName": "Major Salivary Glands",
+      "system": "upper_gi",
+      "layer": 1,
+      "color": "#f59e0b",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "parotid_gland", "name": "Tuyến Mang Tai (Glandula Parotidea & Ống Stenon)", "explodeVector": [0.4, 0.1, 0] },
+        { "id": "submandibular_gland", "name": "Tuyến Dưới Hàm (Glandula Submandibularis & Ống Wharton)", "explodeVector": [0.2, -0.3, 0] },
+        { "id": "sublingual_gland", "name": "Tuyến Dưới Lưỡi (Glandula Sublingualis & Ống Rivinus)", "explodeVector": [0, -0.2, 0.3] }
+      ],
+      "location": "Gồm 3 cặp tuyến đối xứng nằm quanh góc hàm và sàn miệng: Tuyến mang tai (trước dưới loa tai), Tuyến dưới hàm (trong hố dưới hàm), Tuyến dưới lưỡi (dưới niêm mạc sàn miệng cạnh gốc lưỡi).",
+      "structure": "Tuyến nang - ống ngoại tiết phức hợp: 1. Tuyến mang tai: Lớn nhất (20 - 30g), tiết dịch thanh dịch loãng (serous), có dây thần kinh VII đi xuyên qua mô tuyến chia thành 5 nhánh mặt, ống Stenon đổ vào niêm mạc má đối diện răng cối lớn trên số 2; 2. Tuyến dưới hàm: Tiết dịch hỗn hợp (thanh dịch + nhầy), ống Wharton dài 5 cm đổ vào cục dưới lưỡi; 3. Tuyến dưới lưỡi: Nhỏ nhất, tiết chủ yếu chất nhầy qua các ống nhỏ Rivinus.",
+      "vasculature": "Cấp máu bởi các nhánh của ĐM cảnh ngoài (ĐM thái dương nông, ĐM mặt, ĐM lưỡi). Phân bố đối giao cảm tiết dịch: Dây IX (qua hạch tai) cho tuyến mang tai; Dây VII (qua thừng nhĩ và hạch dưới hàm) cho tuyến dưới hàm và dưới lưỡi.",
+      "physiology": "Sản xuất 1.0 - 1.5 lít nước bọt/ngày chứa: Nước (99.5%), chất nhầy bôi trơn Mucin, men tiêu hóa tinh bột Alpha-Amylase (Ptyalin), kháng thể sIgA, Lysozyme diệt khuẩn và ion Bicarbonat đệm trung hòa axit bảo vệ men răng.",
+      "clinicalNotes": "Bệnh Quai bị (Mumps) do virus Paramyxovirus gây viêm tuyến mang tai cấp tính sưng to 2 bên. Sỏi tuyến nước bọt (Sialolithiasis) gặp nhiều nhất ở ống Wharton tuyến dưới hàm (80%) gây tắc tuyến và đau tăng đột ngột khi nhìn hoặc ngửi thấy thức ăn (cơn đau sỏi nước bọt)."
+    },
+    {
+      "id": "portal_system",
+      "vietnameseName": "Hệ Thống Tĩnh Mạch Cửa",
+      "latinName": "Systema Venae Portae Hepatis",
+      "englishName": "Hepatic Portal Venous System",
+      "system": "vascular",
+      "layer": 2,
+      "color": "#3b82f6",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "portal_vein_main", "name": "Thân Tĩnh Mạch Cửa (Vena Portae Hepatis)", "explodeVector": [-0.1, 0, 0.4] },
+        { "id": "smv", "name": "Tĩnh Mạch Mạc Treo Tràng Trên (Superior Mesenteric Vein)", "explodeVector": [0.1, -0.4, 0.2] },
+        { "id": "splenic_vein", "name": "Tĩnh Mạch Lách (Splenic Vein)", "explodeVector": [-0.4, 0.1, 0.1] },
+        { "id": "imv", "name": "Tĩnh Mạch Mạc Treo Tràng Dưới (Inferior Mesenteric Vein)", "explodeVector": [0, -0.5, 0.2] }
+      ],
+      "location": "Chạy trong cuống gan (phía sau động mạch gan riêng và ống mật chủ) bắt đầu từ sau cổ tụy (ngang đốt sống L1 - L2) đi lên rốn gan (Porta hepatis).",
+      "structure": "Tĩnh mạch chức phận đặc biệt của gan (dài 6 - 8 cm, đường kính 10 - 12 mm, không có van tĩnh mạch). Được hình thành bởi sự hợp lưu của 2 thân lớn: Tĩnh mạch mạc treo tràng trên (thu gom máu toàn bộ ruột non và nửa phải đại tràng) và Tĩnh mạch lách (thu gom máu từ lách, tụy, dạ dày và nhận thêm TM mạc treo tràng dưới). Tại rốn gan, thân TM cửa chia làm 2 nhánh chính: Nhánh phải (cho các phân thùy V, VI, VII, VIII) và Nhánh trái (cho phân thùy II, III, IV và thùy đuôi I).",
+      "vasculature": "Máu trong hệ TM cửa chiếm 75% lưu lượng máu đến gan (khoảng 1000 - 1200 ml/phút), rất giàu chất dinh dưỡng hấp thu từ đường tiêu hóa nhưng nghèo oxy hơn động mạch gan.",
+      "physiology": "Vận chuyển toàn bộ sản phẩm tiêu hóa (glucose, axit amin, axit béo chuỗi ngắn, vitamin) và độc chất hấp thu từ ống tiêu hóa về gan để xử lý, tổng hợp glycogen, giải độc và dự trữ trước khi đổ vào tuần hoàn chung toàn thân.",
+      "clinicalNotes": "Tăng áp lực tĩnh mạch cửa (Portal Hypertension - áp lực > 12 mmHg) trong xơ gan làm máu ứ đọng và trào ngược vào 4 vòng nối cửa - chủ: 1. Vòng nối thực quản (giãn vỡ TM thực quản gây nôn ra máu sét đánh); 2. Vòng nối trực tràng (trĩ nội); 3. Vòng nối quanh rốn (tuần hoàn bàng hệ kiểu đầu sứa - Caput Medusae); 4. Cổ trướng (báng bụng dịch thấm tự do)."
+    },
+    {
+      "id": "hepatic_artery",
+      "vietnameseName": "Hệ Động Mạch Gan & Thân Tạng",
+      "latinName": "Arteria Hepatica & Truncus Coeliacus",
+      "englishName": "Hepatic Arterial Tree & Celiac Trunk",
+      "system": "vascular",
+      "layer": 2,
+      "color": "#ef4444",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "celiac_trunk", "name": "Thân Tạng (Truncus Coeliacus)", "explodeVector": [0, 0.2, 0.3] },
+        { "id": "common_hepatic_art", "name": "Động Mạch Gan Chung (Common Hepatic Artery)", "explodeVector": [0.2, 0.1, 0.2] },
+        { "id": "proper_hepatic_art", "name": "Động Mạch Gan Riêng (Proper Hepatic Artery)", "explodeVector": [0.1, 0.3, 0.2] },
+        { "id": "splenic_art", "name": "Động Mạch Lách (Splenic Artery)", "explodeVector": [-0.4, 0.1, 0.1] },
+        { "id": "left_gastric_art", "name": "Động Mạch Vị Trái (Left Gastric Artery)", "explodeVector": [-0.1, 0.3, 0.1] }
+      ],
+      "location": "Xuất phát từ mặt trước động mạch chủ bụng ngang mức bờ dưới đốt sống T12 - L1, ngay dưới cơ hoành.",
+      "structure": "Thân tạng là một thân mạch ngắn (dài 1.25 cm, đường kính 7 - 8 mm) tách ngay thành chạc 3 kinh điển: 1. ĐM vị trái (chạy lên tâm vị dạ dày); 2. ĐM lách (chạy uốn lượn bờ trên tụy); 3. ĐM gan chung (chạy sang phải). ĐM gan chung sau khi cho ĐM vị tá tràng thì đổi tên thành ĐM gan riêng chạy trong cuống gan (bên trái ống mật chủ, phía trước TM cửa) rồi chia 2 nhánh gan phải và gan trái đi vào nhu mô gan.",
+      "vasculature": "Cung cấp 25% lưu lượng máu đến gan (khoảng 300 - 400 ml/phút) nhưng cung cấp tới 50% lượng oxy nuôi dưỡng cho các tế bào nhu mô gan và toàn bộ đường mật trong gan.",
+      "physiology": "Cung cấp dòng máu động mạch giàu oxy áp lực cao nuôi dưỡng tế bào gan và các cấu trúc đường mật (ĐM gan là nguồn cấp máu duy nhất cho mạng lưới mao mạch quanh ống mật - Peribiliary Plexus).",
+      "clinicalNotes": "Tắc hoặc hoại tử động mạch gan sau ghép gan dẫn đến biến chứng thiếu máu thủng/hẹp đường mật tối cấp. Nút mạch hóa chất động mạch gan (TACE) là phương pháp điều trị chọn lọc cho Ung thư biểu mô tế bào gan (HCC) bằng cách bơm hóa chất và làm tắc nhánh động mạch gan nuôi khối u."
+    },
+    {
+      "id": "hepatic_veins",
+      "vietnameseName": "Các Tĩnh Mạch Trên Gan & TMC Dưới",
+      "latinName": "Venae Hepaticae & Vena Cava Inferior",
+      "englishName": "Hepatic Veins & Inferior Vena Cava",
+      "system": "vascular",
+      "layer": 3,
+      "color": "#1d4ed8",
+      "canLocalExplode": true,
+      "subComponents": [
+        { "id": "hepatic_veins_trio", "name": "Bộ 3 Tĩnh Mạch Trên Gan (Phải, Giữa, Trái)", "explodeVector": [0, 0.4, 0] },
+        { "id": "ivc_segment", "name": "Tĩnh Mạch Chủ Dưới Đoạn Sau Gan (IVC)", "explodeVector": [-0.1, 0, -0.3] }
+      ],
+      "location": "Nằm ở mặt hoành và bờ sau trên của gan, ngay dưới cơ hoành nơi TMC dưới chui qua lỗ tĩnh mạch chủ của cơ hoành (ngang mức T8) để đổ vào tâm nhĩ phải.",
+      "structure": "Gồm 3 thân tĩnh mạch lớn thoát ra từ nhu mô gan: 1. TM gan phải (lớn nhất, dẫn lưu phân thùy VI, VII, VIII); 2. TM gan giữa (chạy trong khe giữa ranh giới giữa gan phải và gan trái, dẫn lưu phân thùy IV, V, VIII); 3. TM gan trái (dẫn lưu phân thùy II, III). Cả 3 TM đổ trực tiếp vào mặt trước của Tĩnh mạch chủ dưới (IVC) đoạn sau gan nằm trong rãnh tĩnh mạch chủ của gan.",
+      "vasculature": "Thu gom toàn bộ dòng máu tĩnh mạch từ các xoang gan (sau khi máu từ TM cửa và ĐM gan hòa trộn qua lưới mao mạch nan hoa) để đưa về tim phải với lưu lượng lên tới 1.5 lít/phút.",
+      "physiology": "Dẫn lưu dòng máu ra khỏi gan về tuần hoàn đại tuần hoàn, duy trì áp lực xoang gan ở mức thấp (khoảng 2 - 5 mmHg) để bảo đảm sự trao đổi chất nhịp nhàng giữa tế bào gan và dòng máu.",
+      "clinicalNotes": "Hội chứng Budd-Chiari (tắc các tĩnh mạch trên gan do huyết khối hoặc màng ngăn) gây ứ trệ tuần hoàn máu nặng nề tại gan, gan to đau cấp tính, cổ trướng kháng trị và suy gan cấp. Trong phẫu thuật cắt gan (Hepatectomy), phẫu thuật viên dựa vào đường đi của 3 TM trên gan để phân chia các mặt phẳng cắt vô mạch (Avascular cleavage planes)."
     }
   ]
 }
