@@ -459,6 +459,33 @@ export class SceneView {
         };
       }
 
+      // 50% Coronal Cutaway Discard Shader for Circulatory Vessels (Stomach anterior region)
+      if (['portal_system', 'hepatic_artery', 'hepatic_veins'].includes(organId)) {
+        mat.side = THREE.DoubleSide;
+        mat.userData.uVesselCutActive = { value: 0.0 };
+        mat.userData.uVesselCutZ = { value: 7.2 };
+        mat.onBeforeCompile = (shader) => {
+          shader.uniforms.uVesselCutActive = mat.userData.uVesselCutActive;
+          shader.uniforms.uVesselCutZ = mat.userData.uVesselCutZ;
+          shader.vertexShader = `
+            varying vec3 vVesselWorldPos;
+          ` + shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            `#include <begin_vertex>
+             vVesselWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`
+          );
+          shader.fragmentShader = `
+            uniform float uVesselCutActive;
+            uniform float uVesselCutZ;
+            varying vec3 vVesselWorldPos;
+          ` + shader.fragmentShader.replace(
+            '#include <clipping_planes_fragment>',
+            `#include <clipping_planes_fragment>
+             if (uVesselCutActive > 0.5 && vVesselWorldPos.z > uVesselCutZ && vVesselWorldPos.x > -2.5 && vVesselWorldPos.x < 7.5 && vVesselWorldPos.y > 109.5 && vVesselWorldPos.y < 122.5) discard;`
+          );
+        };
+      }
+
       child.material = mat;
       child.castShadow = true;
       child.receiveShadow = true;
@@ -1358,6 +1385,60 @@ export class SceneView {
       };
     }
 
+    // 7. Peritoneum & Omentum Functional Heatmap Regions
+    if (isRegions && (organId === 'peritoneum_omentum' || mesh.userData.organId === 'peritoneum_omentum')) {
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      let reg = 'greater_omentum';
+      if (low.includes('lesser') || low.includes('minor') || low.includes('minus')) reg = 'lesser_omentum';
+      else if (low.includes('mesocolon')) reg = 'mesocolon';
+      else if (low.includes('appendix') || low.includes('meso')) reg = 'meso_appendix';
+      else reg = 'greater_omentum';
+
+      const palP = this._getThermalPalette(4);
+      const peritCards = {
+        lesser_omentum: {
+          color: '#' + palP[0].getHexString(),
+          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
+          badge: 'Cuống Gan & Lỗ Winslow • Nóng Nhất',
+          title: 'Mạc Nối Nhỏ (Omentum Minus / Lesser Omentum)',
+          subtitle: 'Nếp phúc mạc căng từ rốn gan và khe dây chằng tĩnh mạch đến bờ cong nhỏ dạ dày và tá tràng (Dây chằng Gan - Vị & Dây chằng Gan - Tá tràng). Bờ tự do bên phải chứa Cuống gan (TM Cửa, ĐM Gan riêng, Ống mật chủ) và giới hạn bờ trước Lỗ Winslow dẫn vào hậu cung mạc nối.'
+        },
+        mesocolon: {
+          color: '#' + palP[1].getHexString(),
+          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
+          badge: 'Ranh Giới Tầng Trên - Dưới Ổ Bụng',
+          title: 'Mạc Treo Đại Tràng Ngang (Mesocolon Transversum)',
+          subtitle: 'Bản phúc mạc rộng treo đại tràng ngang vào thành bụng sau (băng ngang mặt trước tụy và tá tràng). Ranh giới giải phẫu chia ổ phúc mạc thành 2 tầng: Tầng trên mạc treo (chứa gan, dạ dày, lách) và Tầng dưới mạc treo (chứa ruột non, đại tràng).'
+        },
+        greater_omentum: {
+          color: '#' + palP[2].getHexString(),
+          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
+          badge: 'Người Cảnh Sát Ổ Bụng • 4 Lá Phúc Mạc',
+          title: 'Mạc Nối Lớn (Omentum Majus / Greater Omentum)',
+          subtitle: 'Tấm "tạp dề" mỡ kép gồm 4 lá phúc mạc rủ xuống từ bờ cong lớn dạ dày phủ lên trước các quai ruột non. Rất giàu mạch máu, tế bào mỡ và đám tế bào lympho ("vết sữa" - milky spots), có khả năng di chuyển bao vây khu trú ổ nhiễm trùng hoặc lỗ thủng tạng ("Người cảnh sát ổ bụng").'
+        },
+        meso_appendix: {
+          color: '#' + palP[3].getHexString(),
+          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
+          badge: 'Động Mạch Ruột Thừa • Lạnh Nhất',
+          title: 'Mạc Treo Ruột Thừa & Hố Chậu Phải (Meso-appendix)',
+          subtitle: 'Nếp phúc mạc hình tam giác bắt nguồn từ mặt sau mạc treo đoạn cuối hồi tràng đến ruột thừa. Bờ tự do chứa Động mạch ruột thừa (nhánh tận của ĐM hồi đại tràng) - mốc kẹp thắt mạch máu then chốt trong phẫu thuật cắt ruột thừa nội soi.'
+        }
+      };
+      const c = peritCards[reg];
+      return {
+        organId: 'peritoneum_omentum',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
     if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) {
       const shortThickness = (mesh.userData.wallLayerThickness || '').split('(')[0].trim();
       const organTitle = mesh.userData.organTitle ? mesh.userData.organTitle.toUpperCase() : 'MÔ HỌC';
@@ -1470,6 +1551,12 @@ export class SceneView {
       } else {
         subPartTitle = 'Vùng Miệng & Hầu (Oral Cavity & Pharynx)';
       }
+    } else if (organId === 'peritoneum_omentum') {
+      if (low.includes('lesser')) subPartTitle = 'Mạc Nối Nhỏ (Lesser Omentum)';
+      else if (low.includes('greater')) subPartTitle = 'Mạc Nối Lớn (Greater Omentum)';
+      else if (low.includes('mesocolon')) subPartTitle = 'Mạc Treo Đại Tràng Ngang (Transverse Mesocolon)';
+      else if (low.includes('appendix')) subPartTitle = 'Mạc Treo Ruột Thừa (Meso-appendix)';
+      else subPartTitle = 'Hệ Thống Phúc Mạc & Mạc Nối';
     } else if (organId === 'salivary_glands') {
       if (low.includes('parotid')) subPartTitle = 'Tuyến Mang Tai (Parotid Gland)';
       else if (low.includes('submandibular')) subPartTitle = 'Tuyến Dưới Hàm (Submandibular Gland)';
@@ -1810,13 +1897,17 @@ export class SceneView {
       organLayersMap: this.stomachBuilder ? this.stomachBuilder.organLayersMap : null
     });
 
-    // Update Midsagittal 50% Cutaway for Oral Cavity (Median vertical cut X = 0)
+    // Update Midsagittal 50% Cutaway for Oral Cavity & Coronal Cutaway for Vessels
     const isCutaway = this.dissectionVM.state.isCutawayOpen;
     const selectedId = this.sceneVM.state.selectedOrganId;
     const shouldCutOral = isCutaway && (!selectedId || selectedId === 'oral_cavity');
+    const shouldCutStomachVessels = isCutaway && (!selectedId || selectedId === 'stomach');
     this.clickableMeshes.forEach((mesh) => {
       if (mesh.userData.organId === 'oral_cavity' && mesh.material && mesh.material.userData && mesh.material.userData.uCutawayActive) {
         mesh.material.userData.uCutawayActive.value = shouldCutOral ? 1.0 : 0.0;
+      }
+      if (['portal_system', 'hepatic_artery', 'hepatic_veins'].includes(mesh.userData.organId) && mesh.material && mesh.material.userData && mesh.material.userData.uVesselCutActive) {
+        mesh.material.userData.uVesselCutActive.value = shouldCutStomachVessels ? 1.0 : 0.0;
       }
     });
 
@@ -2293,9 +2384,9 @@ export class SceneView {
           } else {
             // Whole system: uniform light gray
             mesh.visible = true;
-            mesh.material.transparent = isXRay;
-            mesh.material.opacity = isXRay ? 0.35 : 1.0;
-            mesh.material.depthWrite = true;
+            mesh.material.transparent = isXRay || (organTargetId === 'peritoneum_omentum');
+            mesh.material.opacity = (organTargetId === 'peritoneum_omentum') ? 0.10 : (isXRay ? 0.35 : 1.0);
+            mesh.material.depthWrite = organTargetId !== 'peritoneum_omentum';
           }
         }
       } else {
@@ -2387,24 +2478,38 @@ export class SceneView {
       applyColorsToMesh(mesh, () => segColor, 'liver');
     });
 
-    // 9. Update any remaining clickable meshes (oral cavity, teeth, jaws, vessels, etc.)
+    // 9. Peritoneum & Omentum Functional Heatmap (4 anatomical regions: Hot -> Cold)
+    // Lesser Omentum (hot rose) -> Mesocolon (warm peach) -> Greater Omentum (mint to aqua) -> Meso-appendix (lavender)
+    const palPerit = this._getThermalPalette(4);
+    this.clickableMeshes.forEach(mesh => {
+      if (mesh.userData.organId !== 'peritoneum_omentum') return;
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      if (low.includes('lesser') || low.includes('minor') || low.includes('minus')) {
+        // Lesser Omentum: Top hot coral
+        applyColorsToMesh(mesh, () => palPerit[0], 'peritoneum_omentum');
+      } else if (low.includes('mesocolon')) {
+        // Transverse Mesocolon: Warm peach
+        applyColorsToMesh(mesh, () => palPerit[1], 'peritoneum_omentum');
+      } else if (low.includes('greater') || low.includes('majus')) {
+        // Greater Omentum: Fresh Mint to Sky Aqua vertical gradient
+        applyColorsToMesh(mesh, (x, y) => {
+          const s = THREE.MathUtils.clamp((116.3 - y) / (116.3 - 88.0), 0, 1);
+          return this._sampleContinuousThermalColor(0.55 + 0.20 * s);
+        }, 'peritoneum_omentum');
+      } else if (low.includes('appendix') || low.includes('meso')) {
+        // Meso-appendix & Pelvic Douglas fold: Coolest pastel violet
+        applyColorsToMesh(mesh, () => palPerit[3], 'peritoneum_omentum');
+      }
+    });
+
+    // 10. Update any remaining clickable meshes (oral cavity, teeth, jaws, vessels, etc.)
     this.clickableMeshes.forEach(mesh => {
       const orgId = mesh.userData.organId;
-      if (['stomach', 'duodenum', 'pancreas', 'large_intestine', 'esophagus', 'gallbladder_tree', 'small_intestine', 'liver'].includes(orgId)) {
+      if (['stomach', 'duodenum', 'pancreas', 'large_intestine', 'esophagus', 'gallbladder_tree', 'small_intestine', 'liver', 'peritoneum_omentum'].includes(orgId)) {
         return; // Already handled above
       }
       if (isRegions) {
         updateMaterialHeatmapState(mesh, true);
-        if (orgId === 'peritoneum_omentum') {
-          // Omentum is a curtain covering intestines: keep hidden or very faint in heatmap mode
-          mesh.visible = (!isIsolate && !selectedId);
-          if (mesh.visible) {
-            mesh.material.transparent = true;
-            mesh.material.opacity = 0.08;
-            mesh.material.depthWrite = false;
-          }
-          return;
-        }
         if (selectedId && orgId !== selectedId) {
           mesh.visible = !isIsolate;
           if (!isIsolate) {

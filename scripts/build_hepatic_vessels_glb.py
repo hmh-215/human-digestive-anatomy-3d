@@ -66,6 +66,42 @@ def interpolate_catmull_rom(pts, num_out):
     res.append(pts[-1])
     return res
 
+def adjust_left_vein(pts):
+    """
+    Reroutes Left Gastro-omental Vein along the greater curvature outside the stomach wall
+    and connects to the splenic vein behind the stomach without penetrating stomach lumen.
+    """
+    new_pts = []
+    for x, y, z in pts:
+        if x <= 7.5:
+            target_y = min(y, 110.05 + 0.15 * max(0.0, x - 3.56))
+            t_z = max(0.0, min(1.0, (x - 3.56) / 3.94))
+            target_z = 7.75 * (1 - t_z) + 4.50 * t_z
+            new_pts.append((x, target_y, target_z))
+        else:
+            t = (x - 7.5) / (8.56 - 7.5)
+            t = max(0.0, min(1.0, t))
+            t_s = t * t * (3 - 2 * t)
+            target_y = 110.64 * (1 - t_s) + 115.95 * t_s
+            target_z = 4.50 * (1 - t_s) + (-0.50) * t_s
+            new_pts.append((x, target_y, target_z))
+    return new_pts
+
+def adjust_right_vein(pts):
+    """
+    Reroutes Right Gastro-omental Vein along the greater curvature outside the stomach wall
+    in the gastrocolic ligament.
+    """
+    new_pts = []
+    for x, y, z in pts:
+        if -3.15 <= x <= 3.8:
+            target_y = min(y, 110.05 + 0.45 * max(0.0, -x - 0.5))
+            target_z = max(z, 7.50)
+            new_pts.append((x, target_y, target_z))
+        else:
+            new_pts.append((x, y, z))
+    return new_pts
+
 def generate_tube_mesh(points, radii, name, organ_id, display_name, couinaud_seg=None, vessel_role=None):
     if len(points) < 2:
         return None
@@ -191,14 +227,14 @@ def build_couinaud_vascular_tree():
     # =========================================================================
     # A. THE 3 MAJOR HEPATIC VEINS (Intersegmental Venous Cleavage Planes)
     # =========================================================================
-    ivc_drainage_pt = (-0.75, 124.2, 0.8)
+    ivc_drainage_pt = (-0.75, 122.8, 0.8)
 
     # 1. Middle Hepatic Vein (Cantlie's line: separates Right V/VIII and Left IV)
     mhv_pts = [
         (-3.8, 115.5, 5.2),
         (-3.0, 117.8, 4.4),
         (-2.2, 120.5, 3.1),
-        (-1.4, 122.8, 1.8),
+        (-1.4, 122.0, 1.8),
         ivc_drainage_pt
     ]
     mhv_smooth = interpolate_catmull_rom(mhv_pts, 16)
@@ -211,11 +247,11 @@ def build_couinaud_vascular_tree():
 
     # 2. Right Hepatic Vein (Right scissure: separates Right Lateral VI/VII and Medial V/VIII)
     rhv_pts = [
-        (-8.2, 114.2, 1.4),
-        (-7.8, 116.8, 1.5),
-        (-7.0, 119.5, 1.6),
-        (-4.5, 122.2, 1.4),
-        (-1.2, 123.8, 0.9),
+        (-7.4, 114.5, 1.4),
+        (-7.0, 116.8, 1.5),
+        (-6.2, 119.5, 1.6),
+        (-4.0, 121.5, 1.4),
+        (-1.2, 122.5, 0.9),
         ivc_drainage_pt
     ]
     rhv_smooth = interpolate_catmull_rom(rhv_pts, 18)
@@ -230,8 +266,8 @@ def build_couinaud_vascular_tree():
     lhv_pts = [
         (2.8, 118.5, 5.6),
         (2.2, 120.2, 4.4),
-        (1.2, 122.0, 2.8),
-        (-0.2, 123.5, 1.4),
+        (1.2, 121.5, 2.8),
+        (-0.2, 122.5, 1.4),
         ivc_drainage_pt
     ]
     lhv_smooth = interpolate_catmull_rom(lhv_pts, 16)
@@ -446,6 +482,16 @@ def build_complete_hepatic_and_mesenteric_vessels():
                                     knots.append({'h1': h1, 'co': co, 'h2': h2, 'radius': r_eff})
 
                                 if len(knots) >= 2:
+                                    # Filter/trim specific curves to prevent organ penetrations or air protrusions
+                                    if cu_name == 'CUProper hepatic artery':
+                                        if spline_idx == 3:
+                                            # Skip spline 3 (protrudes into air at lateral liver border)
+                                            nurb_addr = next_nurb
+                                            continue
+                                        if spline_idx == 1 and len(knots) > 9:
+                                            # Trim knots 9..12 which reach X < -9.2 and poke out of liver margin
+                                            knots = knots[:9]
+
                                     # Subdivide knots into smooth 3D tube path
                                     sampled_pts = []
                                     sampled_rad = []
@@ -473,6 +519,14 @@ def build_complete_hepatic_and_mesenteric_vessels():
                                             sampled_rad.append(r0*(1.0-t) + r1*t)
                                     sampled_pts.append(transform_point(knots[-1]['co'], ob_mat))
                                     sampled_rad.append(knots[-1]['radius'] * 100.0)
+
+                                    # Adjust vessels that penetrate organs or protrude into air
+                                    if cu_name in ['CUInferior vena cava (abdominal part)', 'CUHepatic veins']:
+                                        sampled_pts = [(p[0], min(p[1], 122.2), p[2]) for p in sampled_pts]
+                                    elif cu_name == 'CULeft gastro-omental vein':
+                                        sampled_pts = adjust_left_vein(sampled_pts)
+                                    elif cu_name == 'CURight gastro-omental vein':
+                                        sampled_pts = adjust_right_vein(sampled_pts)
 
                                     sub_name = f"{cu_name[2:]}_spline_{spline_idx}" if spline_idx > 1 else cu_name[2:]
                                     sub_disp = f"{display_name} (Nhánh {spline_idx})" if spline_idx > 1 else display_name
