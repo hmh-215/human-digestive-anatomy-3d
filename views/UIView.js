@@ -131,27 +131,6 @@ export class UIView {
       });
     });
 
-    // 4b. Organ View Mode Toggle (Body Map vs Categorized List)
-    const btnBodyMap = document.getElementById('btn-view-bodymap');
-    const btnList = document.getElementById('btn-view-list');
-    const bodyMapContainer = document.getElementById('organ-bodymap-container');
-    const listContainer = document.getElementById('organ-list-container');
-
-    if (btnBodyMap && btnList) {
-      btnBodyMap.addEventListener('click', () => {
-        btnBodyMap.classList.add('active');
-        btnList.classList.remove('active');
-        if (bodyMapContainer) bodyMapContainer.classList.remove('hidden');
-        if (listContainer) listContainer.classList.add('hidden');
-      });
-      btnList.addEventListener('click', () => {
-        btnList.classList.add('active');
-        btnBodyMap.classList.remove('active');
-        if (bodyMapContainer) bodyMapContainer.classList.add('hidden');
-        if (listContainer) listContainer.classList.remove('hidden');
-      });
-    }
-
     // 5. Task 2: Per-Organ 50% Longitudinal Cutaway Toggle (works on any hollow organ!)
     if (this.cutawayBtn) {
       this.cutawayBtn.addEventListener('click', () => {
@@ -379,7 +358,7 @@ export class UIView {
     this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {
       if (this.cutawayBtn) {
         this.cutawayBtn.classList.toggle('active', isOpen);
-        this.cutawayBtn.textContent = isOpen ? '✖ Đóng Mặt Cắt' : '✂️ Mặt Cắt Dọc 50%';
+        this.cutawayBtn.textContent = isOpen ? 'Đóng Mặt Cắt' : 'Mặt Cắt Dọc 50%';
       }
     });
 
@@ -395,6 +374,18 @@ export class UIView {
       if (this.labelModeRegions) {
         this.labelModeRegions.classList.toggle('active', !isLayers);
       }
+
+      // Hide explode control card in regions mode (no exploding in heatmap mode)
+      const explodeCard = document.querySelector('.explode-control-card');
+      if (explodeCard) {
+        explodeCard.classList.toggle('hidden', !isLayers);
+      }
+
+      // In heatmap mode, ensure explode factor is reset to 0
+      if (!isLayers && (this.dissectionVM.state.explodeFactor || 0) > 0) {
+        this.dissectionVM.setExplodeFactor(0);
+      }
+
       if (this.explodeHelperText) {
         if (!isLayers) {
           this.explodeHelperText.textContent = 'Chế độ Phân Vùng Chức Năng: Rê chuột để xem tên và chức năng sinh lý/bệnh học từng phân vùng giải phẫu';

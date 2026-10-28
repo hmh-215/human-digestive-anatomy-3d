@@ -900,40 +900,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 /* ========================================================
    ANATOMICAL BODY MAP NAVIGATOR & CATEGORIZED LIST
    ======================================================== */
-.organ-view-mode-bar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
-  background: var(--bg-primary);
-  padding: 3px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.sub-tab-btn {
-  flex: 1;
-  padding: 5px 8px;
-  font-size: 11px;
-  font-weight: 700;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  text-align: center;
-}
-
-.sub-tab-btn:hover {
-  color: var(--text-main);
-}
-
-.sub-tab-btn.active {
-  background: var(--bg-surface);
-  color: var(--primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
 .anatomical-body-map-card {
   position: relative;
   width: 100%;
@@ -1041,39 +1007,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .pin-large-int {
   top: 300px;
   left: 50%;
-}
-
-/* Categorized List View */
-.categorized-organ-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  max-height: 336px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.organ-category-group {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 6px 8px;
-}
-
-.category-header {
-  display: block;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  margin-bottom: 5px;
-  text-transform: uppercase;
-}
-
-.category-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
 }
 
 /* ========================================================

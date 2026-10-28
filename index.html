@@ -106,15 +106,9 @@
         </div>
       </div>
 
-      <!-- TAB 2 PANE: ISOLATED ORGAN LAYER SELECTOR CHIPS & ANATOMICAL BODY MAP -->
+      <!-- TAB 2 PANE: ISOLATED ORGAN ANATOMICAL BODY MAP -->
       <div id="tab-pane-organ" class="dock-tab-pane hidden">
-        <!-- VIEW MODE SELECTOR (BODY MAP vs CATEGORIZED LIST) -->
-        <div class="organ-view-mode-bar">
-          <button id="btn-view-bodymap" class="sub-tab-btn active" title="Định vị trực quan trên sơ đồ cơ thể người">Sơ Đồ Cơ Thể</button>
-          <button id="btn-view-list" class="sub-tab-btn" title="Danh sách phân nhóm giải phẫu ĐHYHN">Danh Sách</button>
-        </div>
-
-        <!-- 1. INTERACTIVE ANATOMICAL BODY MAP (CLINICAL SURFACE ANATOMY) -->
+        <!-- INTERACTIVE ANATOMICAL BODY MAP (CLINICAL SURFACE ANATOMY) -->
         <div id="organ-bodymap-container" class="anatomical-body-map-card">
           <svg class="body-silhouette-svg" viewBox="0 0 320 370" preserveAspectRatio="xMidYMid meet">
             <!-- Head & Chin Contour -->
@@ -159,47 +153,6 @@
           <button class="organ-chip body-pin pin-portal" data-organ="portal_system" title="Hệ Thống Mạch Máu Cửa Gan">Mạch Cửa</button>
           <button class="organ-chip body-pin pin-small-int" data-organ="small_intestine" title="Ruột Non - Hỗng Tràng & Hồi Tràng">Ruột Non</button>
           <button class="organ-chip body-pin pin-large-int" data-organ="large_intestine" title="Đại Tràng Toàn Khung & Ruột Thừa">Đại Tràng</button>
-        </div>
-
-        <!-- 2. CATEGORIZED ANATOMICAL TIERS LIST (TOGGLED VIA BUTTON) -->
-        <div id="organ-list-container" class="categorized-organ-list hidden">
-          <div class="organ-category-group">
-            <span class="category-header">ĐẦU MẶT CỔ</span>
-            <div class="category-chips">
-              <button class="organ-chip" data-organ="oral_cavity">Vùng Miệng</button>
-            </div>
-          </div>
-          <div class="organ-category-group">
-            <span class="category-header">NGỰC TRUNG THẤT</span>
-            <div class="category-chips">
-              <button class="organ-chip" data-organ="esophagus">Thực Quản</button>
-            </div>
-          </div>
-          <div class="organ-category-group">
-            <span class="category-header">THƯỢNG VỊ & DƯỚI HOÀNH</span>
-            <div class="category-chips">
-              <button class="organ-chip" data-organ="liver">Gan</button>
-              <button class="organ-chip" data-organ="gallbladder_tree">Túi Mật</button>
-              <button class="organ-chip" data-organ="stomach">Dạ Dày</button>
-              <button class="organ-chip" data-organ="pancreas">Tụy</button>
-              <button class="organ-chip" data-organ="duodenum">Tá Tràng</button>
-            </div>
-          </div>
-          <div class="organ-category-group">
-            <span class="category-header">HỆ MẠCH CỬA & TUẦN HOÀN GAN</span>
-            <div class="category-chips">
-              <button class="organ-chip" data-organ="portal_system">Mạch Cửa</button>
-              <button class="organ-chip" data-organ="hepatic_artery">Động Mạch Gan</button>
-              <button class="organ-chip" data-organ="hepatic_veins">Tĩnh Mạch Gan</button>
-            </div>
-          </div>
-          <div class="organ-category-group">
-            <span class="category-header">HẠ VỊ & Ổ BỤNG DƯỚI</span>
-            <div class="category-chips">
-              <button class="organ-chip" data-organ="small_intestine">Ruột Non</button>
-              <button class="organ-chip" data-organ="large_intestine">Đại Tràng</button>
-            </div>
-          </div>
         </div>
       </div>
 

@@ -947,6 +947,282 @@ export class SceneView {
       }
     }
 
+    // 2. Duodenum Functional Heatmap Regions (Matching user illustration: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
+    if (isRegions && (organId === 'duodenum' || mesh.userData.organId === 'duodenum')) {
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const x = localPt.x, y = localPt.y;
+
+      let reg = 'd3';
+      if (y >= 111.8 && x >= -4.8) reg = 'd1';
+      else if (y >= 111.0 && x < -4.8) reg = 'flex_sup';
+      else if (x < -4.2 && y >= 106.5) reg = 'd2';
+      else if (x < -3.8 && y < 106.5) reg = 'flex_inf';
+      else if (y <= 107.2 && x <= 0.5) reg = 'd3';
+      else reg = 'd4';
+
+      const duodCards = {
+        d1: {
+          color: '#38bdf8',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Hành Tá Tràng (D1) • L1',
+          title: 'Đoạn Trên - Hành Tá Tràng (Pars Superior / Bulbus Duodeni)',
+          subtitle: 'Đoạn di động duy nhất của tá tràng, tiếp nối ống môn vị tại đốt sống L1. Niêm mạc nhẵn không có nếp van Kerckring; vị trí xuất hiện >90% các ổ loét tá tràng do acid dịch vị (Peptic Ulcer).'
+        },
+        flex_sup: {
+          color: '#0284c7',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Góc Tá Trên L1',
+          title: 'Góc Tá Trên (Flexura Duodeni Superior)',
+          subtitle: 'Khúc ngoặt 90 độ giữa D1 và D2 nằm ngay dưới gan và túi mật, ngang mức bờ phải đốt sống thắt lưng L1.'
+        },
+        d2: {
+          color: '#10b981',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Nhú Tá Lớn (Vater) • L2-L3',
+          title: 'Đoạn Xuống & Nhú Tá Lớn (Pars Descendens & Papilla Duodeni Major)',
+          subtitle: 'Chạy thẳng đứng dọc bờ phải cột sống L2-L3. Thành sau trong chứa Nhú tá lớn (Vater) có cơ thắt Oddi điều hòa dịch mật và tụy đổ vào, và Nhú tá bé của ống tụy phụ Santorini.'
+        },
+        flex_inf: {
+          color: '#f59e0b',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Góc Tá Dưới L3',
+          title: 'Góc Tá Dưới (Flexura Duodeni Inferior)',
+          subtitle: 'Góc gấp khúc chuyển tiếp giữa đoạn xuống D2 và đoạn ngang D3 tại mức đốt sống L3.'
+        },
+        d3: {
+          color: '#f97316',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Bắt Chéo ĐMC & TMC Dưới • L3',
+          title: 'Đoạn Ngang (Pars Horizontalis / Pars Inferior)',
+          subtitle: 'Chạy ngang sang trái băng qua trước IVC và Động mạch chủ bụng tại L3. Bị kẹp phía trước bởi Động mạch mạc treo tràng trên (SMA), có thể gây hội chứng kìm động mạch Wilkie.'
+        },
+        d4: {
+          color: '#ec4899',
+          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          badge: 'Dây Chằng Treitz • L2',
+          title: 'Đoạn Lên & Góc Tá Hỗng Tràng (Pars Ascendens & Flexura Treitz)',
+          subtitle: 'Chạy chếch lên trái đến L2 nối tiếp với hỗng tràng. Cố định bởi Cơ treo tá tràng (Dây chằng Treitz) - mốc ngoại khoa phân định ranh giới Xuất huyết tiêu hóa trên và Xuất huyết tiêu hóa dưới.'
+        }
+      };
+      const c = duodCards[reg];
+      return {
+        organId: 'duodenum',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
+    // 3. Large Intestine / Colon Functional Heatmap Regions
+    if (isRegions && (organId === 'large_intestine' || mesh.userData.organId === 'large_intestine')) {
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const x = localPt.x, y = localPt.y;
+
+      let reg = 'transverse';
+      if (x <= -4.5 && y <= 96.0) reg = 'cecum';
+      else if (x <= -4.0 && y > 96.0) reg = 'ascending';
+      else if (y >= 106.0 && x > -4.0) reg = 'transverse';
+      else if (x >= 3.0 && y >= 87.0 && y < 106.0) reg = 'descending';
+      else if (y < 93.0) reg = 'sigmoid';
+
+      const colonCards = {
+        cecum: {
+          color: '#e11d48',
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          badge: 'Điểm McBurney • Hố Chậu P',
+          title: 'Manh Tràng & Ruột Thừa (Caecum & Appendix Vermiformis)',
+          subtitle: 'Túi cùng nằm ở hố chậu phải dưới van hồi manh tràng Bauhin. Ruột thừa chứa mô bạch huyết dày đặc, vị trí điểm đau ngoại khoa kinh điển McBurney trong viêm ruột thừa cấp.'
+        },
+        ascending: {
+          color: '#16a34a',
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          badge: 'Mạc Dính Toldt P • Góc Gan',
+          title: 'Đại Tràng Lên & Góc Gan (Colon Ascendens & Flexura Coli Dextra)',
+          subtitle: 'Chạy dọc rãnh đại tràng phải lên bờ dưới gan tạo thành Góc gan. Cố định bởi mạc dính Toldt phải; hấp thu chủ yếu nước và điện giải (Na+, Cl-).'
+        },
+        transverse: {
+          color: '#059669',
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          badge: 'Mạc Treo Di Động • Góc Lách',
+          title: 'Đại Tràng Ngang & Góc Lách (Colon Transversum & Flexura Coli Sinistra)',
+          subtitle: 'Đoạn dài nhất và di động nhất nhờ mạc treo đại tràng ngang. Treo cong hình chữ U từ góc gan sang góc lách; mạc nối lớn phủ mặt trước như tấm rào chắn chống viêm nhiễm ổ bụng.'
+        },
+        descending: {
+          color: '#0284c7',
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          badge: 'Mạc Dính Toldt T • Mạn Sườn T',
+          title: 'Đại Tràng Xuống (Colon Descendens)',
+          subtitle: 'Chạy từ góc lách dọc mạn sườn trái xuống mào chậu. Cố định bởi mạc dính Toldt trái, lòng hẹp chứa phân đặc, vị trí thường gặp u dạng vòng nhẫn gây bán tắc ruột.'
+        },
+        sigmoid: {
+          color: '#8b5cf6',
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          badge: 'Mạc Treo Sigma • Hố Chậu T',
+          title: 'Đại Tràng Sigma (Colon Sigmoideum)',
+          subtitle: 'Quai ruột hình chữ S di động ở hố chậu trái nối tiếp trực tràng ngang mức S3. Có mạc treo riêng hình chữ V; vị trí hay gặp túi thừa đại tràng và xoắn đại tràng sigma.'
+        }
+      };
+      const c = colonCards[reg];
+      return {
+        organId: 'large_intestine',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
+    // 4. Esophagus Functional Heatmap Regions
+    if (isRegions && (organId === 'esophagus' || mesh.userData.organId === 'esophagus')) {
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const y = localPt.y;
+
+      let reg = 'thoracic';
+      if (y > 138.0) reg = 'cervical';
+      else if (y <= 123.0) reg = 'abdominal';
+
+      const esophCards = {
+        cervical: {
+          color: '#38bdf8',
+          tag: 'PHÂN VÙNG THỰC QUẢN',
+          badge: 'Miệng Thực Quản C6',
+          title: 'Đoạn Cổ Thực Quản (Pars Cervicalis Oesophagi)',
+          subtitle: 'Khởi đầu từ bờ dưới sụn nhẫn C6 (chỗ hẹp trên cùng ~15cm từ cung răng), đi sau khí quản và trước cột sống cổ.'
+        },
+        thoracic: {
+          color: '#f59e0b',
+          tag: 'PHÂN VÙNG THỰC QUẢN',
+          badge: 'Chỗ Hẹp Quai ĐMC T4-T5',
+          title: 'Đoạn Ngực Thực Quản (Pars Thoracica Oesophagi)',
+          subtitle: 'Nằm trong trung thất sau, áp sát mặt sau tâm nhĩ trái và phế quản chính trái (chỗ hẹp thứ hai ~22.5cm và 27.5cm từ cung răng).'
+        },
+        abdominal: {
+          color: '#10b981',
+          tag: 'PHÂN VÙNG THỰC QUẢN',
+          badge: 'Lỗ Cơ Hoành T10 • Góc His',
+          title: 'Đoạn Bụng Thực Quản (Pars Abdominalis Oesophagi)',
+          subtitle: 'Chui qua lỗ cơ hoành T10 (chỗ hẹp thứ ba ~40cm từ cung răng) dài khoảng 2-3cm trước khi đổ vào tâm vị dạ dày tại góc His; cơ thắt thực quản dưới (LES) ngăn trào ngược dạ dày thực quản (GERD).'
+        }
+      };
+      const c = esophCards[reg];
+      return {
+        organId: 'esophagus',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
+    // 5. Gallbladder & Biliary Tree Functional Heatmap Regions
+    if (isRegions && (organId === 'gallbladder_tree' || mesh.userData.organId === 'gallbladder_tree')) {
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const z = localPt.z;
+
+      let reg = 'corpus';
+      if (low.includes('bile') || low.includes('duct')) reg = 'bile_duct';
+      else if (z > 6.0) reg = 'fundus';
+      else if (z <= 4.5) reg = 'neck';
+
+      const gbCards = {
+        fundus: {
+          color: '#10b981',
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          badge: 'Điểm Đau Murphy • Sụn Sườn 9',
+          title: 'Đáy Túi Mật (Fundus Vesicae Biliaris)',
+          subtitle: 'Phần nhô ra khỏi bờ dưới gan tại khuyết túi mật, tiếp xúc trực tiếp thành bụng trước tại giao điểm bờ ngoài cơ thẳng bụng phải và bờ sườn 9 (Điểm Murphy kinh điển).'
+        },
+        corpus: {
+          color: '#14b8a6',
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          badge: 'Dự Trữ & Cô Đặc Dịch Mật',
+          title: 'Thân Túi Mật (Corpus Vesicae Biliaris)',
+          subtitle: 'Nằm áp sát vào hố túi mật ở mặt tạng của gan, có mô liên kết lỏng lẻo gắn chặt vào bao Glisson gan; niêm mạc tổ ong cô đặc dịch mật 5-10 lần bằng cách tái hấp thu nước.'
+        },
+        neck: {
+          color: '#f59e0b',
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          badge: 'Túi Cùng Hartmann • Kẹt Sỏi Mật',
+          title: 'Cổ Túi Mật & Túi Cùng Hartmann (Collum & Infundibulum)',
+          subtitle: 'Hình chữ S uốn lượn nối vào ống túi mật; phần phình Hartmann là nơi sỏi mật hay bị kẹt gây ứ nước túi mật và viêm túi mật cấp.'
+        },
+        bile_duct: {
+          color: '#0284c7',
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          badge: 'Tam Giác Calot • Nhú Vater',
+          title: 'Ống Mật Chủ (Ductus Choledochus)',
+          subtitle: 'Dẫn mật từ hợp lưu ống gan chung và ống túi mật đi trong cuống gan (phía trước tĩnh mạch cửa, bên phải động mạch gan riêng) chui sau đầu tụy cắm vào nhú tá lớn D2 tá tràng.'
+        }
+      };
+      const c = gbCards[reg];
+      return {
+        organId: 'gallbladder_tree',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
+    // 6. Small Intestine Functional Heatmap Regions
+    if (isRegions && (organId === 'small_intestine' || mesh.userData.organId === 'small_intestine')) {
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const x = localPt.x, y = localPt.y;
+
+      const reg = (x > 0 || y > 98.0) ? 'jejunum' : 'ileum';
+      const siCards = {
+        jejunum: {
+          color: '#f97316',
+          tag: 'PHÂN VÙNG RUỘT NON',
+          badge: 'Hấp Thu Đường Đạm • Nếp Gấp Villi',
+          title: 'Hỗng Tràng (Jejunum)',
+          subtitle: 'Chiếm 2/5 trên ruột non, quai ruột xếp nằm ngang ở ô bụng trên trái. Thành dày, đỏ hồng do mạch máu dồi dào, quai cung động mạch thưa (1-2 bậc) với động mạch thẳng dài; nếp gấp vòng Kerckring và nhung mao dày đặc tối ưu hấp thu carbohydrate và amino acid.'
+        },
+        ileum: {
+          color: '#a855f7',
+          tag: 'PHÂN VÙNG RUỘT NON',
+          badge: 'Hấp Thu Muối Mật & B12 • Mảng Peyer',
+          title: 'Hồi Tràng (Ileum)',
+          subtitle: 'Chiếm 3/5 dưới ruột non, quai ruột xếp thẳng đứng ở ô bụng dưới phải đổ vào manh tràng tại van Bauhin. Cung mạch phức tạp (3-5 tầng) với động mạch thẳng ngắn; tập trung các nang bạch huyết mảng Peyer miễn dịch và thụ thể tái hấp thu muối mật chu trình gan ruột và vitamin B12.'
+        }
+      };
+      const c = siCards[reg];
+      return {
+        organId: 'small_intestine',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
     if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) {
       const shortThickness = (mesh.userData.wallLayerThickness || '').split('(')[0].trim();
       const organTitle = mesh.userData.organTitle ? mesh.userData.organTitle.toUpperCase() : 'MÔ HỌC';
@@ -1683,107 +1959,187 @@ export class SceneView {
   }
 
   /**
-   * Applies vertex-colored Regional Functional Heatmaps for Stomach (matching user illustration:
-   * Cardia, Fundus, Corpus, Antrum, Pylorus) and Pancreas (Head/Uncinate, Neck, Body, Tail).
+   * Applies vertex-colored Regional Functional Heatmaps for all digestive organs:
+   * - Stomach (Cardia, Fundus, Corpus, Antrum, Pylorus)
+   * - Pancreas (Head/Uncinate, Neck, Body, Tail)
+   * - Duodenum (D1, Sup Flexure L1, D2, Inf Flexure L3, D3, D4 & Treitz)
+   * - Large Intestine (Cecum/Appendix, Ascending, Transverse, Descending, Sigmoid)
+   * - Esophagus (Cervical, Thoracic, Abdominal)
+   * - Small Intestine (Jejunum, Ileum)
+   * - Gallbladder & Biliary Tree (Fundus, Body, Neck/Hartmann, Common Bile Duct)
+   *
+   * In Heatmap mode (regions), inner concentric layers are hidden to present an intact anatomical 3D organ.
    */
   _applyFunctionalHeatmaps() {
     const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
 
-    // 1. Stomach Functional Heatmap (Matching user illustration 5 regions)
-    const stomachMeshes = this.stomachWallMeshes && this.stomachWallMeshes.length > 0
-      ? this.stomachWallMeshes
-      : this.clickableMeshes.filter(m => m.userData.organId === 'stomach');
+    // 0. Toggle layer visibility: in heatmap mode, show ONLY outermost layer (intact organ, no explosion)
+    if (this.stomachBuilder && this.stomachBuilder.organLayersMap) {
+      this.stomachBuilder.organLayersMap.forEach((layers) => {
+        if (!layers || layers.length === 0) return;
+        if (isRegions) {
+          layers[0].visible = true;
+          for (let i = 1; i < layers.length; i++) {
+            layers[i].visible = false;
+          }
+        } else {
+          for (let i = 0; i < layers.length; i++) {
+            layers[i].visible = true;
+            if (layers[i].material) {
+              layers[i].material.vertexColors = false;
+              layers[i].material.needsUpdate = true;
+            }
+          }
+        }
+      });
+    }
 
+    const applyColorsToMesh = (mesh, colorFn) => {
+      if (!mesh) return;
+      const geo = mesh.geometry;
+      if (!geo || !geo.attributes.position) return;
+
+      if (isRegions) {
+        if (!geo.attributes.color) {
+          const count = geo.attributes.position.count;
+          const colors = new Float32Array(count * 3);
+          const pos = geo.attributes.position;
+          for (let i = 0; i < count; i++) {
+            const c = colorFn(pos.getX(i), pos.getY(i), pos.getZ(i), i);
+            colors[i * 3]     = c.r;
+            colors[i * 3 + 1] = c.g;
+            colors[i * 3 + 2] = c.b;
+          }
+          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
+        if (mesh.material) {
+          mesh.material.vertexColors = true;
+          mesh.material.needsUpdate = true;
+        }
+      } else {
+        if (mesh.material) {
+          mesh.material.vertexColors = false;
+          mesh.material.needsUpdate = true;
+        }
+      }
+    };
+
+    // 1. Stomach Functional Heatmap (5 regions)
     const cFundus = new THREE.Color(0xf87171); // Salmon Red
     const cCardia = new THREE.Color(0x10b981); // Emerald Green
     const cCorpus = new THREE.Color(0xfb7185); // Peach Pink
     const cAntrum = new THREE.Color(0xc084fc); // Lilac Purple
     const cPylorus = new THREE.Color(0x38bdf8); // Sky Blue / Cyan
 
-    stomachMeshes.forEach(mesh => {
-      const geo = mesh.geometry;
-      if (!geo || !geo.attributes.position) return;
-
-      if (isRegions) {
-        if (!geo.attributes.color) {
-          const count = geo.attributes.position.count;
-          const colors = new Float32Array(count * 3);
-          const pos = geo.attributes.position;
-          for (let i = 0; i < count; i++) {
-            const x = pos.getX(i);
-            const y = pos.getY(i);
-            const z = pos.getZ(i);
-            let c = cCorpus;
-            if (y > 120.2 && x > 1.2) {
-              c = cFundus;
-            } else if (y >= 118.0 && x <= 2.5 && z <= 4.8) {
-              c = cCardia;
-            } else if (x <= -0.8 && y <= 114.2) {
-              c = cPylorus;
-            } else if (y <= 114.8 && x <= 3.5) {
-              c = cAntrum;
-            }
-            colors[i * 3]     = c.r;
-            colors[i * 3 + 1] = c.g;
-            colors[i * 3 + 2] = c.b;
-          }
-          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        }
-        if (mesh.material) {
-          mesh.material.vertexColors = true;
-          mesh.material.needsUpdate = true;
-        }
-      } else {
-        if (mesh.material) {
-          mesh.material.vertexColors = false;
-          mesh.material.needsUpdate = true;
-        }
-      }
+    const stomachTarget = (this.stomachWallMeshes && this.stomachWallMeshes.length > 0)
+      ? this.stomachWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'stomach');
+    applyColorsToMesh(stomachTarget, (x, y, z) => {
+      if (y > 120.2 && x > 1.2) return cFundus;
+      if (y >= 118.0 && x <= 2.5 && z <= 4.8) return cCardia;
+      if (x <= -0.8 && y <= 114.2) return cPylorus;
+      if (y <= 114.8 && x <= 3.5) return cAntrum;
+      return cCorpus;
     });
 
-    // 2. Pancreas Functional Heatmap (Head/Uncinate, Neck, Body, Tail)
-    const cHead = new THREE.Color(0xf59e0b); // Warm Amber (98% Exocrine)
-    const cNeck = new THREE.Color(0xeab308); // Lemon Yellow (Notch for SMA/SMV)
-    const cBody = new THREE.Color(0xf97316); // Deep Orange (Midline retroperitoneal)
-    const cTail = new THREE.Color(0xec4899); // Magenta/Pink (Endocrine Langerhans)
+    // 2. Pancreas Functional Heatmap (4 regions)
+    const cPancHead = new THREE.Color(0xf59e0b); // Warm Amber
+    const cPancNeck = new THREE.Color(0xeab308); // Lemon Yellow
+    const cPancBody = new THREE.Color(0xf97316); // Deep Orange
+    const cPancTail = new THREE.Color(0xec4899); // Magenta/Pink
 
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'pancreas') return;
       const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
       if (low.includes('duct')) return; // Ducts stay solid porcelain cyan
+      applyColorsToMesh(mesh, (x) => {
+        if (x < -1.5) return cPancHead;
+        if (x < 0.2) return cPancNeck;
+        if (x < 4.2) return cPancBody;
+        return cPancTail;
+      });
+    });
 
-      const geo = mesh.geometry;
-      if (!geo || !geo.attributes.position) return;
+    // 3. Duodenum Functional Heatmap (Matching user illustration: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
+    const cD1 = new THREE.Color(0x38bdf8);       // Cyan (D1 Hành tá tràng)
+    const cFlexSup = new THREE.Color(0x0284c7);  // Ocean Blue (Góc tá trên L1)
+    const cD2 = new THREE.Color(0x10b981);       // Emerald Green (D2 Đoạn xuống & Nhú Vater)
+    const cFlexInf = new THREE.Color(0xf59e0b);  // Amber (Góc tá dưới L3)
+    const cD3 = new THREE.Color(0xf97316);       // Deep Orange (D3 Đoạn ngang)
+    const cD4 = new THREE.Color(0xec4899);       // Magenta / Rose (D4 Đoạn lên & Góc Treitz)
 
-      if (isRegions) {
-        if (!geo.attributes.color) {
-          const count = geo.attributes.position.count;
-          const colors = new Float32Array(count * 3);
-          const pos = geo.attributes.position;
-          for (let i = 0; i < count; i++) {
-            const x = pos.getX(i);
-            let c = cBody;
-            if (x < -1.5) c = cHead;
-            else if (x < 0.2) c = cNeck;
-            else if (x < 4.2) c = cBody;
-            else c = cTail;
+    const duodTarget = (this.duodenumWallMeshes && this.duodenumWallMeshes.length > 0)
+      ? this.duodenumWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'duodenum');
+    applyColorsToMesh(duodTarget, (x, y) => {
+      if (y >= 111.8 && x >= -4.8) return cD1;
+      if (y >= 111.0 && x < -4.8) return cFlexSup;
+      if (x < -4.2 && y >= 106.5) return cD2;
+      if (x < -3.8 && y < 106.5) return cFlexInf;
+      if (y <= 107.2 && x <= 0.5) return cD3;
+      return cD4;
+    });
 
-            colors[i * 3]     = c.r;
-            colors[i * 3 + 1] = c.g;
-            colors[i * 3 + 2] = c.b;
-          }
-          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        }
-        if (mesh.material) {
-          mesh.material.vertexColors = true;
-          mesh.material.needsUpdate = true;
-        }
-      } else {
-        if (mesh.material) {
-          mesh.material.vertexColors = false;
-          mesh.material.needsUpdate = true;
-        }
-      }
+    // 4. Large Intestine / Colon Functional Heatmap (Cecum/Appendix, Ascending, Transverse, Descending, Sigmoid)
+    const cAppendix = new THREE.Color(0xe11d48);   // Crimson (Manh tràng & Ruột thừa)
+    const cAscending = new THREE.Color(0x16a34a);  // Forest Green (Đại tràng lên & Góc gan)
+    const cTransverse = new THREE.Color(0x059669); // Teal Green (Đại tràng ngang & Góc lách)
+    const cDescending = new THREE.Color(0x0284c7); // Sky Blue (Đại tràng xuống)
+    const cSigmoid = new THREE.Color(0x8b5cf6);    // Purple (Đại tràng sigma)
+
+    const colonTarget = (this.colonWallMeshes && this.colonWallMeshes.length > 0)
+      ? this.colonWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'large_intestine');
+    applyColorsToMesh(colonTarget, (x, y) => {
+      if (x <= -4.5 && y <= 96.0) return cAppendix;
+      if (x <= -4.0 && y > 96.0) return cAscending;
+      if (y >= 106.0 && x > -4.0) return cTransverse;
+      if (x >= 3.0 && y >= 87.0 && y < 106.0) return cDescending;
+      if (y < 93.0) return cSigmoid;
+      return cTransverse;
+    });
+
+    // 5. Esophagus Functional Heatmap (Cervical, Thoracic, Abdominal)
+    const cEsophCervical = new THREE.Color(0x38bdf8);  // Cyan (Đoạn cổ C6-T1)
+    const cEsophThoracic = new THREE.Color(0xf59e0b);  // Amber (Đoạn ngực T1-T10)
+    const cEsophAbdominal = new THREE.Color(0x10b981); // Emerald (Đoạn bụng T10-T11)
+
+    const esophTarget = (this.esophagusWallMeshes && this.esophagusWallMeshes.length > 0)
+      ? this.esophagusWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'esophagus');
+    applyColorsToMesh(esophTarget, (x, y) => {
+      if (y > 138.0) return cEsophCervical;
+      if (y <= 123.0) return cEsophAbdominal;
+      return cEsophThoracic;
+    });
+
+    // 6. Gallbladder & Bile Duct Functional Heatmap (Fundus, Body, Neck/Hartmann, Bile Duct)
+    const cGbFundus = new THREE.Color(0x10b981);   // Emerald (Đáy túi mật / Điểm Murphy)
+    const cGbBody = new THREE.Color(0x14b8a6);     // Teal (Thân túi mật)
+    const cGbNeck = new THREE.Color(0xf59e0b);     // Amber (Cổ túi mật & Phễu Hartmann)
+    const cBileDuct = new THREE.Color(0x0284c7);   // Ocean Blue (Ống mật chủ)
+
+    const gbTarget = (this.gallbladderWallMeshes && this.gallbladderWallMeshes.length > 0)
+      ? this.gallbladderWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'gallbladder_tree' && m.name === 'Gallbladder');
+    applyColorsToMesh(gbTarget, (x, y, z) => {
+      if (z > 6.0) return cGbFundus;
+      if (z <= 4.5) return cGbNeck;
+      return cGbBody;
+    });
+
+    const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
+    applyColorsToMesh(bileDuctTarget, () => cBileDuct);
+
+    // 7. Small Intestine Functional Heatmap (Jejunum, Ileum)
+    const cJejunum = new THREE.Color(0xf97316); // Deep Orange (Hỗng tràng)
+    const cIleum = new THREE.Color(0xa855f7);   // Lilac Purple (Hồi tràng)
+
+    const siTarget = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
+      ? this.smallIntestineWallMeshes[0]
+      : this.clickableMeshes.find(m => m.userData.organId === 'small_intestine');
+    applyColorsToMesh(siTarget, (x, y) => {
+      return (x > 0 || y > 98.0) ? cJejunum : cIleum;
     });
   }
 
