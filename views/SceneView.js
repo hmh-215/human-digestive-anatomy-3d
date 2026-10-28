@@ -2394,75 +2394,98 @@ export class SceneView {
       }
     };
 
-    // 1. Stomach Functional Heatmap (Smooth continuous curved progression: Fundus -> Cardia -> Corpus -> Antrum -> Pylorus)
+    // 1. Stomach Functional Heatmap (5 Discrete Steps: Fundus -> Cardia -> Corpus -> Antrum -> Pylorus)
+    const palStom = this._getThermalPalette(5);
     const stomachTarget = (this.stomachWallMeshes && this.stomachWallMeshes.length > 0)
       ? this.stomachWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'stomach');
     applyColorsToMesh(stomachTarget, (x, y, z) => {
       const s = this._projectToCenterline(x, y, z, this._stomachPts);
-      return this._sampleContinuousThermalColor(s);
+      if (s < 0.18) return palStom[0];
+      else if (s < 0.32) return palStom[1];
+      else if (s < 0.65) return palStom[2];
+      else if (s < 0.88) return palStom[3];
+      else return palStom[4];
     }, 'stomach');
 
-    // 2. Pancreas Functional Heatmap (Smooth continuous progression Head -> Neck -> Body -> Tail)
+    // 2. Pancreas Functional Heatmap (4 Discrete Steps: Head -> Neck -> Body -> Tail)
+    const palP = this._getThermalPalette(4);
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'pancreas') return;
       const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
       if (low.includes('duct')) return; // Ducts stay solid porcelain sky blue
       applyColorsToMesh(mesh, (x) => {
         const s = THREE.MathUtils.clamp((x - (-3.8)) / (4.8 - (-3.8)), 0, 1);
-        return this._sampleContinuousThermalColor(s);
+        if (s < 0.25) return palP[0];
+        else if (s < 0.45) return palP[1];
+        else if (s < 0.80) return palP[2];
+        else return palP[3];
       }, 'pancreas');
     });
 
-    // 3. Duodenum Functional Heatmap (Smooth continuous C-Loop progression D1 -> Flex Sup -> D2 -> Flex Inf -> D3 -> D4)
+    // 3. Duodenum Functional Heatmap (6 Discrete Steps: D1 -> Flex Sup -> D2 -> Flex Inf -> D3 -> D4)
+    const palD = this._getThermalPalette(6);
     const duodTarget = (this.duodenumWallMeshes && this.duodenumWallMeshes.length > 0)
       ? this.duodenumWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'duodenum');
     applyColorsToMesh(duodTarget, (x, y, z) => {
       const s = this._projectToCenterline(x, y, z, this._duodPts);
-      return this._sampleContinuousThermalColor(s);
+      if (s < 0.18) return palD[0];
+      else if (s < 0.32) return palD[1];
+      else if (s < 0.58) return palD[2];
+      else if (s < 0.72) return palD[3];
+      else if (s < 0.86) return palD[4];
+      else return palD[5];
     }, 'duodenum');
 
-    // 4. Large Intestine / Colon Functional Heatmap (Smooth continuous U-Frame progression Cecum -> Ascending -> Transverse -> Descending -> Sigmoid)
+    // 4. Large Intestine / Colon Functional Heatmap (5 Discrete Steps: Cecum -> Ascending -> Transverse -> Descending -> Sigmoid)
+    // Colon Descendens is strictly 1 single solid pastel color (palC[3]) with sharp anatomical borders
+    const palC = this._getThermalPalette(5);
     const colonTarget = (this.colonWallMeshes && this.colonWallMeshes.length > 0)
       ? this.colonWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'large_intestine');
     applyColorsToMesh(colonTarget, (x, y, z) => {
       const s = this._projectToCenterline(x, y, z, this._colonPts);
-      return this._sampleContinuousThermalColor(s);
+      if (s < 0.18) return palC[0];      // Manh tràng & Ruột thừa
+      else if (s < 0.38) return palC[1]; // ĐT lên & Góc gan
+      else if (s < 0.65) return palC[2]; // ĐT ngang & Góc lách
+      else if (s < 0.85) return palC[3]; // ĐT xuống (1 màu duy nhất!)
+      else return palC[4];               // ĐT sigma
     }, 'large_intestine');
 
-    // 5. Esophagus Functional Heatmap (Smooth continuous vertical progression Cervical -> Thoracic -> Abdominal)
+    // 5. Esophagus Functional Heatmap (3 Discrete Steps: Cervical -> Thoracic -> Abdominal)
+    const palE = this._getThermalPalette(3);
     const esophTarget = (this.esophagusWallMeshes && this.esophagusWallMeshes.length > 0)
       ? this.esophagusWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'esophagus');
     applyColorsToMesh(esophTarget, (x, y) => {
       const s = THREE.MathUtils.clamp((145.0 - y) / (145.0 - 122.0), 0, 1);
-      return this._sampleContinuousThermalColor(s);
+      if (s < 0.28) return palE[0];
+      else if (s >= 0.80) return palE[2];
+      else return palE[1];
     }, 'esophagus');
 
-    // 6. Gallbladder & Bile Duct Functional Heatmap (Smooth continuous progression Fundus -> Body -> Neck -> Common Bile Duct)
+    // 6. Gallbladder & Bile Duct Functional Heatmap (4 Discrete Steps: Fundus -> Body -> Neck -> Common Bile Duct)
+    const palG = this._getThermalPalette(4);
     const gbTarget = (this.gallbladderWallMeshes && this.gallbladderWallMeshes.length > 0)
       ? this.gallbladderWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'gallbladder_tree' && m.name === 'Gallbladder');
     applyColorsToMesh(gbTarget, (x, y, z) => {
-      const s = THREE.MathUtils.clamp((6.5 - z) / (6.5 - 4.2), 0, 1) * 0.75;
-      return this._sampleContinuousThermalColor(s);
+      if (z > 6.0) return palG[0];
+      else if (z <= 4.5) return palG[2];
+      else return palG[1];
     }, 'gallbladder_tree');
 
     const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
-    applyColorsToMesh(bileDuctTarget, (x, y) => {
-      const s = 0.85 + 0.15 * THREE.MathUtils.clamp((113.0 - y) / (113.0 - 106.0), 0, 1);
-      return this._sampleContinuousThermalColor(s);
-    }, 'gallbladder_tree');
+    applyColorsToMesh(bileDuctTarget, () => palG[3], 'gallbladder_tree');
 
-    // 7. Small Intestine Functional Heatmap (Smooth continuous spatial progression Jejunum -> Ileum)
+    // 7. Small Intestine Functional Heatmap (2 Discrete Steps: Jejunum -> Ileum)
+    const palS = this._getThermalPalette(2);
     const siTarget = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
       ? this.smallIntestineWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'small_intestine');
     applyColorsToMesh(siTarget, (x, y) => {
-      const s = THREE.MathUtils.clamp(((x - (-3.0)) / 6.0 + (105.0 - y) / 15.0) * 0.5, 0, 1);
-      return this._sampleContinuousThermalColor(s);
+      return (x > 0 || y > 98.0) ? palS[0] : palS[1];
     }, 'small_intestine');
 
     // 8. Couinaud Liver Functional Heatmap (8 segments: Hot -> Cold)
@@ -2479,7 +2502,7 @@ export class SceneView {
     });
 
     // 9. Peritoneum & Omentum Functional Heatmap (4 anatomical regions: Hot -> Cold)
-    // Lesser Omentum (hot rose) -> Mesocolon (warm peach) -> Greater Omentum (mint to aqua) -> Meso-appendix (lavender)
+    // Lesser Omentum (hot rose) -> Mesocolon (warm peach) -> Greater Omentum (fresh mint) -> Meso-appendix (lavender)
     const palPerit = this._getThermalPalette(4);
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'peritoneum_omentum') return;
@@ -2491,11 +2514,8 @@ export class SceneView {
         // Transverse Mesocolon: Warm peach
         applyColorsToMesh(mesh, () => palPerit[1], 'peritoneum_omentum');
       } else if (low.includes('greater') || low.includes('majus')) {
-        // Greater Omentum: Fresh Mint to Sky Aqua vertical gradient
-        applyColorsToMesh(mesh, (x, y) => {
-          const s = THREE.MathUtils.clamp((116.3 - y) / (116.3 - 88.0), 0, 1);
-          return this._sampleContinuousThermalColor(0.55 + 0.20 * s);
-        }, 'peritoneum_omentum');
+        // Greater Omentum: Solid fresh mint
+        applyColorsToMesh(mesh, () => palPerit[2], 'peritoneum_omentum');
       } else if (low.includes('appendix') || low.includes('meso')) {
         // Meso-appendix & Pelvic Douglas fold: Coolest pastel violet
         applyColorsToMesh(mesh, () => palPerit[3], 'peritoneum_omentum');
