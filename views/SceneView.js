@@ -825,16 +825,24 @@ export class SceneView {
    * Hot (Red/Orange) -> Warm (Gold/Amber) -> Neutral (Green) -> Cool (Cyan) -> Cold (Blue/Violet).
    * Selected dynamically based on the exact number of functional regions in each organ.
    */
+  /**
+   * Generates a high-saturation, ultra-vibrant thermal gradient sampled directly from
+   * the user's reference spectrum image:
+   * Hot (Pure Red) -> Vibrant Orange -> Vivid Yellow -> Lime Green -> Pure Green -> Bright Cyan -> Electric Blue -> Electric Indigo -> Pure Magenta / Violet (Cold).
+   * Selected dynamically based on the exact number of functional regions in each organ.
+   */
   _getThermalPalette(n) {
-    if (n <= 1) return [new THREE.Color(0xef4444)];
+    if (n <= 1) return [new THREE.Color(0xff0000)];
     const stops = [
-      new THREE.Color(0xef4444), // 0: Red (Nóng nhất)
-      new THREE.Color(0xf97316), // 1: Orange
-      new THREE.Color(0xfbbf24), // 2: Amber / Gold
-      new THREE.Color(0x10b981), // 3: Emerald Green
-      new THREE.Color(0x06b6d4), // 4: Cyan / Aqua
-      new THREE.Color(0x3b82f6), // 5: Cobalt Blue
-      new THREE.Color(0x8b5cf6)  // 6: Cold Violet (Lạnh nhất)
+      new THREE.Color(0xff0000), // 0: Pure Red (#ff0000 - Hot/Inlet)
+      new THREE.Color(0xff7700), // 1: Vibrant Orange (#ff7700)
+      new THREE.Color(0xffee00), // 2: Vivid Yellow (#ffee00)
+      new THREE.Color(0x66ff00), // 3: Lime Green (#66ff00)
+      new THREE.Color(0x00ff22), // 4: Pure Bright Green (#00ff22)
+      new THREE.Color(0x00e5ff), // 5: Electric Bright Cyan (#00e5ff)
+      new THREE.Color(0x0033ff), // 6: Vivid Royal Blue (#0033ff)
+      new THREE.Color(0x6600ff), // 7: Electric Indigo (#6600ff)
+      new THREE.Color(0xff00ea)  // 8: Pure Vivid Magenta / Violet (#ff00ea - Cold/Outlet)
     ];
     const palette = [];
     for (let i = 0; i < n; i++) {
