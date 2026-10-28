@@ -938,6 +938,43 @@
       "clinicalNotes": "Viêm phúc mạc toàn thể là tối cấp cứu ngoại khoa bụng (dấu hiệu bụng cứng như gỗ, co cứng thành bụng và cảm ứng phúc mạc - Blumberg dương tính). Dính ruột sau phẫu thuật là biến chứng do phúc mạc phản ứng xơ hóa. Túi cùng Douglas (túi cùng trực tràng - tử cung ở nữ / trực tràng - bàng quang ở nam) là điểm thấp nhất của ổ phúc mạc, nơi đọng dịch/mủ đầu tiên; thăm khám trực tràng/âm đạo thấy túi cùng Douglas phồng và đau nhói ('tiếng kêu Douglas')."
     },
     {
+      "id": "oral_cavity",
+      "vietnameseName": "Vùng Miệng (Hầu, Lưỡi, Khung Hàm & Răng)",
+      "latinName": "Cavitas Oris & Pharynx",
+      "englishName": "Oral Cavity, Jaws, Teeth & Pharynx",
+      "system": "upper_gi",
+      "layer": 1,
+      "color": "#ec4899",
+      "canLocalExplode": true,
+      "subComponents": [
+        {
+          "id": "teeth_and_jaw",
+          "name": "Khung Xương Hàm & 32 Cung Răng (Mandible, Maxilla & Teeth)"
+        },
+        {
+          "id": "tongue",
+          "name": "Lưỡi & Sàn Miệng (Tongue & Floor of Mouth)"
+        },
+        {
+          "id": "pharynx",
+          "name": "Hầu / Họng 3 Tầng (Nasopharynx, Oropharynx, Laryngopharynx)"
+        },
+        {
+          "id": "palate",
+          "name": "Khẩu Cái Cứng & Mềm, Lưỡi Gà (Palate & Uvula)"
+        },
+        {
+          "id": "salivary_glands",
+          "name": "Hệ Tuyến Nước Bọt (Mang tai, Dưới hàm, Dưới lưỡi)"
+        }
+      ],
+      "location": "Nằm ở tầng dưới và giữa khối xương sọ mặt và vùng cổ trước, là cửa ngõ đầu vào của toàn bộ ống tiêu hóa.",
+      "structure": "Bao gồm 4 cấu trúc giải phẫu chức năng chính: 1. Bộ máy cắn xé cơ học: 32 răng vĩnh viễn bám trong các cung huyệt răng xương hàm trên và xương hàm dưới (khớp thái dương hàm TMJ); 2. Lưỡi & Sàn miệng: Khối cơ vân linh hoạt phủ niêm mạc nhú vị giác; 3. Vòm khẩu cái & Hầu (Họng): Ngã tư tiêu hóa - hô hấp gồm 3 tầng (Tỵ hầu, Khẩu hầu và Hạ hầu); 4. Hệ tuyến nước bọt chính: 3 cặp tuyến đối xứng (Mang tai, Dưới hàm, Dưới lưỡi) tiết 1.0 - 1.5 lít nước bọt mỗi ngày.",
+      "vasculature": "Cấp máu bởi các nhánh của Động mạch cảnh ngoài (ĐM mặt, ĐM lưỡi, ĐM hàm, ĐM hầu lên). Hồi lưu tĩnh mạch đổ về đám rối tĩnh mạch hầu và tĩnh mạch cảnh trong.",
+      "physiology": "Tiếp nhận, cắn xé và nghiền nát thức ăn dạng cơ học, nhào trộn với nước bọt chứa men Amylase (Ptyalin) tiêu hóa tinh bột, cảm nhận 5 vị giác cơ bản và khởi phát phản xạ Nuốt (thì miệng và thì hầu) đẩy viên thức ăn an toàn vào thực quản mà không lọt vào đường thở nhờ nắp thanh quản (Epiglottis).",
+      "clinicalNotes": "Mặt cắt đứng dọc giữa (Midsagittal Cut) giúp quan sát trọn vẹn giải phẫu định khu bên trong khoang miệng: ngà răng, tủy răng, cơ lưỡi, vòm hầu và nắp thanh quản. Các bệnh lý thường gặp: Sâu răng, viêm tủy, viêm nha chu, viêm amidan hốc mủ, phì đại VA gây ngủ ngáy, hóc dị vật xoang lê, sỏi ống tuyến nước bọt Wharton và ung thư vòm họng."
+    },
+    {
       "id": "pharynx",
       "vietnameseName": "Hầu (Họng 3 Tầng)",
       "latinName": "Pharynx",

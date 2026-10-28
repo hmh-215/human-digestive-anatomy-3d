@@ -106,24 +106,84 @@
         </div>
       </div>
 
-      <!-- TAB 2 PANE: ISOLATED ORGAN LAYER SELECTOR CHIPS -->
+      <!-- TAB 2 PANE: ISOLATED ORGAN LAYER SELECTOR CHIPS & ANATOMICAL BODY MAP -->
       <div id="tab-pane-organ" class="dock-tab-pane hidden">
-        <div class="quick-organ-strip">
-          <button class="organ-chip" data-organ="pharynx">👄 Hầu & Miệng</button>
-          <button class="organ-chip" data-organ="tongue">👅 Lưỡi</button>
-          <button class="organ-chip" data-organ="teeth_and_jaw">🦷 Răng & Khung Hàm</button>
-          <button class="organ-chip" data-organ="salivary_glands">🧪 Tuyến Nước Bọt</button>
-          <button class="organ-chip" data-organ="esophagus">🥖 Thực Quản (5 Lớp)</button>
-          <button class="organ-chip" data-organ="stomach">🔬 Dạ Dày (6 Lớp)</button>
-          <button class="organ-chip" data-organ="duodenum">🧪 Tá Tràng (5 Lớp)</button>
-          <button class="organ-chip" data-organ="small_intestine">🌾 Ruột Non (5 Lớp)</button>
-          <button class="organ-chip" data-organ="large_intestine">🔄 Đại Tràng (5 Lớp)</button>
-          <button class="organ-chip" data-organ="gallbladder_tree">💧 Túi Mật (4 Lớp)</button>
-          <button class="organ-chip" data-organ="liver">🧩 Gan (I–VIII Couinaud)</button>
-          <button class="organ-chip" data-organ="portal_system">🔵 Tĩnh Mạch Cửa Gan</button>
-          <button class="organ-chip" data-organ="hepatic_artery">🔴 Động Mạch Thân Tạng & Gan</button>
-          <button class="organ-chip" data-organ="hepatic_veins">🔷 Tĩnh Mạch Gan & TMC</button>
-          <button class="organ-chip" data-organ="pancreas">🥞 Tụy & Ống Tụy</button>
+        <!-- VIEW MODE SELECTOR (BODY MAP vs CATEGORIZED LIST) -->
+        <div class="organ-view-mode-bar">
+          <button id="btn-view-bodymap" class="sub-tab-btn active" title="Định vị trực quan trên sơ đồ cơ thể người">👤 Sơ Đồ Cơ Thể (Body Map)</button>
+          <button id="btn-view-list" class="sub-tab-btn" title="Danh sách phân nhóm giải phẫu ĐHYHN">📋 Danh Sách Nhóm</button>
+        </div>
+
+        <!-- 1. INTERACTIVE ANATOMICAL BODY MAP (MATCHING USER SKETCH) -->
+        <div id="organ-bodymap-container" class="anatomical-body-map-card">
+          <svg class="body-silhouette-svg" viewBox="0 0 320 400" preserveAspectRatio="xMidYMid meet">
+            <!-- Head & Ears -->
+            <path d="M 130 18 C 130 8, 190 8, 190 18 C 190 28, 196 38, 196 46 C 196 52, 192 56, 186 58 C 182 66, 172 70, 160 70 C 148 70, 138 66, 134 58 C 128 56, 124 52, 124 46 C 124 38, 130 28, 130 18 Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+            <!-- Neck & Shoulders -->
+            <path d="M 142 69 L 140 85 C 128 88, 92 98, 76 116 C 68 126, 64 148, 62 178 L 56 242 C 54 262, 50 280, 48 300 C 46 312, 42 334, 46 348 C 48 354, 56 358, 60 350 C 64 340, 68 318, 70 300 L 76 250 C 78 238, 80 220, 84 210" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M 178 69 L 180 85 C 192 88, 228 98, 244 116 C 252 126, 256 148, 258 178 L 264 242 C 266 262, 270 280, 272 300 C 274 312, 278 334, 274 348 C 272 354, 264 358, 260 350 C 256 340, 252 318, 250 300 L 244 250 C 242 238, 240 220, 236 210" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <!-- Torso & Flank Outlines -->
+            <path d="M 88 152 C 94 175, 96 210, 92 245 C 88 280, 84 315, 86 355 L 86 385" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M 232 152 C 226 175, 224 210, 228 245 C 232 280, 236 315, 234 355 L 234 385" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <!-- Inguinal & Perineal Groin Lines -->
+            <path d="M 154 340 L 154 385" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M 166 340 L 166 385" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <!-- Median Sagittal Symmetry Axis -->
+            <line x1="160" y1="12" x2="160" y2="390" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
+          </svg>
+
+          <!-- Interactive Anatomical Body Pins -->
+          <button class="organ-chip body-pin pin-oral" data-organ="oral_cavity" title="Vùng Miệng (Hầu, Lưỡi, Khung Hàm & Răng)">👄 Vùng Miệng</button>
+          <button class="organ-chip body-pin pin-esophagus" data-organ="esophagus" title="Thực Quản (5 Lớp Mô Học)">🥖 Thực Quản (5 Lớp)</button>
+          <button class="organ-chip body-pin pin-liver" data-organ="liver" title="Gan (I–VIII Couinaud)">🧩 Gan (I–VIII)</button>
+          <button class="organ-chip body-pin pin-stomach" data-organ="stomach" title="Dạ Dày (6 Lớp Mô Học)">🩻 Dạ Dày (6 Lớp)</button>
+          <button class="organ-chip body-pin pin-gallbladder" data-organ="gallbladder_tree" title="Túi Mật & Đường Dẫn Mật (4 Lớp)">💧 Túi Mật (4 Lớp)</button>
+          <button class="organ-chip body-pin pin-pancreas" data-organ="pancreas" title="Tuyến Tụy & Cây Ống Tụy Men Sứ">🥞 Tụy & Ống Tụy</button>
+          <button class="organ-chip body-pin pin-duodenum" data-organ="duodenum" title="Tá Tràng Quai Chữ C (5 Lớp)">🧪 Tá Tràng (5 Lớp)</button>
+          <button class="organ-chip body-pin pin-portal" data-organ="portal_system" title="Hệ Thống Mạch Máu Cửa Gan & Mạc Treo">🔵 Hệ Mạch Cửa</button>
+          <button class="organ-chip body-pin pin-small-int" data-organ="small_intestine" title="Ruột Non - Hỗng Tràng & Hồi Tràng (5 Lớp)">🌾 Ruột Non (5 Lớp)</button>
+          <button class="organ-chip body-pin pin-large-int" data-organ="large_intestine" title="Đại Tràng Toàn Khung & Ruột Thừa (5 Lớp)">🔄 Đại Tràng (5 Lớp)</button>
+        </div>
+
+        <!-- 2. CATEGORIZED ANATOMICAL TIERS LIST (TOGGLED VIA BUTTON) -->
+        <div id="organ-list-container" class="categorized-organ-list hidden">
+          <div class="organ-category-group">
+            <span class="category-header">🗣️ TẦNG ĐẦU MẶT CỔ</span>
+            <div class="category-chips">
+              <button class="organ-chip" data-organ="oral_cavity">👄 Vùng Miệng (Hầu, Lưỡi, Hàm, Răng)</button>
+            </div>
+          </div>
+          <div class="organ-category-group">
+            <span class="category-header">🫁 TẦNG NGỰC TRUNG THẤT</span>
+            <div class="category-chips">
+              <button class="organ-chip" data-organ="esophagus">🥖 Thực Quản (5 Lớp)</button>
+            </div>
+          </div>
+          <div class="organ-category-group">
+            <span class="category-header">🫀 TẦNG THƯỢNG VỊ & DƯỚI HOÀNH</span>
+            <div class="category-chips">
+              <button class="organ-chip" data-organ="liver">🧩 Gan (I–VIII Couinaud)</button>
+              <button class="organ-chip" data-organ="gallbladder_tree">💧 Túi Mật (4 Lớp)</button>
+              <button class="organ-chip" data-organ="stomach">🩻 Dạ Dày (6 Lớp)</button>
+              <button class="organ-chip" data-organ="pancreas">🥞 Tụy & Ống Tụy</button>
+              <button class="organ-chip" data-organ="duodenum">🧪 Tá Tràng (5 Lớp)</button>
+            </div>
+          </div>
+          <div class="organ-category-group">
+            <span class="category-header">🩸 HỆ TUẦN HOÀN CỬA GAN</span>
+            <div class="category-chips">
+              <button class="organ-chip" data-organ="portal_system">🔵 Tĩnh Mạch Cửa & Mạc Treo</button>
+              <button class="organ-chip" data-organ="hepatic_artery">🔴 Động Mạch Thân Tạng & Gan</button>
+              <button class="organ-chip" data-organ="hepatic_veins">🔷 Tĩnh Mạch Gan & TMC</button>
+            </div>
+          </div>
+          <div class="organ-category-group">
+            <span class="category-header">🌀 TẦNG HẠ VỊ & Ổ BỤNG DƯỚI</span>
+            <div class="category-chips">
+              <button class="organ-chip" data-organ="small_intestine">🌾 Ruột Non (5 Lớp)</button>
+              <button class="organ-chip" data-organ="large_intestine">🔄 Đại Tràng (5 Lớp)</button>
+            </div>
+          </div>
         </div>
       </div>
 

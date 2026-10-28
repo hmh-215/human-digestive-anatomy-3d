@@ -114,7 +114,7 @@ export class UIView {
       });
     }
 
-    // 4. Quick Organ Chips (Tab 2)
+    // 4. Quick Organ Chips & Body Pins (Tab 2)
     this.organChips.forEach((chip) => {
       chip.addEventListener('click', () => {
         const organId = chip.dataset.organ || null;
@@ -129,6 +129,27 @@ export class UIView {
         }
       });
     });
+
+    // 4b. Organ View Mode Toggle (Body Map vs Categorized List)
+    const btnBodyMap = document.getElementById('btn-view-bodymap');
+    const btnList = document.getElementById('btn-view-list');
+    const bodyMapContainer = document.getElementById('organ-bodymap-container');
+    const listContainer = document.getElementById('organ-list-container');
+
+    if (btnBodyMap && btnList) {
+      btnBodyMap.addEventListener('click', () => {
+        btnBodyMap.classList.add('active');
+        btnList.classList.remove('active');
+        if (bodyMapContainer) bodyMapContainer.classList.remove('hidden');
+        if (listContainer) listContainer.classList.add('hidden');
+      });
+      btnList.addEventListener('click', () => {
+        btnList.classList.add('active');
+        btnBodyMap.classList.remove('active');
+        if (bodyMapContainer) bodyMapContainer.classList.add('hidden');
+        if (listContainer) listContainer.classList.remove('hidden');
+      });
+    }
 
     // 5. Task 2: Per-Organ 50% Longitudinal Cutaway Toggle (works on any hollow organ!)
     if (this.cutawayBtn) {
@@ -295,6 +316,9 @@ export class UIView {
           } else if (organId === 'hepatic_veins') {
             this.explodeModeLabel.textContent = '💥 Các Tĩnh Mạch Gan & Tĩnh Mạch Chủ Dưới:';
             this.explodeHelperText.textContent = '3 tĩnh mạch gan (Phải, Giữa, Trái) dẫn lưu máu khử oxy từ các hạ phân thùy gan đổ trực tiếp vào TMC dưới';
+          } else if (organId === 'oral_cavity') {
+            this.explodeModeLabel.textContent = '💥 Vùng Miệng, Khung Hàm, Răng & Hầu:';
+            this.explodeHelperText.textContent = 'Bấm "✂️ Mặt Cắt Dọc 50%" để xem mặt phẳng cắt dọc chính giữa mặt (midsagittal cut) qua răng, cơ lưỡi và 3 tầng thành hầu!';
           } else if (organId === 'pharynx') {
             this.explodeModeLabel.textContent = '💥 Hệ Thống Hầu - Họng (3 Tầng):';
             this.explodeHelperText.textContent = 'Tỵ hầu (Nasopharynx) → Khẩu hầu (Oropharynx) → Thanh hầu (Laryngopharynx) nối tiếp miệng thực quản tại C6';

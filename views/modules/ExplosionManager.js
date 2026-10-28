@@ -136,6 +136,30 @@ export class ExplosionManager {
         else if (low.includes('middle_hepatic')) subVec.set(-1.0, 2.0, 1.5);
         else if (low.includes('left_hepatic')) subVec.set(2.0, 2.5, 1.0);
         else subVec.set(0.0, 4.0, -2.0);
+      } else if (organId === 'oral_cavity') {
+        if (low.includes('mandib') || (low.includes('lower') && low.includes('tooth')) || (low.includes('lower') && (low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')))) {
+          subVec.set(0.0, -2.5, 3.2);
+        } else if (low.includes('maxill') || (low.includes('upper') && low.includes('tooth')) || (low.includes('upper') && (low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')))) {
+          subVec.set(0.0, 2.5, 2.2);
+        } else if (low.includes('gingiva')) {
+          subVec.set(0.0, -0.8, 3.0);
+        } else if (low.includes('tongue')) {
+          subVec.set(0.0, -1.0, 3.8);
+        } else if (low.includes('naso')) {
+          subVec.set(0.0, 3.5, -2.0);
+        } else if (low.includes('oro')) {
+          subVec.set(0.0, 1.2, -2.5);
+        } else if (low.includes('laryngo')) {
+          subVec.set(0.0, -1.8, -2.0);
+        } else if (low.includes('palate') || low.includes('uvula')) {
+          subVec.set(0.0, 1.2, -1.5);
+        } else if (low.includes('epiglottis') || low.includes('hyoid')) {
+          subVec.set(0.0, -1.5, 0.5);
+        } else if (low.includes('gland')) {
+          subVec.set(low.includes('r') ? -4.5 : 4.5, 0.5, 0.0);
+        } else {
+          subVec.set(0.0, 0.0, 2.0);
+        }
       } else if (organId === 'pharynx') {
         if (low.includes('naso')) subVec.set(0.0, 4.0, 0.0);
         else if (low.includes('oro')) subVec.set(0.0, 1.5, 1.0);
@@ -183,9 +207,10 @@ export class ExplosionManager {
       // Clear any prior knolling anchor
       mesh.userData.knollingAnchor = null;
 
-      if (organId === 'teeth_and_jaw') {
-        const isLower = low.includes('inferior') || low.includes('mandib') || (!low.includes('superior') && !low.includes('maxill'));
-        const anchor = isLower ? mandibleMesh : maxillaMesh;
+      if (organId === 'oral_cavity' || organId === 'teeth_and_jaw') {
+        const isLower = low.includes('inferior') || low.includes('mandib') || (!low.includes('superior') && !low.includes('maxill') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar') || low.includes('gingiva')));
+        const isUpper = low.includes('superior') || low.includes('maxill') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
+        const anchor = isLower ? mandibleMesh : (isUpper ? maxillaMesh : null);
         if (anchor && mesh !== anchor) {
           mesh.userData.knollingAnchor = anchor;
         }
@@ -204,7 +229,7 @@ export class ExplosionManager {
       }
     });
 
-    const row1 = []; // Upper GI: Teeth/Jaws -> Salivary -> Tongue -> Pharynx -> Esophagus (5) -> Stomach (6) -> Duodenum (5)
+    const row1 = []; // Upper GI: Oral Cavity / Teeth / Jaws / Pharynx -> Esophagus (5) -> Stomach (6) -> Duodenum (5)
     const row2 = []; // Hepatobiliary, Pancreas & Hepatic Vascular System: Liver (8) -> Gallbladder (4 + duct) -> Pancreas (3) -> Portal Tree -> Hepatic Artery Tree -> Hepatic Vein Tree
     const row3 = []; // Small Intestine (5) + Peritoneum/Omentum (4)
     const row4 = []; // Large Intestine / Whole Colon Frame (5)
@@ -222,6 +247,7 @@ export class ExplosionManager {
       .sort(sortByLayerOrName);
 
     row1.push(
+      ...byOrganPrimary('oral_cavity'),
       ...byOrganPrimary('teeth_and_jaw'),
       ...byOrganPrimary('salivary_glands'),
       ...byOrganPrimary('tongue'),

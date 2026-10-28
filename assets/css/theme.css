@@ -242,7 +242,8 @@ body {
   position: absolute;
   bottom: 24px;
   left: 24px;
-  width: 356px;
+  width: 376px;
+  max-width: calc(100vw - 48px);
   background: var(--bg-surface);
   backdrop-filter: blur(16px);
   border-radius: var(--radius);
@@ -894,4 +895,247 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-size: 11.5px;
   color: var(--danger);
   line-height: 1.45;
+}
+
+/* ========================================================
+   ANATOMICAL BODY MAP NAVIGATOR & CATEGORIZED LIST
+   ======================================================== */
+.organ-view-mode-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.sub-tab-btn {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+}
+
+.sub-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.sub-tab-btn.active {
+  background: var(--bg-surface);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.anatomical-body-map-card {
+  position: relative;
+  width: 100%;
+  height: 336px;
+  background: radial-gradient(circle at 50% 25%, rgba(2, 132, 199, 0.06), transparent 70%);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+.body-silhouette-svg {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 95%;
+  color: #94a3b8;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.04));
+}
+
+.body-pin {
+  position: absolute;
+  z-index: 3;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 7px;
+  white-space: nowrap;
+  border-radius: 20px;
+  background: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-main);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.body-pin:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  z-index: 6;
+}
+
+.body-pin.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25), 0 4px 12px rgba(2, 132, 199, 0.35);
+  z-index: 7;
+}
+
+/* Spatial Pin Coordinates on Anatomical Silhouette (Matching User Diagram) */
+.pin-oral {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-oral:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-oral.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pin-esophagus {
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-esophagus:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-esophagus.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pin-liver {
+  top: 122px;
+  left: 8px;
+}
+.pin-liver:hover {
+  transform: scale(1.06);
+}
+.pin-liver.active {
+  transform: scale(1.08);
+}
+
+.pin-stomach {
+  top: 122px;
+  right: 8px;
+}
+.pin-stomach:hover {
+  transform: scale(1.06);
+}
+.pin-stomach.active {
+  transform: scale(1.08);
+}
+
+.pin-gallbladder {
+  top: 164px;
+  left: 14px;
+}
+.pin-gallbladder:hover {
+  transform: scale(1.06);
+}
+.pin-gallbladder.active {
+  transform: scale(1.08);
+}
+
+.pin-pancreas {
+  top: 164px;
+  right: 14px;
+}
+.pin-pancreas:hover {
+  transform: scale(1.06);
+}
+.pin-pancreas.active {
+  transform: scale(1.08);
+}
+
+.pin-duodenum {
+  top: 202px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-duodenum:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-duodenum.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pin-portal {
+  top: 238px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9.5px;
+}
+.pin-portal:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-portal.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pin-small-int {
+  top: 272px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-small-int:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-small-int.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.pin-large-int {
+  top: 304px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.pin-large-int:hover {
+  transform: translateX(-50%) scale(1.06);
+}
+.pin-large-int.active {
+  transform: translateX(-50%) scale(1.08);
+}
+
+/* Categorized List View */
+.categorized-organ-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 336px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.organ-category-group {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.category-header {
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
