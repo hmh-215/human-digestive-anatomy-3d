@@ -826,35 +826,119 @@ export class SceneView {
    * Selected dynamically based on the exact number of functional regions in each organ.
    */
   /**
-   * Generates a high-saturation, ultra-vibrant thermal gradient sampled directly from
-   * the user's reference spectrum image:
-   * Hot (Pure Red) -> Vibrant Orange -> Vivid Yellow -> Lime Green -> Pure Green -> Bright Cyan -> Electric Blue -> Electric Indigo -> Pure Magenta / Violet (Cold).
-   * Selected dynamically based on the exact number of functional regions in each organ.
+   * Initializes 3D curved centerlines along anatomical organ trajectories
+   * for silky-smooth, continuous gradient parameterization (Zero Jagged Zigzags).
+   */
+  _initHeatmapCenterlines() {
+    if (this._stomachPts) return;
+
+    // Stomach C-curved trajectory: Fundus -> Cardia -> Upper Corpus -> Lower Corpus -> Antrum -> Pylorus
+    const stomachCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(2.5, 121.8, 3.2),  // 0.00: Fundus (Hot Coral Rose - Nóng nhất)
+      new THREE.Vector3(1.6, 119.5, 3.8),  // 0.20: Cardia (Warm Peach)
+      new THREE.Vector3(2.7, 117.2, 3.2),  // 0.40: Upper Corpus (Sunny Butter)
+      new THREE.Vector3(2.2, 114.8, 2.9),  // 0.60: Lower Corpus (Pastel Mint)
+      new THREE.Vector3(0.5, 113.4, 2.8),  // 0.80: Antrum (Sky Aqua)
+      new THREE.Vector3(-1.5, 114.0, 2.8)  // 1.00: Pylorus (Pastel Lavender - Lạnh nhất)
+    ]);
+    this._stomachPts = stomachCurve.getPoints(50);
+
+    // Duodenum C-loop trajectory: D1 Bulb -> Sup Flexure L1 -> D2 Descending -> Inf Flexure L3 -> D3 -> D4 Treitz
+    const duodCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-1.8, 113.2, 2.5), // 0.00: D1 Hành tá tràng (Hot Coral Rose - Nóng nhất)
+      new THREE.Vector3(-4.4, 111.5, 2.2), // 0.20: Góc tá trên L1 (Warm Peach)
+      new THREE.Vector3(-5.3, 108.0, 1.8), // 0.40: D2 Đoạn xuống & Nhú Vater (Sunny Butter)
+      new THREE.Vector3(-4.6, 104.8, 1.6), // 0.60: Góc tá dưới L3 (Pastel Mint)
+      new THREE.Vector3(-2.2, 105.2, 1.5), // 0.80: D3 Đoạn ngang (Sky Aqua)
+      new THREE.Vector3(0.2, 108.2, 1.5)   // 1.00: D4 Đoạn lên & Góc Treitz (Pastel Lavender - Lạnh nhất)
+    ]);
+    this._duodPts = duodCurve.getPoints(50);
+
+    // Large Intestine U-shaped frame trajectory: Cecum/Appendix -> Ascending -> Transverse -> Descending -> Sigmoid
+    const colonCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-4.8, 92.0, 2.0),  // 0.00: Manh tràng & Ruột thừa (Hot Coral Rose - Nóng nhất)
+      new THREE.Vector3(-4.6, 102.0, 2.0), // 0.22: Đại tràng lên (Warm Peach)
+      new THREE.Vector3(-3.8, 107.0, 2.0), // 0.35: Góc gan
+      new THREE.Vector3(0.0, 108.5, 2.5),  // 0.50: Đại tràng ngang (Sunny Butter)
+      new THREE.Vector3(3.8, 107.0, 2.0),  // 0.65: Góc lách
+      new THREE.Vector3(4.5, 100.0, 1.8),  // 0.78: Đại tràng xuống (Sky Aqua)
+      new THREE.Vector3(2.5, 91.0, 1.5)    // 1.00: Đại tràng sigma (Pastel Lavender - Lạnh nhất)
+    ]);
+    this._colonPts = colonCurve.getPoints(60);
+  }
+
+  /**
+   * Projects any 3D coordinate (px, py, pz) onto a centerline point array,
+   * returning normalized parameter s in [0.0, 1.0].
+   */
+  _projectToCenterline(px, py, pz, pts) {
+    if (!pts || pts.length === 0) return 0.5;
+    let minDistSq = Infinity;
+    let bestIdx = 0;
+    for (let j = 0; j < pts.length; j++) {
+      const dx = px - pts[j].x;
+      const dy = py - pts[j].y;
+      const dz = pz - pts[j].z;
+      const dSq = dx * dx + dy * dy + dz * dz;
+      if (dSq < minDistSq) {
+        minDistSq = dSq;
+        bestIdx = j;
+      }
+    }
+    let s = bestIdx / (pts.length - 1);
+    if (bestIdx > 0 && bestIdx < pts.length - 1) {
+      const pPrev = pts[bestIdx - 1];
+      const pNext = pts[bestIdx + 1];
+      const segX = pNext.x - pPrev.x;
+      const segY = pNext.y - pPrev.y;
+      const segZ = pNext.z - pPrev.z;
+      const segLenSq = segX * segX + segY * segY + segZ * segZ;
+      if (segLenSq > 1e-6) {
+        const vx = px - pPrev.x;
+        const vy = py - pPrev.y;
+        const vz = pz - pPrev.z;
+        const dot = (vx * segX + vy * segY + vz * segZ) / segLenSq;
+        const localT = Math.max(0, Math.min(1, dot));
+        s = (bestIdx - 1 + localT * 2) / (pts.length - 1);
+      }
+    }
+    return Math.max(0, Math.min(1, s));
+  }
+
+  /**
+   * Samples a continuous, high-luminosity pastel-vibrant thermal color for parameter s in [0.0, 1.0].
+   * Hot (Luminous Coral Rose) -> Warm Peach -> Sunny Butter -> Pastel Lime -> Fresh Mint Emerald
+   * -> Luminous Sky Aqua -> Soft Cornflower -> Pastel Lavender -> Radiant Orchid Pink (Cold).
+   * High lightness (L >= 62%-75%) ensures vivid, clean, museum-quality medical rendering.
+   */
+  _sampleContinuousThermalColor(s) {
+    const stops = [
+      new THREE.Color(0xff477e), // 0.00: Luminous Coral Rose (#ff477e - Hot Inlet / Nóng nhất)
+      new THREE.Color(0xff8533), // 0.14: Warm Glowing Peach (#ff8533)
+      new THREE.Color(0xffd13b), // 0.28: Sunny Butter Amber (#ffd13b)
+      new THREE.Color(0x7bed9f), // 0.42: Fresh Pastel Lime (#7bed9f)
+      new THREE.Color(0x2fe091), // 0.56: Fresh Mint Emerald (#2fe091)
+      new THREE.Color(0x38e1ff), // 0.70: Luminous Sky Aqua (#38e1ff)
+      new THREE.Color(0x54a0ff), // 0.82: Soft Cornflower Blue (#54a0ff)
+      new THREE.Color(0xa55eea), // 0.92: Pastel Lavender / Royal Orchid (#a55eea)
+      new THREE.Color(0xff78cb)  // 1.00: Radiant Orchid Pink (#ff78cb - Cold Outlet / Lạnh nhất)
+    ];
+    const t = Math.max(0, Math.min(1, s));
+    const scaled = t * (stops.length - 1);
+    const idx = Math.floor(scaled);
+    const frac = scaled - idx;
+    if (idx >= stops.length - 1) return stops[stops.length - 1].clone();
+    return stops[idx].clone().lerp(stops[idx + 1], frac);
+  }
+
+  /**
+   * Generates n discrete colors sampled evenly along the continuous pastel thermal spectrum.
    */
   _getThermalPalette(n) {
-    if (n <= 1) return [new THREE.Color(0xff0000)];
-    const stops = [
-      new THREE.Color(0xff0000), // 0: Pure Red (#ff0000 - Hot/Inlet)
-      new THREE.Color(0xff7700), // 1: Vibrant Orange (#ff7700)
-      new THREE.Color(0xffee00), // 2: Vivid Yellow (#ffee00)
-      new THREE.Color(0x66ff00), // 3: Lime Green (#66ff00)
-      new THREE.Color(0x00ff22), // 4: Pure Bright Green (#00ff22)
-      new THREE.Color(0x00e5ff), // 5: Electric Bright Cyan (#00e5ff)
-      new THREE.Color(0x0033ff), // 6: Vivid Royal Blue (#0033ff)
-      new THREE.Color(0x6600ff), // 7: Electric Indigo (#6600ff)
-      new THREE.Color(0xff00ea)  // 8: Pure Vivid Magenta / Violet (#ff00ea - Cold/Outlet)
-    ];
+    if (n <= 1) return [new THREE.Color(0xff477e)];
     const palette = [];
     for (let i = 0; i < n; i++) {
-      const t = i / (n - 1);
-      const scaled = t * (stops.length - 1);
-      const idx = Math.floor(scaled);
-      const frac = scaled - idx;
-      if (idx >= stops.length - 1) {
-        palette.push(stops[stops.length - 1].clone());
-      } else {
-        palette.push(stops[idx].clone().lerp(stops[idx + 1], frac));
-      }
+      palette.push(this._sampleContinuousThermalColor(i / (n - 1)));
     }
     return palette;
   }
@@ -868,15 +952,17 @@ export class SceneView {
 
     // 1. In Functional Heatmap Mode: Classify hit point into 5 Stomach or 4 Pancreas Functional Regions
     if (isRegions && (organId === 'stomach' || mesh.userData.isStomachWallLayer)) {
+      this._initHeatmapCenterlines();
       const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
       const localPt = mesh.worldToLocal(hitPt.clone());
-      const x = localPt.x, y = localPt.y, z = localPt.z;
+      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._stomachPts);
 
       let reg = 'corpus';
-      if (y > 120.2 && x > 1.2) reg = 'fundus';
-      else if (y >= 118.0 && x <= 2.5 && z <= 4.8) reg = 'cardia';
-      else if (x <= -0.8 && y <= 114.2) reg = 'pylorus';
-      else if (y <= 114.8 && x <= 3.5) reg = 'antrum';
+      if (s < 0.18) reg = 'fundus';
+      else if (s < 0.32) reg = 'cardia';
+      else if (s < 0.65) reg = 'corpus';
+      else if (s < 0.88) reg = 'antrum';
+      else reg = 'pylorus';
 
       const palStom = this._getThermalPalette(5);
       const stomachRegionCards = {
@@ -935,12 +1021,12 @@ export class SceneView {
       if (!low.includes('duct')) {
         const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
         const localPt = mesh.worldToLocal(hitPt.clone());
-        const x = localPt.x;
+        const s = THREE.MathUtils.clamp((localPt.x - (-3.8)) / (4.8 - (-3.8)), 0, 1);
 
         let reg = 'body';
-        if (x < -1.5) reg = 'head';
-        else if (x < 0.2) reg = 'neck';
-        else if (x < 4.2) reg = 'body';
+        if (s < 0.25) reg = 'head';
+        else if (s < 0.45) reg = 'neck';
+        else if (s < 0.80) reg = 'body';
         else reg = 'tail';
 
         const palP = this._getThermalPalette(4);
@@ -989,18 +1075,19 @@ export class SceneView {
       }
     }
 
-    // 2. Duodenum Functional Heatmap Regions (Matching user illustration: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
+    // 2. Duodenum Functional Heatmap Regions (Continuous C-Loop progression: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
     if (isRegions && (organId === 'duodenum' || mesh.userData.organId === 'duodenum')) {
+      this._initHeatmapCenterlines();
       const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
       const localPt = mesh.worldToLocal(hitPt.clone());
-      const x = localPt.x, y = localPt.y;
+      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._duodPts);
 
       let reg = 'd3';
-      if (y >= 111.8 && x >= -4.8) reg = 'd1';
-      else if (y >= 111.0 && x < -4.8) reg = 'flex_sup';
-      else if (x < -4.2 && y >= 106.5) reg = 'd2';
-      else if (x < -3.8 && y < 106.5) reg = 'flex_inf';
-      else if (y <= 107.2 && x <= 0.5) reg = 'd3';
+      if (s < 0.18) reg = 'd1';
+      else if (s < 0.32) reg = 'flex_sup';
+      else if (s < 0.58) reg = 'd2';
+      else if (s < 0.72) reg = 'flex_inf';
+      else if (s < 0.86) reg = 'd3';
       else reg = 'd4';
 
       const palD = this._getThermalPalette(6);
@@ -1062,18 +1149,19 @@ export class SceneView {
       };
     }
 
-    // 3. Large Intestine / Colon Functional Heatmap Regions
+    // 3. Large Intestine / Colon Functional Heatmap Regions (Continuous U-Frame progression)
     if (isRegions && (organId === 'large_intestine' || mesh.userData.organId === 'large_intestine')) {
+      this._initHeatmapCenterlines();
       const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
       const localPt = mesh.worldToLocal(hitPt.clone());
-      const x = localPt.x, y = localPt.y;
+      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._colonPts);
 
       let reg = 'transverse';
-      if (x <= -4.5 && y <= 96.0) reg = 'cecum';
-      else if (x <= -4.0 && y > 96.0) reg = 'ascending';
-      else if (y >= 106.0 && x > -4.0) reg = 'transverse';
-      else if (x >= 3.0 && y >= 87.0 && y < 106.0) reg = 'descending';
-      else if (y < 93.0) reg = 'sigmoid';
+      if (s < 0.18) reg = 'cecum';
+      else if (s < 0.38) reg = 'ascending';
+      else if (s < 0.65) reg = 'transverse';
+      else if (s < 0.85) reg = 'descending';
+      else reg = 'sigmoid';
 
       const palC = this._getThermalPalette(5);
       const colonCards = {
@@ -1127,15 +1215,15 @@ export class SceneView {
       };
     }
 
-    // 4. Esophagus Functional Heatmap Regions
+    // 4. Esophagus Functional Heatmap Regions (Continuous Vertical progression)
     if (isRegions && (organId === 'esophagus' || mesh.userData.organId === 'esophagus')) {
       const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
       const localPt = mesh.worldToLocal(hitPt.clone());
-      const y = localPt.y;
+      const s = THREE.MathUtils.clamp((145.0 - localPt.y) / (145.0 - 122.0), 0, 1);
 
       let reg = 'thoracic';
-      if (y > 138.0) reg = 'cervical';
-      else if (y <= 123.0) reg = 'abdominal';
+      if (s < 0.28) reg = 'cervical';
+      else if (s >= 0.80) reg = 'abdominal';
 
       const palE = this._getThermalPalette(3);
       const esophCards = {
@@ -1932,6 +2020,7 @@ export class SceneView {
         const isPancreaticVessel = (organId === 'portal_system' || organId === 'hepatic_artery') &&
           (rawNameLow.includes('splenic') || rawNameLow.includes('mesenteric') || rawNameLow.includes('gastroduodenal') || rawNameLow.includes('coeliac'));
         const isDuodenum = organId === 'duodenum';
+        const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
 
         if (organId === 'pancreas') {
           mesh.visible = true;
@@ -1941,17 +2030,21 @@ export class SceneView {
             mesh.material.opacity = 1.0;
             mesh.material.depthWrite = true;
           } else {
-            // Pancreas parenchyma: ghosted semi-transparent so internal ducts shine through!
-            mesh.material.transparent = true;
-            mesh.material.opacity = isXRay ? 0.18 : 0.32;
-            mesh.material.depthWrite = false;
+            // In Heatmap mode, parenchyma is solid so the functional heatmap is fully visible!
+            // In Layers mode, parenchyma is ghosted semi-transparent so internal ducts shine through!
+            mesh.material.transparent = isXRay || (!isRegions);
+            mesh.material.opacity = isRegions ? (isXRay ? 0.45 : 1.0) : (isXRay ? 0.18 : 0.32);
+            mesh.material.depthWrite = isRegions;
           }
         } else if (isBile || isPancreaticVessel || isDuodenum) {
-          // Keep biliary confluence, splenic/mesenteric vessels, and duodenum C-loop clearly visible as context!
-          mesh.visible = true;
-          mesh.material.transparent = isDuodenum;
-          mesh.material.opacity = isDuodenum ? 0.38 : 1.0;
-          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+          if (isRegions && isIsolate) {
+            mesh.visible = false;
+          } else {
+            mesh.visible = true;
+            mesh.material.transparent = isDuodenum || isRegions;
+            mesh.material.opacity = isRegions ? 0.12 : (isDuodenum ? 0.38 : 1.0);
+            if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+          }
         } else {
           mesh.visible = !isIsolate;
           if (mesh.visible) {
@@ -2023,13 +2116,59 @@ export class SceneView {
    * Only the isolated / selected organ receives vibrant functional heatmap colors.
    */
   _applyFunctionalHeatmaps() {
+    this._initHeatmapCenterlines();
     const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
     const selectedId = this.sceneVM.state.selectedOrganId;
     const isIsolate = this.dissectionVM.state.isIsolateMode;
     const isXRay = this.dissectionVM.state.isXRayMode;
 
-    // Neutral anatomical light gray palette
-    const cNeutralGray = new THREE.Color(0xd1d5db); // Tailwind slate-300 / neutral soft gray
+    // Neutral anatomical light gray palette (Tailwind slate-200 / clean elegant medical light gray)
+    const cNeutralGray = new THREE.Color(0xe2e8f0);
+
+    // Helper to safely strip procedural textures/bump maps in Heatmap Mode
+    // and restore original histological textures/bump maps in Layers Mode
+    const updateMaterialHeatmapState = (mesh, isHeatmapActive) => {
+      if (!mesh || !mesh.material) return;
+      const mat = mesh.material;
+      if (isHeatmapActive) {
+        if (!mesh.userData._origMatProps) {
+          mesh.userData._origMatProps = {
+            map: mat.map,
+            bumpMap: mat.bumpMap,
+            bumpScale: mat.bumpScale,
+            roughnessMap: mat.roughnessMap,
+            normalMap: mat.normalMap,
+            color: mat.color ? mat.color.clone() : new THREE.Color(0xffffff),
+            roughness: mat.roughness !== undefined ? mat.roughness : 0.5,
+            metalness: mat.metalness !== undefined ? mat.metalness : 0.0
+          };
+        }
+        // Strip textures & bump maps so colors shine at 100% full luminosity without darkening
+        mat.map = null;
+        mat.bumpMap = null;
+        mat.roughnessMap = null;
+        mat.normalMap = null;
+        if (mat.color) mat.color.setHex(0xffffff);
+        mat.roughness = 0.35;
+        mat.metalness = 0.02;
+        mat.needsUpdate = true;
+      } else {
+        // Restore original histological texture and shading
+        if (mesh.userData._origMatProps) {
+          const p = mesh.userData._origMatProps;
+          mat.map = p.map;
+          mat.bumpMap = p.bumpMap;
+          if (p.bumpScale !== undefined) mat.bumpScale = p.bumpScale;
+          mat.roughnessMap = p.roughnessMap;
+          mat.normalMap = p.normalMap;
+          if (p.color && mat.color) mat.color.copy(p.color);
+          if (p.roughness !== undefined) mat.roughness = p.roughness;
+          if (p.metalness !== undefined) mat.metalness = p.metalness;
+          mat.vertexColors = false;
+          mat.needsUpdate = true;
+        }
+      }
+    };
 
     // 0. Toggle concentric layer visibility:
     // In heatmap mode (regions): inner concentric layers (idx > 0) are ALWAYS hidden.
@@ -2045,6 +2184,8 @@ export class SceneView {
             layers[i].visible = false;
           }
           const l0 = layers[0];
+          updateMaterialHeatmapState(l0, true);
+
           if (!selectedId) {
             // Whole system mode: All organs visible in uniform light gray
             l0.visible = true;
@@ -2058,19 +2199,18 @@ export class SceneView {
             l0.material.opacity = isXRay ? 0.45 : 1.0;
             l0.material.depthWrite = true;
           } else {
-            // Non-selected organs when one organ is isolated:
-            // Requirement 2: Hide completely if isIsolate, or show ghosted transparent
+            // Non-selected organs when one organ is isolated
             l0.visible = !isIsolate;
             if (!isIsolate) {
               l0.material.transparent = true;
               l0.material.opacity = 0.12;
               l0.material.depthWrite = false;
-              l0.material.vertexColors = false;
-              if (l0.material.color) l0.material.color.setHex(0xb0bccb);
             }
           }
         } else {
-          // In Layers mode (Mô Học):
+          // In Layers mode (Mô Học): restore materials and visibility
+          layers.forEach((lMesh) => updateMaterialHeatmapState(lMesh, false));
+
           if (selectedId && !isThisSelected) {
             // Another organ is selected: hide inner layers, ghost or hide outer layer
             for (let i = 0; i < layers.length; i++) {
@@ -2083,10 +2223,6 @@ export class SceneView {
                 }
               } else {
                 layers[i].visible = false;
-              }
-              if (layers[i].material) {
-                layers[i].material.vertexColors = false;
-                layers[i].material.needsUpdate = true;
               }
             }
           } else {
@@ -2102,10 +2238,6 @@ export class SceneView {
                 lMesh.material.opacity = isXRay ? 0.35 : 1.0;
                 lMesh.material.depthWrite = true;
               }
-              if (lMesh.material) {
-                lMesh.material.vertexColors = false;
-                lMesh.material.needsUpdate = true;
-              }
             });
           }
         }
@@ -2118,6 +2250,7 @@ export class SceneView {
       if (!geo || !geo.attributes.position) return;
 
       if (isRegions) {
+        updateMaterialHeatmapState(mesh, true);
         // Requirement 3: "mặc định tất cả các cơ quan màu xám nhạt --> chỉ khi cô lập thì hãy tô màu heatmap của mỗi cơ quan được chọn"
         const isThisOrganIsolated = (selectedId === targetOrganId);
 
@@ -2166,141 +2299,83 @@ export class SceneView {
           }
         }
       } else {
-        if (mesh.material) {
-          mesh.material.vertexColors = false;
-          mesh.material.needsUpdate = true;
-        }
+        updateMaterialHeatmapState(mesh, false);
       }
     };
 
-    // 1. Stomach Functional Heatmap (5 regions: Hot -> Cold)
-    const palStomach = this._getThermalPalette(5);
-    const cFundus = palStomach[0];   // Hot Red (Đáy vị - Nóng nhất)
-    const cCardia = palStomach[1];   // Warm Orange (Tâm vị)
-    const cCorpus = palStomach[2];   // Gold / Amber (Thân vị)
-    const cAntrum = palStomach[3];   // Cyan (Hang vị)
-    const cPylorus = palStomach[4];  // Cold Violet (Môn vị - Lạnh nhất)
-
+    // 1. Stomach Functional Heatmap (Smooth continuous curved progression: Fundus -> Cardia -> Corpus -> Antrum -> Pylorus)
     const stomachTarget = (this.stomachWallMeshes && this.stomachWallMeshes.length > 0)
       ? this.stomachWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'stomach');
     applyColorsToMesh(stomachTarget, (x, y, z) => {
-      if (y > 120.2 && x > 1.2) return cFundus;
-      if (y >= 118.0 && x <= 2.5 && z <= 4.8) return cCardia;
-      if (x <= -0.8 && y <= 114.2) return cPylorus;
-      if (y <= 114.8 && x <= 3.5) return cAntrum;
-      return cCorpus;
+      const s = this._projectToCenterline(x, y, z, this._stomachPts);
+      return this._sampleContinuousThermalColor(s);
     }, 'stomach');
 
-    // 2. Pancreas Functional Heatmap (4 regions: Hot -> Cold)
-    const palPanc = this._getThermalPalette(4);
-    const cPancHead = palPanc[0]; // Hot Red (Đầu tụy - Nóng nhất)
-    const cPancNeck = palPanc[1]; // Warm Orange (Cổ tụy)
-    const cPancBody = palPanc[2]; // Emerald Green (Thân tụy)
-    const cPancTail = palPanc[3]; // Cold Violet (Đuôi tụy - Lạnh nhất)
-
+    // 2. Pancreas Functional Heatmap (Smooth continuous progression Head -> Neck -> Body -> Tail)
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'pancreas') return;
       const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
-      if (low.includes('duct')) return; // Ducts stay solid porcelain cyan
+      if (low.includes('duct')) return; // Ducts stay solid porcelain sky blue
       applyColorsToMesh(mesh, (x) => {
-        if (x < -1.5) return cPancHead;
-        if (x < 0.2) return cPancNeck;
-        if (x < 4.2) return cPancBody;
-        return cPancTail;
+        const s = THREE.MathUtils.clamp((x - (-3.8)) / (4.8 - (-3.8)), 0, 1);
+        return this._sampleContinuousThermalColor(s);
       }, 'pancreas');
     });
 
-    // 3. Duodenum Functional Heatmap (6 regions: Hot -> Cold)
-    const palDuod = this._getThermalPalette(6);
-    const cD1 = palDuod[0];      // Hot Red (D1 Hành tá tràng - Nóng nhất)
-    const cFlexSup = palDuod[1]; // Orange (Góc tá trên L1)
-    const cD2 = palDuod[2];      // Gold / Amber (D2 Đoạn xuống & Nhú Vater)
-    const cFlexInf = palDuod[3]; // Emerald Green (Góc tá dưới L3)
-    const cD3 = palDuod[4];      // Cyan (D3 Đoạn ngang)
-    const cD4 = palDuod[5];      // Cold Violet (D4 Đoạn lên & Góc Treitz - Lạnh nhất)
-
+    // 3. Duodenum Functional Heatmap (Smooth continuous C-Loop progression D1 -> Flex Sup -> D2 -> Flex Inf -> D3 -> D4)
     const duodTarget = (this.duodenumWallMeshes && this.duodenumWallMeshes.length > 0)
       ? this.duodenumWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'duodenum');
-    applyColorsToMesh(duodTarget, (x, y) => {
-      if (y >= 111.8 && x >= -4.8) return cD1;
-      if (y >= 111.0 && x < -4.8) return cFlexSup;
-      if (x < -4.2 && y >= 106.5) return cD2;
-      if (x < -3.8 && y < 106.5) return cFlexInf;
-      if (y <= 107.2 && x <= 0.5) return cD3;
-      return cD4;
+    applyColorsToMesh(duodTarget, (x, y, z) => {
+      const s = this._projectToCenterline(x, y, z, this._duodPts);
+      return this._sampleContinuousThermalColor(s);
     }, 'duodenum');
 
-    // 4. Large Intestine / Colon Functional Heatmap (5 regions: Hot -> Cold)
-    const palColon = this._getThermalPalette(5);
-    const cAppendix = palColon[0];   // Hot Red (Manh tràng & Ruột thừa - Nóng nhất)
-    const cAscending = palColon[1];  // Orange (Đại tràng lên & Góc gan)
-    const cTransverse = palColon[2]; // Gold / Amber (Đại tràng ngang & Góc lách)
-    const cDescending = palColon[3]; // Cyan (Đại tràng xuống)
-    const cSigmoid = palColon[4];    // Cold Violet (Đại tràng sigma - Lạnh nhất)
-
+    // 4. Large Intestine / Colon Functional Heatmap (Smooth continuous U-Frame progression Cecum -> Ascending -> Transverse -> Descending -> Sigmoid)
     const colonTarget = (this.colonWallMeshes && this.colonWallMeshes.length > 0)
       ? this.colonWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'large_intestine');
-    applyColorsToMesh(colonTarget, (x, y) => {
-      if (x <= -4.5 && y <= 96.0) return cAppendix;
-      if (x <= -4.0 && y > 96.0) return cAscending;
-      if (y >= 106.0 && x > -4.0) return cTransverse;
-      if (x >= 3.0 && y >= 87.0 && y < 106.0) return cDescending;
-      if (y < 93.0) return cSigmoid;
-      return cTransverse;
+    applyColorsToMesh(colonTarget, (x, y, z) => {
+      const s = this._projectToCenterline(x, y, z, this._colonPts);
+      return this._sampleContinuousThermalColor(s);
     }, 'large_intestine');
 
-    // 5. Esophagus Functional Heatmap (3 regions: Hot -> Cold)
-    const palEsoph = this._getThermalPalette(3);
-    const cEsophCervical = palEsoph[0];  // Hot Red (Đoạn cổ C6-T1 - Nóng nhất)
-    const cEsophThoracic = palEsoph[1];  // Emerald Green (Đoạn ngực T1-T10)
-    const cEsophAbdominal = palEsoph[2]; // Cold Violet (Đoạn bụng T10-T11 - Lạnh nhất)
-
+    // 5. Esophagus Functional Heatmap (Smooth continuous vertical progression Cervical -> Thoracic -> Abdominal)
     const esophTarget = (this.esophagusWallMeshes && this.esophagusWallMeshes.length > 0)
       ? this.esophagusWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'esophagus');
     applyColorsToMesh(esophTarget, (x, y) => {
-      if (y > 138.0) return cEsophCervical;
-      if (y <= 123.0) return cEsophAbdominal;
-      return cEsophThoracic;
+      const s = THREE.MathUtils.clamp((145.0 - y) / (145.0 - 122.0), 0, 1);
+      return this._sampleContinuousThermalColor(s);
     }, 'esophagus');
 
-    // 6. Gallbladder & Bile Duct Functional Heatmap (4 regions: Hot -> Cold)
-    const palGb = this._getThermalPalette(4);
-    const cGbFundus = palGb[0];  // Hot Red (Đáy túi mật / Điểm Murphy - Nóng nhất)
-    const cGbBody = palGb[1];    // Warm Orange (Thân túi mật)
-    const cGbNeck = palGb[2];    // Emerald Green (Cổ túi mật & Phễu Hartmann)
-    const cBileDuct = palGb[3];  // Cold Violet (Ống mật chủ - Lạnh nhất)
-
+    // 6. Gallbladder & Bile Duct Functional Heatmap (Smooth continuous progression Fundus -> Body -> Neck -> Common Bile Duct)
     const gbTarget = (this.gallbladderWallMeshes && this.gallbladderWallMeshes.length > 0)
       ? this.gallbladderWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'gallbladder_tree' && m.name === 'Gallbladder');
     applyColorsToMesh(gbTarget, (x, y, z) => {
-      if (z > 6.0) return cGbFundus;
-      if (z <= 4.5) return cGbNeck;
-      return cGbBody;
+      const s = THREE.MathUtils.clamp((6.5 - z) / (6.5 - 4.2), 0, 1) * 0.75;
+      return this._sampleContinuousThermalColor(s);
     }, 'gallbladder_tree');
 
     const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
-    applyColorsToMesh(bileDuctTarget, () => cBileDuct, 'gallbladder_tree');
+    applyColorsToMesh(bileDuctTarget, (x, y) => {
+      const s = 0.85 + 0.15 * THREE.MathUtils.clamp((113.0 - y) / (113.0 - 106.0), 0, 1);
+      return this._sampleContinuousThermalColor(s);
+    }, 'gallbladder_tree');
 
-    // 7. Small Intestine Functional Heatmap (2 regions: Hot -> Cold)
-    const palSi = this._getThermalPalette(2);
-    const cJejunum = palSi[0]; // Hot Red (Hỗng tràng - Nóng)
-    const cIleum = palSi[1];   // Cold Violet (Hồi tràng - Lạnh)
-
+    // 7. Small Intestine Functional Heatmap (Smooth continuous spatial progression Jejunum -> Ileum)
     const siTarget = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
       ? this.smallIntestineWallMeshes[0]
       : this.clickableMeshes.find(m => m.userData.organId === 'small_intestine');
     applyColorsToMesh(siTarget, (x, y) => {
-      return (x > 0 || y > 98.0) ? cJejunum : cIleum;
+      const s = THREE.MathUtils.clamp(((x - (-3.0)) / 6.0 + (105.0 - y) / 15.0) * 0.5, 0, 1);
+      return this._sampleContinuousThermalColor(s);
     }, 'small_intestine');
 
     // 8. Couinaud Liver Functional Heatmap (8 segments: Hot -> Cold)
     const palLiver = this._getThermalPalette(8);
-
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'liver') return;
       const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
@@ -2310,6 +2385,44 @@ export class SceneView {
       const segNum = roman ? romanMap[roman] : 1;
       const segColor = palLiver[segNum - 1] || palLiver[0];
       applyColorsToMesh(mesh, () => segColor, 'liver');
+    });
+
+    // 9. Update any remaining clickable meshes (oral cavity, teeth, jaws, vessels, etc.)
+    this.clickableMeshes.forEach(mesh => {
+      const orgId = mesh.userData.organId;
+      if (['stomach', 'duodenum', 'pancreas', 'large_intestine', 'esophagus', 'gallbladder_tree', 'small_intestine', 'liver'].includes(orgId)) {
+        return; // Already handled above
+      }
+      if (isRegions) {
+        updateMaterialHeatmapState(mesh, true);
+        if (orgId === 'peritoneum_omentum') {
+          // Omentum is a curtain covering intestines: keep hidden or very faint in heatmap mode
+          mesh.visible = (!isIsolate && !selectedId);
+          if (mesh.visible) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.08;
+            mesh.material.depthWrite = false;
+          }
+          return;
+        }
+        if (selectedId && orgId !== selectedId) {
+          mesh.visible = !isIsolate;
+          if (!isIsolate) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.12;
+            mesh.material.depthWrite = false;
+          }
+        } else {
+          mesh.visible = true;
+          mesh.material.transparent = isXRay;
+          mesh.material.opacity = isXRay ? 0.35 : 0.85;
+          mesh.material.vertexColors = false;
+          if (mesh.material.color) mesh.material.color.copy(cNeutralGray);
+          mesh.material.needsUpdate = true;
+        }
+      } else {
+        updateMaterialHeatmapState(mesh, false);
+      }
     });
   }
 
