@@ -10,12 +10,60 @@
       "color": "#e06c75",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "stomach_cardia", "name": "Tâm vị & Lỗ tâm vị", "explodeVector": [0, 0.4, 0] },
-        { "id": "stomach_fundus", "name": "Đáy vị (Túi hơi dạ dày)", "explodeVector": [-0.3, 0.5, 0.1] },
-        { "id": "stomach_body", "name": "Thân vị & Bờ cong lớn/nhỏ", "explodeVector": [-0.3, 0, 0.3] },
-        { "id": "stomach_antrum", "name": "Hang môn vị & Ống môn vị", "explodeVector": [0.4, -0.2, 0.2] },
-        { "id": "stomach_pylorus", "name": "Môn vị & Cơ thắt môn vị", "explodeVector": [0.5, -0.4, 0] },
-        { "id": "stomach_mucosa", "name": "Lớp niêm mạc & Nếp gấp Rugae", "explodeVector": [0, 0, 0.6] }
+        {
+          "id": "stomach_cardia",
+          "name": "Tâm vị & Lỗ tâm vị",
+          "explodeVector": [
+            0,
+            0.4,
+            0
+          ]
+        },
+        {
+          "id": "stomach_fundus",
+          "name": "Đáy vị (Túi hơi dạ dày)",
+          "explodeVector": [
+            -0.3,
+            0.5,
+            0.1
+          ]
+        },
+        {
+          "id": "stomach_body",
+          "name": "Thân vị & Bờ cong lớn/nhỏ",
+          "explodeVector": [
+            -0.3,
+            0,
+            0.3
+          ]
+        },
+        {
+          "id": "stomach_antrum",
+          "name": "Hang môn vị & Ống môn vị",
+          "explodeVector": [
+            0.4,
+            -0.2,
+            0.2
+          ]
+        },
+        {
+          "id": "stomach_pylorus",
+          "name": "Môn vị & Cơ thắt môn vị",
+          "explodeVector": [
+            0.5,
+            -0.4,
+            0
+          ]
+        },
+        {
+          "id": "stomach_mucosa",
+          "name": "Lớp niêm mạc & Nếp gấp Rugae",
+          "explodeVector": [
+            0,
+            0,
+            0.6
+          ]
+        }
       ],
       "wallLayers": [
         {
@@ -107,20 +155,92 @@
       "color": "#a0522d",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "liver_seg_1", "name": "Hạ phân thùy I (Thùy đuôi Spigel)", "explodeVector": [0, 0.4, -0.5] },
-        { "id": "liver_seg_2", "name": "Hạ phân thùy II (Bên sau trái)", "explodeVector": [-0.6, 0.4, -0.1] },
-        { "id": "liver_seg_3", "name": "Hạ phân thùy III (Bên trước trái)", "explodeVector": [-0.6, 0.1, 0.3] },
-        { "id": "liver_seg_4", "name": "Hạ phân thùy IV (Thùy vuông / Giữa trái)", "explodeVector": [-0.2, -0.1, 0.4] },
-        { "id": "liver_seg_5", "name": "Hạ phân thùy V (Trước dưới phải)", "explodeVector": [0.4, -0.3, 0.4] },
-        { "id": "liver_seg_6", "name": "Hạ phân thùy VI (Sau dưới phải)", "explodeVector": [0.7, -0.3, -0.2] },
-        { "id": "liver_seg_7", "name": "Hạ phân thùy VII (Sau trên phải)", "explodeVector": [0.7, 0.3, -0.4] },
-        { "id": "liver_seg_8", "name": "Hạ phân thùy VIII (Trước trên phải)", "explodeVector": [0.3, 0.4, 0.2] },
-        { "id": "liver_gallbladder_embed", "name": "Giường túi mật & Túi mật", "explodeVector": [0.2, -0.5, 0.1] }
+        {
+          "id": "liver_seg_1",
+          "name": "Hạ phân thùy I (Thùy đuôi Spigel)",
+          "explodeVector": [
+            0,
+            0.4,
+            -0.5
+          ]
+        },
+        {
+          "id": "liver_seg_2",
+          "name": "Hạ phân thùy II (Bên sau trái)",
+          "explodeVector": [
+            -0.6,
+            0.4,
+            -0.1
+          ]
+        },
+        {
+          "id": "liver_seg_3",
+          "name": "Hạ phân thùy III (Bên trước trái)",
+          "explodeVector": [
+            -0.6,
+            0.1,
+            0.3
+          ]
+        },
+        {
+          "id": "liver_seg_4",
+          "name": "Hạ phân thùy IV (Thùy vuông / Giữa trái)",
+          "explodeVector": [
+            -0.2,
+            -0.1,
+            0.4
+          ]
+        },
+        {
+          "id": "liver_seg_5",
+          "name": "Hạ phân thùy V (Trước dưới phải)",
+          "explodeVector": [
+            0.4,
+            -0.3,
+            0.4
+          ]
+        },
+        {
+          "id": "liver_seg_6",
+          "name": "Hạ phân thùy VI (Sau dưới phải)",
+          "explodeVector": [
+            0.7,
+            -0.3,
+            -0.2
+          ]
+        },
+        {
+          "id": "liver_seg_7",
+          "name": "Hạ phân thùy VII (Sau trên phải)",
+          "explodeVector": [
+            0.7,
+            0.3,
+            -0.4
+          ]
+        },
+        {
+          "id": "liver_seg_8",
+          "name": "Hạ phân thùy VIII (Trước trên phải)",
+          "explodeVector": [
+            0.3,
+            0.4,
+            0.2
+          ]
+        },
+        {
+          "id": "liver_gallbladder_embed",
+          "name": "Giường túi mật & Túi mật",
+          "explodeVector": [
+            0.2,
+            -0.5,
+            0.1
+          ]
+        }
       ],
       "location": "Nằm ở ô dưới hoành phải, chiếm toàn bộ hạ sườn phải, thượng vị và lấn sang một phần hạ sườn trái. Tuyến lớn nhất cơ thể, nặng 1.4 - 1.8 kg ở người sống (chứa gần 1 lít máu).",
-      "structure": "Gồm 2 mặt: Mặt hoành (lồi, áp sát vòm hoành, chia thành thùy phải và thùy trái bởi Dây chằng liềm; phía sau có vùng trần không có phúc mạc); Mặt tạng (phẳng lõm, nhìn xuống dưới ra sau, có 2 rãnh dọc và 1 rãnh ngang tạo hình chữ H). Rãnh ngang là Cửa gan (Porta hepatis) chứa Cuống gan. Phân chia chức năng theo Couinaud dựa trên phân nhánh tĩnh mạch cửa và tĩnh mạch trên gan thành 8 hạ phân thùy độc lập (I đến VIII), cho phép phẫu thuật cắt gan phân thùy an toàn.",
-      "vasculature": "Nhận 2 nguồn máu: Máu dinh dưỡng từ ĐM gan riêng (nhánh của ĐM thân tạng, chiếm 20 - 25% lưu lượng) và Máu chức phận từ Tĩnh mạch cửa (thu nhận toàn bộ dưỡng chất từ ống tiêu hóa và lách, chiếm 75 - 80% lưu lượng). Máu qua xoang tĩnh mạch gan rồi theo 3 tĩnh mạch trên gan (phải, giữa, trái) đổ về Tĩnh mạch chủ dưới.",
-      "physiology": "Nhà máy hóa chất sinh học trung tâm: Tiết mật (0.5 - 1 lít/ngày) nhũ hóa chất béo; Chuyển hóa carbohydrate (tổng hợp và dự trữ glycogen, tân tạo đường); Chuyển hóa lipid (tổng hợp cholesterol, lipoprotein, thể ceton); Chuyển hóa protein (tổng hợp albumin, các yếu tố đông máu I, II, V, VII, IX, X); Khử độc (chuyển amoniac $NH_3$ độc thành urê đào thải qua thận, bất hoạt thuốc và độc tố).",
+      "structure": "Gồm 2 mặt: Mặt hoành (lồi, áp sát vòm hoành, chia thành thùy phải và thùy trái bởi Dây chằng liềm; phía sau có vùng trần không có phúc mạc); Mặt tạng (phẳng lõm, nhìn xuống dưới ra sau, có 2 rãnh dọc và 1 rãnh ngang tạo hình chữ H; rãnh ngang là Cửa gan/Porta hepatis chứa Cuống gan). Phân chia chức năng theo Couinaud thành 8 hạ phân thùy độc lập (I đến VIII) dựa trên cấu trúc mạch máu: Mỗi phân thùy nhận một cuống Glisson độc lập (nhánh TM cửa, nhánh ĐM gan riêng, ống mật phân thùy) và được ngăn cách bởi 3 tĩnh mạch trên gan (Phải, Giữa, Trái) chạy trong 3 khe liên phân thùy đổ về TMC dưới, cho phép phẫu thuật cắt gan theo từng phân thùy an toàn.",
+      "vasculature": "Nhận 2 nguồn máu: (1) Máu dinh dưỡng từ ĐM gan riêng (chiếm 20 - 25% lưu lượng, giàu oxy) chia nhánh phải/trái rồi phân vào 8 hạ phân thùy; (2) Máu chức phận từ Tĩnh mạch cửa (chiếm 75 - 80% lưu lượng, thu gom toàn bộ máu giàu chất dinh dưỡng từ ruột non qua TM mạc treo tràng trên và đại tràng qua TM mạc treo tràng dưới). Máu qua xoang tĩnh mạch gan rồi theo 3 tĩnh mạch trên gan (phải, giữa, trái) đổ về Tĩnh mạch chủ dưới.",
+      "physiology": "Là trung tâm chuyển hóa lớn nhất cơ thể: chuyển hóa carbohydrate (tổng hợp/giáng hóa glycogen, tân tạo đường); chuyển hóa lipid (tổng hợp lipoprotein, cholesterol, muối mật); chuyển hóa protein (tổng hợp albumin, prothrombin, fibrinogen, các yếu tố đông máu); chức năng giải độc (khử độc thuốc, độc chất qua hệ enzym cytochrom P450, chuyển NH3 thành ure); chức năng bài tiết mật (khoảng 800 - 1000 ml/ngày nhũ tương hóa lipid); dự trữ vitamin A, D, B12 và sắt (ferritin).",
       "clinicalNotes": "Vùng hạ sườn phải (Huyệt Kỳ Môn LR-14, Nhật Nguyệt GB-24). Xơ gan làm tăng áp lực tĩnh mạch cửa dẫn đến mở các vòng nối gánh - chủ (gây trĩ, giãn vỡ tĩnh mạch thực quản, tuần hoàn bàng hệ đầu sứa quanh rốn). Ung thư biểu mô tế bào gan (HCC) thường phát triển trên nền xơ gan/viêm gan B, C; phẫu thuật cắt hạ phân thùy gan theo giải phẫu Couinaud là phương pháp điều trị triệt căn hàng đầu."
     },
     {
@@ -133,13 +253,69 @@
       "color": "#22c55e",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "gb_fundus", "name": "Đáy túi mật (Điểm Murphy)", "explodeVector": [0.4, -0.4, 0.4] },
-        { "id": "gb_body", "name": "Thân & Phễu túi mật (Túi Hartmann)", "explodeVector": [0.3, -0.2, 0.2] },
-        { "id": "gb_neck", "name": "Cổ túi mật & Ống túi mật (Van xoắn Heister)", "explodeVector": [0.2, 0, 0.1] },
-        { "id": "biliary_hepatic_ducts", "name": "Ống gan phải & Ống gan trái", "explodeVector": [0, 0.3, 0] },
-        { "id": "biliary_common_hepatic", "name": "Ống gan chung", "explodeVector": [0, 0.1, 0] },
-        { "id": "biliary_choledochus", "name": "Ống mật chủ (Common Bile Duct)", "explodeVector": [-0.1, -0.3, -0.1] },
-        { "id": "biliary_sphincter_oddi", "name": "Bóng Vater & Cơ vòng Oddi", "explodeVector": [-0.2, -0.5, 0] }
+        {
+          "id": "gb_fundus",
+          "name": "Đáy túi mật (Điểm Murphy)",
+          "explodeVector": [
+            0.4,
+            -0.4,
+            0.4
+          ]
+        },
+        {
+          "id": "gb_body",
+          "name": "Thân & Phễu túi mật (Túi Hartmann)",
+          "explodeVector": [
+            0.3,
+            -0.2,
+            0.2
+          ]
+        },
+        {
+          "id": "gb_neck",
+          "name": "Cổ túi mật & Ống túi mật (Van xoắn Heister)",
+          "explodeVector": [
+            0.2,
+            0,
+            0.1
+          ]
+        },
+        {
+          "id": "biliary_hepatic_ducts",
+          "name": "Ống gan phải & Ống gan trái",
+          "explodeVector": [
+            0,
+            0.3,
+            0
+          ]
+        },
+        {
+          "id": "biliary_common_hepatic",
+          "name": "Ống gan chung",
+          "explodeVector": [
+            0,
+            0.1,
+            0
+          ]
+        },
+        {
+          "id": "biliary_choledochus",
+          "name": "Ống mật chủ (Common Bile Duct)",
+          "explodeVector": [
+            -0.1,
+            -0.3,
+            -0.1
+          ]
+        },
+        {
+          "id": "biliary_sphincter_oddi",
+          "name": "Bóng Vater & Cơ vòng Oddi",
+          "explodeVector": [
+            -0.2,
+            -0.5,
+            0
+          ]
+        }
       ],
       "wallLayers": [
         {
@@ -207,12 +383,60 @@
       "color": "#f59e0b",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "pancreas_head", "name": "Đầu tụy & Mỏm móc (Processus uncinatus)", "explodeVector": [0.4, -0.1, 0.1] },
-        { "id": "pancreas_neck", "name": "Cổ tụy & Khuyết tụy (Mạch mạc treo)", "explodeVector": [0.2, 0.1, 0] },
-        { "id": "pancreas_body", "name": "Thân tụy (Băng ngang cột sống)", "explodeVector": [-0.2, 0.2, 0] },
-        { "id": "pancreas_tail", "name": "Đuôi tụy (Chạm rốn lách)", "explodeVector": [-0.6, 0.3, -0.1] },
-        { "id": "pancreas_duct_wirsung", "name": "Ống tụy chính (Wirsung)", "explodeVector": [0, 0, 0.3] },
-        { "id": "pancreas_duct_santorini", "name": "Ống tụy phụ (Santorini)", "explodeVector": [0.3, 0.2, 0.3] }
+        {
+          "id": "pancreas_head",
+          "name": "Đầu tụy & Mỏm móc (Processus uncinatus)",
+          "explodeVector": [
+            0.4,
+            -0.1,
+            0.1
+          ]
+        },
+        {
+          "id": "pancreas_neck",
+          "name": "Cổ tụy & Khuyết tụy (Mạch mạc treo)",
+          "explodeVector": [
+            0.2,
+            0.1,
+            0
+          ]
+        },
+        {
+          "id": "pancreas_body",
+          "name": "Thân tụy (Băng ngang cột sống)",
+          "explodeVector": [
+            -0.2,
+            0.2,
+            0
+          ]
+        },
+        {
+          "id": "pancreas_tail",
+          "name": "Đuôi tụy (Chạm rốn lách)",
+          "explodeVector": [
+            -0.6,
+            0.3,
+            -0.1
+          ]
+        },
+        {
+          "id": "pancreas_duct_wirsung",
+          "name": "Ống tụy chính (Wirsung)",
+          "explodeVector": [
+            0,
+            0,
+            0.3
+          ]
+        },
+        {
+          "id": "pancreas_duct_santorini",
+          "name": "Ống tụy phụ (Santorini)",
+          "explodeVector": [
+            0.3,
+            0.2,
+            0.3
+          ]
+        }
       ],
       "location": "Tạng nằm sau phúc mạc vắt ngang thành bụng sau từ quai tá tràng đến rốn lách (ngang mức L1 - L2), nằm sau dạ dày và trước cột sống thắt lưng. Dài 12 - 15 cm, nặng khoảng 80 g.",
       "structure": "Gồm 4 phần: Đầu tụy (hình dẹt, nằm lọt trong vòng chữ C tá tràng, phía dưới có mỏm móc kẹp bó mạch mạc treo tràng trên); Cổ tụy (chỗ thắt hẹp nằm ngay trước tĩnh mạch cửa); Thân tụy (chạy chếch lên trên sang trái); Đuôi tụy (di động, đi trong dây chằng lách - thận chạm vào rốn lách). Hệ thống ống dẫn: Ống tụy chính (Wirsung) chạy dọc suốt chiều dài tụy đổ vào Nhú tá lớn; Ống tụy phụ (Santorini) tách từ ống chính ở đầu tụy đổ vào Nhú tá bé (nằm trên nhú lớn 2 cm).",
@@ -230,11 +454,51 @@
       "color": "#fb923c",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "duodenum_d1", "name": "Đoạn trên (D1 / Hành tá tràng)", "explodeVector": [0.1, 0.4, 0.1] },
-        { "id": "duodenum_d2", "name": "Đoạn xuống (D2 - Có Nhú tá lớn/bé)", "explodeVector": [0.5, 0, 0.1] },
-        { "id": "duodenum_d3", "name": "Đoạn ngang (D3 - Dưới mạch mạc treo)", "explodeVector": [0.2, -0.4, 0] },
-        { "id": "duodenum_d4", "name": "Đoạn lên (D4 - Góc tá hỗng tràng Treitz)", "explodeVector": [-0.3, -0.1, -0.1] },
-        { "id": "duodenum_papilla", "name": "Nhú tá tràng lớn (Papilla Vater)", "explodeVector": [0.4, 0, 0.4] }
+        {
+          "id": "duodenum_d1",
+          "name": "Đoạn trên (D1 / Hành tá tràng)",
+          "explodeVector": [
+            0.1,
+            0.4,
+            0.1
+          ]
+        },
+        {
+          "id": "duodenum_d2",
+          "name": "Đoạn xuống (D2 - Có Nhú tá lớn/bé)",
+          "explodeVector": [
+            0.5,
+            0,
+            0.1
+          ]
+        },
+        {
+          "id": "duodenum_d3",
+          "name": "Đoạn ngang (D3 - Dưới mạch mạc treo)",
+          "explodeVector": [
+            0.2,
+            -0.4,
+            0
+          ]
+        },
+        {
+          "id": "duodenum_d4",
+          "name": "Đoạn lên (D4 - Góc tá hỗng tràng Treitz)",
+          "explodeVector": [
+            -0.3,
+            -0.1,
+            -0.1
+          ]
+        },
+        {
+          "id": "duodenum_papilla",
+          "name": "Nhú tá tràng lớn (Papilla Vater)",
+          "explodeVector": [
+            0.4,
+            0,
+            0.4
+          ]
+        }
       ],
       "wallLayers": [
         {
@@ -314,9 +578,33 @@
       "color": "#f87171",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "si_jejunum", "name": "Hỗng tràng (Quai nằm ngang, thành dày)", "explodeVector": [-0.3, 0.2, 0.3] },
-        { "id": "si_ileum", "name": "Hồi tràng (Quai nằm dọc, mảng Peyer)", "explodeVector": [0.3, -0.3, 0.2] },
-        { "id": "si_mesentery", "name": "Rễ mạc treo ruột non & Cung mạch", "explodeVector": [0, 0, -0.3] }
+        {
+          "id": "si_jejunum",
+          "name": "Hỗng tràng (Quai nằm ngang, thành dày)",
+          "explodeVector": [
+            -0.3,
+            0.2,
+            0.3
+          ]
+        },
+        {
+          "id": "si_ileum",
+          "name": "Hồi tràng (Quai nằm dọc, mảng Peyer)",
+          "explodeVector": [
+            0.3,
+            -0.3,
+            0.2
+          ]
+        },
+        {
+          "id": "si_mesentery",
+          "name": "Rễ mạc treo ruột non & Cung mạch",
+          "explodeVector": [
+            0,
+            0,
+            -0.3
+          ]
+        }
       ],
       "wallLayers": [
         {
@@ -396,13 +684,69 @@
       "color": "#a3e635",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "colon_cecum", "name": "Manh tràng & Van Bauhin", "explodeVector": [0.6, -0.4, 0.3] },
-        { "id": "colon_appendix", "name": "Ruột thừa (Vermiform Appendix)", "explodeVector": [0.7, -0.6, 0.4] },
-        { "id": "colon_ascending", "name": "Đại tràng lên & Góc gan", "explodeVector": [0.5, 0.1, 0.1] },
-        { "id": "colon_transverse", "name": "Đại tràng ngang & Mạc treo", "explodeVector": [0.4, 0.4, 0.4] },
-        { "id": "colon_descending", "name": "Góc lách & Đại tràng xuống", "explodeVector": [-0.5, 0.1, 0.1] },
-        { "id": "colon_sigmoid", "name": "Đại tràng sigma (Xích-ma)", "explodeVector": [-0.4, -0.4, 0.3] },
-        { "id": "colon_rectum", "name": "Trực tràng & Ống hậu môn", "explodeVector": [0, -0.7, -0.1] }
+        {
+          "id": "colon_cecum",
+          "name": "Manh tràng & Van Bauhin",
+          "explodeVector": [
+            0.6,
+            -0.4,
+            0.3
+          ]
+        },
+        {
+          "id": "colon_appendix",
+          "name": "Ruột thừa (Vermiform Appendix)",
+          "explodeVector": [
+            0.7,
+            -0.6,
+            0.4
+          ]
+        },
+        {
+          "id": "colon_ascending",
+          "name": "Đại tràng lên & Góc gan",
+          "explodeVector": [
+            0.5,
+            0.1,
+            0.1
+          ]
+        },
+        {
+          "id": "colon_transverse",
+          "name": "Đại tràng ngang & Mạc treo",
+          "explodeVector": [
+            0.4,
+            0.4,
+            0.4
+          ]
+        },
+        {
+          "id": "colon_descending",
+          "name": "Góc lách & Đại tràng xuống",
+          "explodeVector": [
+            -0.5,
+            0.1,
+            0.1
+          ]
+        },
+        {
+          "id": "colon_sigmoid",
+          "name": "Đại tràng sigma (Xích-ma)",
+          "explodeVector": [
+            -0.4,
+            -0.4,
+            0.3
+          ]
+        },
+        {
+          "id": "colon_rectum",
+          "name": "Trực tràng & Ống hậu môn",
+          "explodeVector": [
+            0,
+            -0.7,
+            -0.1
+          ]
+        }
       ],
       "wallLayers": [
         {
@@ -559,9 +903,33 @@
       "color": "#fef08a",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "omentum_greater", "name": "Mạc nối lớn (Tấm tạp dề bảo vệ ổ bụng)", "explodeVector": [0, -0.4, 0.6] },
-        { "id": "omentum_lesser", "name": "Mạc nối nhỏ (D/c gan - vị & gan - tá tràng)", "explodeVector": [0, 0.3, 0.2] },
-        { "id": "peritoneum_parietal", "name": "Lá thành phúc mạc", "explodeVector": [0, 0, 0.8] }
+        {
+          "id": "omentum_greater",
+          "name": "Mạc nối lớn (Tấm tạp dề bảo vệ ổ bụng)",
+          "explodeVector": [
+            0,
+            -0.4,
+            0.6
+          ]
+        },
+        {
+          "id": "omentum_lesser",
+          "name": "Mạc nối nhỏ (D/c gan - vị & gan - tá tràng)",
+          "explodeVector": [
+            0,
+            0.3,
+            0.2
+          ]
+        },
+        {
+          "id": "peritoneum_parietal",
+          "name": "Lá thành phúc mạc",
+          "explodeVector": [
+            0,
+            0,
+            0.8
+          ]
+        }
       ],
       "location": "Màng thanh mạc lớn nhất cơ thể lót mặt trong ổ bụng và bọc ngoài hầu hết các tạng tiêu hóa. Mạc nối lớn phủ như tấm rèm từ bờ cong lớn dạ dày xuống tận xương mu rồi quặt ngược lên bám vào đại tràng ngang.",
       "structure": "Gồm 2 lá liên tiếp nhau: Lá thành (lót thành bụng, có cảm giác đau soma nhạy cảm bởi thần kinh hoành và TK gian sườn) và Lá tạng (bọc ngoài bề mặt các tạng tiêu hóa). Khoang giữa 2 lá là Ổ phúc mạc (khoang ảo chứa một lớp dịch thanh mạc mỏng 50ml giúp các tạng trượt lên nhau không dính). Ổ phúc mạc chia thành Đại phúc mạc và Tiểu phúc mạc (Hậu cung mạc nối / Omental bursa nằm sau dạ dày).",
@@ -579,9 +947,33 @@
       "color": "#f472b6",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "laryngopharynx", "name": "Hạ Hầu / Hầu Thanh Quản (Laryngopharynx)", "explodeVector": [0, -0.2, 0.4] },
-        { "id": "oropharynx", "name": "Khẩu Hầu / Hầu Miệng (Oropharynx)", "explodeVector": [0, 0.2, 0.4] },
-        { "id": "nasopharynx", "name": "Tỵ Hầu / Hầu Mũi (Nasopharynx)", "explodeVector": [0, 0.5, 0.3] }
+        {
+          "id": "laryngopharynx",
+          "name": "Hạ Hầu / Hầu Thanh Quản (Laryngopharynx)",
+          "explodeVector": [
+            0,
+            -0.2,
+            0.4
+          ]
+        },
+        {
+          "id": "oropharynx",
+          "name": "Khẩu Hầu / Hầu Miệng (Oropharynx)",
+          "explodeVector": [
+            0,
+            0.2,
+            0.4
+          ]
+        },
+        {
+          "id": "nasopharynx",
+          "name": "Tỵ Hầu / Hầu Mũi (Nasopharynx)",
+          "explodeVector": [
+            0,
+            0.5,
+            0.3
+          ]
+        }
       ],
       "location": "Ống cơ - màng hình phễu dài 12 - 14 cm, nằm trước cột sống cổ từ nền sọ xuống đến bờ dưới sụn nhẫn (ngang đốt sống C6), nơi tiếp nối liên tục với thực quản.",
       "structure": "Gồm 3 tầng giải phẫu từ trên xuống dưới: 1. Hầu mũi (Tỵ hầu / Nasopharynx): Nằm sau ổ mũi, trên khẩu cái mềm, có lỗ vòi tai Eustache và hạnh nhân hầu (Amiđan Luschka / VA); 2. Hầu miệng (Khẩu hầu / Oropharynx): Ngã tư tiêu hóa - hô hấp sau khoang miệng và gốc lưỡi, chứa hạnh nhân khẩu cái (Amiđan); 3. Hầu thanh quản (Hạ hầu / Laryngopharynx): Nối tiếp thực quản, nằm sau thanh quản, có 2 xoang lê (Fossa piriformis) dẫn thức ăn trượt xuống thực quản. Thành hầu gồm 3 cơ khít hầu (trên, giữa, dưới) dạng quạt lồng nhau và niêm mạc lót.",
@@ -599,9 +991,33 @@
       "color": "#e11d48",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "tongue_body", "name": "Thân & Đỉnh Lưỡi (Corpus & Apex Linguae)", "explodeVector": [0, 0, 0.5] },
-        { "id": "tongue_root", "name": "Gốc & Đáy Lưỡi (Radix Linguae)", "explodeVector": [0, -0.2, 0.2] },
-        { "id": "soft_palate", "name": "Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)", "explodeVector": [0, 0.3, 0.2] }
+        {
+          "id": "tongue_body",
+          "name": "Thân & Đỉnh Lưỡi (Corpus & Apex Linguae)",
+          "explodeVector": [
+            0,
+            0,
+            0.5
+          ]
+        },
+        {
+          "id": "tongue_root",
+          "name": "Gốc & Đáy Lưỡi (Radix Linguae)",
+          "explodeVector": [
+            0,
+            -0.2,
+            0.2
+          ]
+        },
+        {
+          "id": "soft_palate",
+          "name": "Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)",
+          "explodeVector": [
+            0,
+            0.3,
+            0.2
+          ]
+        }
       ],
       "location": "Nằm trong khoang miệng chính thức và sàn miệng, tựa trên xương móng và xương hàm dưới.",
       "structure": "Cơ quan cơ - niêm mạc hình nón dẹt gồm Đỉnh, Thân và Gốc lưỡi. Rãnh tận cùng hình chữ V (Sulcus terminalis) chia mặt lưng lưỡi thành 2/3 trước (phần miệng) và 1/3 sau (phần hầu). Mặt lưng 2/3 trước phủ đầy các gai lưỡi (gai chỉ, gai nấm, gai đài) chứa các chồi vị giác. Cơ lưỡi gồm nhóm cơ nội tại (thay đổi hình dạng lưỡi) và ngoại lai (vận động vị trí: Cơ cằm lưỡi, móng lưỡi, trâm lưỡi, khẩu cái lưỡi).",
@@ -619,10 +1035,42 @@
       "color": "#f8fafc",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "mandible", "name": "Xương Hàm Dưới (Mandible)", "explodeVector": [0, -0.3, 0.4] },
-        { "id": "maxilla", "name": "Xương Hàm Trên (Maxilla)", "explodeVector": [0, 0.3, 0.2] },
-        { "id": "teeth_upper", "name": "Cung Răng Hàm Trên (16 răng)", "explodeVector": [0, 0.1, 0.3] },
-        { "id": "teeth_lower", "name": "Cung Răng Hàm Dưới (16 răng)", "explodeVector": [0, -0.1, 0.3] }
+        {
+          "id": "mandible",
+          "name": "Xương Hàm Dưới (Mandible)",
+          "explodeVector": [
+            0,
+            -0.3,
+            0.4
+          ]
+        },
+        {
+          "id": "maxilla",
+          "name": "Xương Hàm Trên (Maxilla)",
+          "explodeVector": [
+            0,
+            0.3,
+            0.2
+          ]
+        },
+        {
+          "id": "teeth_upper",
+          "name": "Cung Răng Hàm Trên (16 răng)",
+          "explodeVector": [
+            0,
+            0.1,
+            0.3
+          ]
+        },
+        {
+          "id": "teeth_lower",
+          "name": "Cung Răng Hàm Dưới (16 răng)",
+          "explodeVector": [
+            0,
+            -0.1,
+            0.3
+          ]
+        }
       ],
       "location": "Nằm ở tầng dưới và giữa khối xương sọ mặt, hình thành bộ máy cắn xé nghiền nát thức ăn của khoang miệng.",
       "structure": "Bộ răng người trưởng thành gồm 32 chiếc phân bố đối xứng trên 2 cung hàm (mỗi phần tư hàm gồm: 2 răng cửa, 1 răng nanh, 2 răng tiền cối, 3 răng cối). Mỗi răng gồm Thân răng (Crown), Cổ răng (Neck) và Chân răng (Root). Men răng (Enamel) là mô cứng nhất cơ thể bao bọc ngoài thân răng, bên dưới là ngà răng (Dentin) và tủy răng (Pulp) chứa mạch máu thần kinh. Xương hàm dưới là xương duy nhất cử động được của khối sọ nhờ khớp thái dương hàm (TMJ).",
@@ -640,9 +1088,33 @@
       "color": "#f59e0b",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "parotid_gland", "name": "Tuyến Mang Tai (Glandula Parotidea & Ống Stenon)", "explodeVector": [0.4, 0.1, 0] },
-        { "id": "submandibular_gland", "name": "Tuyến Dưới Hàm (Glandula Submandibularis & Ống Wharton)", "explodeVector": [0.2, -0.3, 0] },
-        { "id": "sublingual_gland", "name": "Tuyến Dưới Lưỡi (Glandula Sublingualis & Ống Rivinus)", "explodeVector": [0, -0.2, 0.3] }
+        {
+          "id": "parotid_gland",
+          "name": "Tuyến Mang Tai (Glandula Parotidea & Ống Stenon)",
+          "explodeVector": [
+            0.4,
+            0.1,
+            0
+          ]
+        },
+        {
+          "id": "submandibular_gland",
+          "name": "Tuyến Dưới Hàm (Glandula Submandibularis & Ống Wharton)",
+          "explodeVector": [
+            0.2,
+            -0.3,
+            0
+          ]
+        },
+        {
+          "id": "sublingual_gland",
+          "name": "Tuyến Dưới Lưỡi (Glandula Sublingualis & Ống Rivinus)",
+          "explodeVector": [
+            0,
+            -0.2,
+            0.3
+          ]
+        }
       ],
       "location": "Gồm 3 cặp tuyến đối xứng nằm quanh góc hàm và sàn miệng: Tuyến mang tai (trước dưới loa tai), Tuyến dưới hàm (trong hố dưới hàm), Tuyến dưới lưỡi (dưới niêm mạc sàn miệng cạnh gốc lưỡi).",
       "structure": "Tuyến nang - ống ngoại tiết phức hợp: 1. Tuyến mang tai: Lớn nhất (20 - 30g), tiết dịch thanh dịch loãng (serous), có dây thần kinh VII đi xuyên qua mô tuyến chia thành 5 nhánh mặt, ống Stenon đổ vào niêm mạc má đối diện răng cối lớn trên số 2; 2. Tuyến dưới hàm: Tiết dịch hỗn hợp (thanh dịch + nhầy), ống Wharton dài 5 cm đổ vào cục dưới lưỡi; 3. Tuyến dưới lưỡi: Nhỏ nhất, tiết chủ yếu chất nhầy qua các ống nhỏ Rivinus.",
@@ -660,15 +1132,146 @@
       "color": "#3b82f6",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "portal_vein_main", "name": "Thân Tĩnh Mạch Cửa (Vena Portae Hepatis)", "explodeVector": [-0.1, 0, 0.4] },
-        { "id": "smv", "name": "Tĩnh Mạch Mạc Treo Tràng Trên (Superior Mesenteric Vein)", "explodeVector": [0.1, -0.4, 0.2] },
-        { "id": "splenic_vein", "name": "Tĩnh Mạch Lách (Splenic Vein)", "explodeVector": [-0.4, 0.1, 0.1] },
-        { "id": "imv", "name": "Tĩnh Mạch Mạc Treo Tràng Dưới (Inferior Mesenteric Vein)", "explodeVector": [0, -0.5, 0.2] }
+        {
+          "id": "portal_vein_main",
+          "name": "Thân Tĩnh Mạch Cửa Gan (Portal Vein)",
+          "explodeVector": [
+            0,
+            1.0,
+            1.5
+          ]
+        },
+        {
+          "id": "right_portal_trunk",
+          "name": "Thân Nhánh Phải TM Cửa (Right Portal Trunk)",
+          "explodeVector": [
+            -1.5,
+            0.8,
+            1.0
+          ]
+        },
+        {
+          "id": "left_portal_trunk",
+          "name": "Thân Nhánh Trái TM Cửa & Đoạn Rốn (Left Portal Trunk)",
+          "explodeVector": [
+            1.5,
+            0.8,
+            1.0
+          ]
+        },
+        {
+          "id": "portal_seg_I",
+          "name": "Nhánh Cửa Hạ Phân Thùy I (Caudate / Spigel)",
+          "explodeVector": [
+            0.5,
+            4.5,
+            -2.5
+          ]
+        },
+        {
+          "id": "portal_seg_II",
+          "name": "Nhánh Cửa Hạ Phân Thùy II (Left Postero-lateral)",
+          "explodeVector": [
+            6.5,
+            3.8,
+            -1.0
+          ]
+        },
+        {
+          "id": "portal_seg_III",
+          "name": "Nhánh Cửa Hạ Phân Thùy III (Left Antero-lateral)",
+          "explodeVector": [
+            6.8,
+            -3.2,
+            1.8
+          ]
+        },
+        {
+          "id": "portal_seg_IV",
+          "name": "Nhánh Cửa Hạ Phân Thùy IV (Left Medial / Thùy Vuông)",
+          "explodeVector": [
+            1.5,
+            -2.8,
+            2.2
+          ]
+        },
+        {
+          "id": "portal_seg_V",
+          "name": "Nhánh Cửa Hạ Phân Thùy V (Right Antero-medial)",
+          "explodeVector": [
+            -3.2,
+            -4.2,
+            2.0
+          ]
+        },
+        {
+          "id": "portal_seg_VI",
+          "name": "Nhánh Cửa Hạ Phân Thùy VI (Right Postero-lateral)",
+          "explodeVector": [
+            -8.2,
+            -3.8,
+            -1.5
+          ]
+        },
+        {
+          "id": "portal_seg_VII",
+          "name": "Nhánh Cửa Hạ Phân Thùy VII (Right Postero-lateral)",
+          "explodeVector": [
+            -8.0,
+            4.2,
+            -1.5
+          ]
+        },
+        {
+          "id": "portal_seg_VIII",
+          "name": "Nhánh Cửa Hạ Phân Thùy VIII (Right Antero-medial)",
+          "explodeVector": [
+            -3.0,
+            4.8,
+            1.5
+          ]
+        },
+        {
+          "id": "smv",
+          "name": "TM Mạc Treo Tràng Trên (SMV - Dẫn máu ruột non)",
+          "explodeVector": [
+            0.0,
+            -3.5,
+            2.5
+          ]
+        },
+        {
+          "id": "imv",
+          "name": "TM Mạc Treo Tràng Dưới (IMV - Dẫn máu đại tràng trái)",
+          "explodeVector": [
+            -2.5,
+            -4.0,
+            2.0
+          ]
+        },
+        {
+          "id": "splenic_vein",
+          "name": "TM Lách (Splenic Vein - Dẫn máu lách & tụy)",
+          "explodeVector": [
+            4.0,
+            1.0,
+            1.5
+          ]
+        },
+        {
+          "id": "colic_veins",
+          "name": "Các TM Đại Tràng Phải & Giữa (Colic Veins)",
+          "explodeVector": [
+            -3.5,
+            -2.5,
+            2.0
+          ]
+        }
       ],
       "location": "Chạy trong cuống gan (phía sau động mạch gan riêng và ống mật chủ) bắt đầu từ sau cổ tụy (ngang đốt sống L1 - L2) đi lên rốn gan (Porta hepatis).",
-      "structure": "Tĩnh mạch chức phận đặc biệt của gan (dài 6 - 8 cm, đường kính 10 - 12 mm, không có van tĩnh mạch). Được hình thành bởi sự hợp lưu của 2 thân lớn: Tĩnh mạch mạc treo tràng trên (thu gom máu toàn bộ ruột non và nửa phải đại tràng) và Tĩnh mạch lách (thu gom máu từ lách, tụy, dạ dày và nhận thêm TM mạc treo tràng dưới). Tại rốn gan, thân TM cửa chia làm 2 nhánh chính: Nhánh phải (cho các phân thùy V, VI, VII, VIII) và Nhánh trái (cho phân thùy II, III, IV và thùy đuôi I).",
+      "structure": "Tĩnh mạch chức phận đặc biệt của gan (dài 6 - 8 cm, đường kính 10 - 12 mm, không có van tĩnh mạch). Được hình thành sau cổ tụy (ngang đốt sống L1 - L2) bởi sự hợp lưu của TM mạc treo tràng trên (SMV - thu máu toàn bộ ruột non và nửa phải đại tràng) và TM lách (thu máu từ lách, tụy, dạ dày và nhận thêm TM mạc treo tràng dưới IMV từ nửa trái đại tràng). Tại cửa gan, thân TM cửa chia thành 2 nhánh chính: Nhánh phải chia thành nhánh trước (cấp máu hạ phân thùy V, VIII) và nhánh sau (cấp máu hạ phân thùy VI, VII); Nhánh trái chia đoạn ngang cấp máu thùy đuôi I và đoạn rốn cấp máu thùy vuông IV cùng hạ phân thùy II, III.",
       "vasculature": "Máu trong hệ TM cửa chiếm 75% lưu lượng máu đến gan (khoảng 1000 - 1200 ml/phút), rất giàu chất dinh dưỡng hấp thu từ đường tiêu hóa nhưng nghèo oxy hơn động mạch gan.",
-      "physiology": "Vận chuyển toàn bộ sản phẩm tiêu hóa (glucose, axit amin, axit béo chuỗi ngắn, vitamin) và độc chất hấp thu từ ống tiêu hóa về gan để xử lý, tổng hợp glycogen, giải độc và dự trữ trước khi đổ vào tuần hoàn chung toàn thân.",
+      "physiology": "Vận chuyển toàn bộ sản phẩm tiêu hóa (glucose, acid amin, acid béo chuỗi ngắn, vitamin, khoáng chất) và độc chất hấp thu từ ống tiêu hóa về gan để xử lý, tổng hợp glycogen, giải độc và dự trữ trước khi đưa vào tuần hoàn chung toàn thân. Lưu lượng đạt 1000 - 1200 ml/phút (chiếm 75% lưu lượng máu đến gan).",
       "clinicalNotes": "Tăng áp lực tĩnh mạch cửa (Portal Hypertension - áp lực > 12 mmHg) trong xơ gan làm máu ứ đọng và trào ngược vào 4 vòng nối cửa - chủ: 1. Vòng nối thực quản (giãn vỡ TM thực quản gây nôn ra máu sét đánh); 2. Vòng nối trực tràng (trĩ nội); 3. Vòng nối quanh rốn (tuần hoàn bàng hệ kiểu đầu sứa - Caput Medusae); 4. Cổ trướng (báng bụng dịch thấm tự do)."
     },
     {
@@ -681,11 +1284,51 @@
       "color": "#ef4444",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "celiac_trunk", "name": "Thân Tạng (Truncus Coeliacus)", "explodeVector": [0, 0.2, 0.3] },
-        { "id": "common_hepatic_art", "name": "Động Mạch Gan Chung (Common Hepatic Artery)", "explodeVector": [0.2, 0.1, 0.2] },
-        { "id": "proper_hepatic_art", "name": "Động Mạch Gan Riêng (Proper Hepatic Artery)", "explodeVector": [0.1, 0.3, 0.2] },
-        { "id": "splenic_art", "name": "Động Mạch Lách (Splenic Artery)", "explodeVector": [-0.4, 0.1, 0.1] },
-        { "id": "left_gastric_art", "name": "Động Mạch Vị Trái (Left Gastric Artery)", "explodeVector": [-0.1, 0.3, 0.1] }
+        {
+          "id": "celiac_trunk",
+          "name": "Thân Tạng (Truncus Coeliacus)",
+          "explodeVector": [
+            0,
+            0.2,
+            0.3
+          ]
+        },
+        {
+          "id": "common_hepatic_art",
+          "name": "Động Mạch Gan Chung (Common Hepatic Artery)",
+          "explodeVector": [
+            0.2,
+            0.1,
+            0.2
+          ]
+        },
+        {
+          "id": "proper_hepatic_art",
+          "name": "Động Mạch Gan Riêng (Proper Hepatic Artery)",
+          "explodeVector": [
+            0.1,
+            0.3,
+            0.2
+          ]
+        },
+        {
+          "id": "splenic_art",
+          "name": "Động Mạch Lách (Splenic Artery)",
+          "explodeVector": [
+            -0.4,
+            0.1,
+            0.1
+          ]
+        },
+        {
+          "id": "left_gastric_art",
+          "name": "Động Mạch Vị Trái (Left Gastric Artery)",
+          "explodeVector": [
+            -0.1,
+            0.3,
+            0.1
+          ]
+        }
       ],
       "location": "Xuất phát từ mặt trước động mạch chủ bụng ngang mức bờ dưới đốt sống T12 - L1, ngay dưới cơ hoành.",
       "structure": "Thân tạng là một thân mạch ngắn (dài 1.25 cm, đường kính 7 - 8 mm) tách ngay thành chạc 3 kinh điển: 1. ĐM vị trái (chạy lên tâm vị dạ dày); 2. ĐM lách (chạy uốn lượn bờ trên tụy); 3. ĐM gan chung (chạy sang phải). ĐM gan chung sau khi cho ĐM vị tá tràng thì đổi tên thành ĐM gan riêng chạy trong cuống gan (bên trái ống mật chủ, phía trước TM cửa) rồi chia 2 nhánh gan phải và gan trái đi vào nhu mô gan.",
@@ -703,11 +1346,45 @@
       "color": "#1d4ed8",
       "canLocalExplode": true,
       "subComponents": [
-        { "id": "hepatic_veins_trio", "name": "Bộ 3 Tĩnh Mạch Trên Gan (Phải, Giữa, Trái)", "explodeVector": [0, 0.4, 0] },
-        { "id": "ivc_segment", "name": "Tĩnh Mạch Chủ Dưới Đoạn Sau Gan (IVC)", "explodeVector": [-0.1, 0, -0.3] }
+        {
+          "id": "rhv",
+          "name": "Tĩnh Mạch Gan Phải (Right Hepatic Vein - Khe liên phân thùy phải)",
+          "explodeVector": [
+            -4.0,
+            2.5,
+            0.0
+          ]
+        },
+        {
+          "id": "mhv",
+          "name": "Tĩnh Mạch Gan Giữa (Middle Hepatic Vein - Khe chính Cantlie)",
+          "explodeVector": [
+            -1.0,
+            2.0,
+            1.5
+          ]
+        },
+        {
+          "id": "lhv",
+          "name": "Tĩnh Mạch Gan Trái (Left Hepatic Vein - Khe liên phân thùy trái)",
+          "explodeVector": [
+            2.0,
+            2.5,
+            1.0
+          ]
+        },
+        {
+          "id": "ivc",
+          "name": "Tĩnh Mạch Chủ Dưới Đoạn Sau Gan (IVC)",
+          "explodeVector": [
+            0.0,
+            4.0,
+            -2.0
+          ]
+        }
       ],
       "location": "Nằm ở mặt hoành và bờ sau trên của gan, ngay dưới cơ hoành nơi TMC dưới chui qua lỗ tĩnh mạch chủ của cơ hoành (ngang mức T8) để đổ vào tâm nhĩ phải.",
-      "structure": "Gồm 3 thân tĩnh mạch lớn thoát ra từ nhu mô gan: 1. TM gan phải (lớn nhất, dẫn lưu phân thùy VI, VII, VIII); 2. TM gan giữa (chạy trong khe giữa ranh giới giữa gan phải và gan trái, dẫn lưu phân thùy IV, V, VIII); 3. TM gan trái (dẫn lưu phân thùy II, III). Cả 3 TM đổ trực tiếp vào mặt trước của Tĩnh mạch chủ dưới (IVC) đoạn sau gan nằm trong rãnh tĩnh mạch chủ của gan.",
+      "structure": "Gồm 3 thân tĩnh mạch lớn (Phải, Giữa, Trái) chạy trong 3 khe liên phân thùy của nhu mô gan để dẫn lưu toàn bộ máu khử oxy sau khi qua hệ mao mạch xoang gan đổ trực tiếp vào Tĩnh mạch chủ dưới (IVC) ngay trước khi IVC chui qua lỗ cơ hoành lên tâm nhĩ phải. TM gan phải chạy trong khe liên phân thùy phải (giữa phân thùy sau VI/VII và phân thùy trước V/VIII); TM gan giữa chạy trong khe chính Cantlie (giữa gan phải V/VIII và gan trái IV); TM gan trái chạy trong khe liên phân thùy trái (giữa phân thùy giữa IV và phân thùy bên II/III).",
       "vasculature": "Thu gom toàn bộ dòng máu tĩnh mạch từ các xoang gan (sau khi máu từ TM cửa và ĐM gan hòa trộn qua lưới mao mạch nan hoa) để đưa về tim phải với lưu lượng lên tới 1.5 lít/phút.",
       "physiology": "Dẫn lưu dòng máu ra khỏi gan về tuần hoàn đại tuần hoàn, duy trì áp lực xoang gan ở mức thấp (khoảng 2 - 5 mmHg) để bảo đảm sự trao đổi chất nhịp nhàng giữa tế bào gan và dòng máu.",
       "clinicalNotes": "Hội chứng Budd-Chiari (tắc các tĩnh mạch trên gan do huyết khối hoặc màng ngăn) gây ứ trệ tuần hoàn máu nặng nề tại gan, gan to đau cấp tính, cổ trướng kháng trị và suy gan cấp. Trong phẫu thuật cắt gan (Hepatectomy), phẫu thuật viên dựa vào đường đi của 3 TM trên gan để phân chia các mặt phẳng cắt vô mạch (Avascular cleavage planes)."

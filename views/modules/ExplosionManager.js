@@ -107,10 +107,24 @@ export class ExplosionManager {
         else if (low.includes('greater')) subVec.set(0.0, -4.0, 8.0);
         else if (low.includes('mesocolon')) subVec.set(0.0, 2.0, -5.0);
         else subVec.set(-6.0, -6.0, 4.0);
+      } else if (mesh.userData.couinaudSeg) {
+        // Segmental vascular pedicles (Portal vein branch & Hepatic artery branch)
+        // follow the exact explosion vector of their corresponding Couinaud segment!
+        const cSeg = (mesh.userData.couinaudSeg || '').toLowerCase();
+        if (cSeg.includes('_i') && !cSeg.includes('_ii') && !cSeg.includes('_iii') && !cSeg.includes('_iv')) subVec.set(0.5, 4.5, -2.5);
+        else if (cSeg.includes('_ii') && !cSeg.includes('_iii')) subVec.set(6.5, 3.8, -1.0);
+        else if (cSeg.includes('_iii')) subVec.set(6.8, -3.2, 1.8);
+        else if (cSeg.includes('_iv')) subVec.set(1.5, -2.8, 2.2);
+        else if (cSeg.includes('_v') && !cSeg.includes('_vi') && !cSeg.includes('_vii') && !cSeg.includes('_viii')) subVec.set(-3.2, -4.2, 2.0);
+        else if (cSeg.includes('_vi') && !cSeg.includes('_vii')) subVec.set(-8.2, -3.8, -1.5);
+        else if (cSeg.includes('_vii')) subVec.set(-8.0, 4.2, -1.5);
+        else if (cSeg.includes('_viii')) subVec.set(-3.0, 4.8, 1.5);
       } else if (organId === 'portal_system') {
         if (low.includes('superior_mesenteric')) subVec.set(0.0, -3.5, 2.5);
         else if (low.includes('splenic')) subVec.set(4.0, 1.0, 1.5);
         else if (low.includes('inferior_mesenteric')) subVec.set(-2.5, -4.0, 2.0);
+        else if (low.includes('right_colic')) subVec.set(-3.5, -2.5, 2.0);
+        else if (low.includes('middle_colic')) subVec.set(-2.0, -1.5, 2.5);
         else subVec.set(0.0, 2.0, 3.0);
       } else if (organId === 'hepatic_artery') {
         if (low.includes('coeliac')) subVec.set(0.0, 1.0, -2.0);
@@ -118,7 +132,10 @@ export class ExplosionManager {
         else if (low.includes('proper')) subVec.set(1.5, 3.5, 2.0);
         else subVec.set(1.0, 2.0, 1.0);
       } else if (organId === 'hepatic_veins') {
-        subVec.set(0.0, 4.0, -2.0);
+        if (low.includes('right_hepatic')) subVec.set(-4.0, 2.5, 0.0);
+        else if (low.includes('middle_hepatic')) subVec.set(-1.0, 2.0, 1.5);
+        else if (low.includes('left_hepatic')) subVec.set(2.0, 2.5, 1.0);
+        else subVec.set(0.0, 4.0, -2.0);
       } else if (organId === 'pharynx') {
         if (low.includes('naso')) subVec.set(0.0, 4.0, 0.0);
         else if (low.includes('oro')) subVec.set(0.0, 1.5, 1.0);
@@ -348,7 +365,10 @@ export class ExplosionManager {
       const initPos = mesh.userData.initialPos;
       if (!initPos) return;
 
-      if (mesh.userData.organId === selectedOrganId && t > 0) {
+      const isLiverSegmentalVessel = (selectedOrganId === 'liver' && !!mesh.userData.couinaudSeg);
+      const isPortalSegmental = (selectedOrganId === 'portal_system' && !!mesh.userData.couinaudSeg);
+
+      if ((mesh.userData.organId === selectedOrganId || isLiverSegmentalVessel || isPortalSegmental) && t > 0) {
         const vec = mesh.userData.subExplodeVec;
         if (vec) {
           mesh.position.copy(initPos).addScaledVector(vec, t * 1.15);

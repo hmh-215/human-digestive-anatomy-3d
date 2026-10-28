@@ -373,8 +373,13 @@ export class SceneView {
       }
 
       child.visible = true;
+      const segMatch = child.name.match(/segment_([ivx]+)/i);
+      const couinaudSeg = (child.userData && child.userData.couinaudSeg) || (segMatch ? 'segment_' + segMatch[1].toUpperCase() : null);
+
       child.userData = {
+        ...child.userData,
         organId,
+        couinaudSeg,
         rawName: child.name,
         initialPos: child.position.clone(),
         initialScale: child.scale.clone()
@@ -393,7 +398,7 @@ export class SceneView {
         baseMat = materials.palate;
       } else if (low.includes('gland')) {
         baseMat = materials.salivary_glands;
-      } else if (low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein')) {
+      } else if (low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein') || low.includes('colic_vein') || low.includes('gastro-omental') || low.includes('gastro_omental')) {
         baseMat = materials.portal_vein;
       } else if (low.includes('hepatic_vein')) {
         baseMat = materials.hepatic_veins;
@@ -861,21 +866,75 @@ export class SceneView {
       else if (low.includes('sublingual')) subPartTitle = 'Tuyến Dưới Lưỡi (Sublingual Gland)';
       else subPartTitle = 'Tuyến Nước Bọt Lớn';
     } else if (organId === 'portal_system') {
-      if (low.includes('superior_mesenteric')) subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Trên (SMV)';
-      else if (low.includes('splenic')) subPartTitle = 'Tĩnh Mạch Tỳ / Lách (Splenic Vein)';
-      else if (low.includes('inferior_mesenteric')) subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Dưới (IMV)';
-      else subPartTitle = 'Thân Tĩnh Mạch Cửa Gan (Portal Vein)';
+      const seg = (mesh.userData.couinaudSeg || '').toUpperCase();
+      if (low.includes('portal_vein_segment') || seg) {
+        const roman = seg.replace('SEGMENT_', '') || (low.match(/segment_([ivx]+)/i) ? low.match(/segment_([ivx]+)/i)[1].toUpperCase() : '');
+        subPartTitle = `Nhánh TM Cửa Hạ Phân Thùy ${roman} (Portal Branch ${roman})`;
+      } else if (low.includes('right_portal_trunk')) {
+        subPartTitle = 'Thân Phải Tĩnh Mạch Cửa (Right Portal Trunk)';
+      } else if (low.includes('left_portal_trunk')) {
+        subPartTitle = 'Thân Trái Tĩnh Mạch Cửa & Đoạn Rốn (Left Portal Trunk)';
+      } else if (low.includes('superior_mesenteric')) {
+        subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Trên (SMV - Dẫn máu dinh dưỡng ruột non)';
+      } else if (low.includes('inferior_mesenteric')) {
+        subPartTitle = 'Tĩnh Mạch Mạc Treo Tràng Dưới (IMV - Dẫn máu đại tràng trái)';
+      } else if (low.includes('right_colic_vein')) {
+        subPartTitle = 'Tĩnh Mạch Đại Tràng Phải (Right Colic Vein - Dẫn máu đại tràng lên)';
+      } else if (low.includes('middle_colic_vein')) {
+        subPartTitle = 'Tĩnh Mạch Đại Tràng Giữa (Middle Colic Vein - Dẫn máu đại tràng ngang)';
+      } else if (low.includes('gastro-omental') || low.includes('gastro_omental')) {
+        subPartTitle = 'Tĩnh Mạch Mạc Nối Dạ Dày (Gastro-omental Vein)';
+      } else if (low.includes('splenic')) {
+        subPartTitle = 'Tĩnh Mạch Lách & Nhánh Tụy Vị (Splenic Vein)';
+      } else {
+        subPartTitle = 'Thân Tĩnh Mạch Cửa Gan (Portal Vein - Cửa ngõ hấp thu dinh dưỡng)';
+      }
     } else if (organId === 'hepatic_artery') {
-      if (low.includes('coeliac')) subPartTitle = 'Động Mạch Thân Tạng (Coeliac Trunk)';
-      else if (low.includes('common_hepatic')) subPartTitle = 'Động Mạch Gan Chung (CHA)';
-      else if (low.includes('proper_hepatic')) subPartTitle = 'Động Mạch Gan Riêng (PHA)';
-      else if (low.includes('splenic_artery')) subPartTitle = 'Động Mạch Lách (Splenic Artery)';
-      else if (low.includes('gastric_artery')) subPartTitle = 'Động Mạch Vị Trái (LGA)';
-      else if (low.includes('superior_mesenteric')) subPartTitle = 'Động Mạch Mạc Treo Tràng Trên (SMA)';
-      else subPartTitle = 'Cây Động Mạch Gan & Thân Tạng';
+      const seg = (mesh.userData.couinaudSeg || '').toUpperCase();
+      if (low.includes('segment') || seg) {
+        const roman = seg.replace('SEGMENT_', '') || (low.match(/segment_([ivx]+)/i) ? low.match(/segment_([ivx]+)/i)[1].toUpperCase() : '');
+        subPartTitle = `Động Mạch Cấp Máu Hạ Phân Thùy ${roman} (Segmental Hepatic Artery ${roman})`;
+      } else if (low.includes('right_hepatic_artery_trunk')) {
+        subPartTitle = 'Thân Động Mạch Gan Phải (Right Hepatic Artery)';
+      } else if (low.includes('left_hepatic_artery_trunk')) {
+        subPartTitle = 'Thân Động Mạch Gan Trái (Left Hepatic Artery)';
+      } else if (low.includes('gastroduodenal')) {
+        subPartTitle = 'Động Mạch Vị Tá Tràng (GDA)';
+      } else if (low.includes('ileocolic')) {
+        subPartTitle = 'Động Mạch Hồi Đại Tràng (Ileocolic Artery - Cấp máu manh tràng & ruột thừa)';
+      } else if (low.includes('right_colic')) {
+        subPartTitle = 'Động Mạch Đại Tràng Phải (Right Colic Artery)';
+      } else if (low.includes('middle_colic')) {
+        subPartTitle = 'Động Mạch Đại Tràng Giữa (Middle Colic Artery)';
+      } else if (low.includes('left_colic')) {
+        subPartTitle = 'Động Mạch Đại Tràng Trái (Left Colic Artery)';
+      } else if (low.includes('coeliac')) {
+        subPartTitle = 'Động Mạch Thân Tạng (Coeliac Trunk)';
+      } else if (low.includes('common_hepatic')) {
+        subPartTitle = 'Động Mạch Gan Chung (CHA)';
+      } else if (low.includes('proper_hepatic')) {
+        subPartTitle = 'Động Mạch Gan Riêng (PHA)';
+      } else if (low.includes('splenic_artery')) {
+        subPartTitle = 'Động Mạch Lách (Splenic Artery)';
+      } else if (low.includes('gastric_artery')) {
+        subPartTitle = 'Động Mạch Vị Trái (LGA)';
+      } else if (low.includes('superior_mesenteric')) {
+        subPartTitle = 'Động Mạch Mạc Treo Tràng Trên (SMA - Cấp máu toàn bộ ruột non)';
+      } else {
+        subPartTitle = 'Cây Động Mạch Cấp Máu Gan & Ống Tiêu Hóa';
+      }
     } else if (organId === 'hepatic_veins') {
-      if (low.includes('cava')) subPartTitle = 'Tĩnh Mạch Chủ Dưới (IVC - Đoạn ổ bụng)';
-      else subPartTitle = 'Các Tĩnh Mạch Gan (Hepatic Veins - 3 Thân đổ TMC)';
+      if (low.includes('right_hepatic_vein')) {
+        subPartTitle = 'Tĩnh Mạch Gan Phải (Right Hepatic Vein - Khe liên phân thùy phải)';
+      } else if (low.includes('middle_hepatic_vein')) {
+        subPartTitle = 'Tĩnh Mạch Gan Giữa (Middle Hepatic Vein - Khe chính Cantlie)';
+      } else if (low.includes('left_hepatic_vein')) {
+        subPartTitle = 'Tĩnh Mạch Gan Trái (Left Hepatic Vein - Khe liên phân thùy trái)';
+      } else if (low.includes('cava')) {
+        subPartTitle = 'Tĩnh Mạch Chủ Dưới (IVC - Đoạn ổ bụng)';
+      } else {
+        subPartTitle = 'Các Tĩnh Mạch Gan (3 Thân dẫn lưu về TMC dưới)';
+      }
     }
 
     const subtitle = organ
@@ -1315,6 +1374,12 @@ export class SceneView {
         mesh.visible = true;
         mesh.material.transparent = false;
         mesh.material.opacity = 0.95;
+        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+      } else if (selectedId === 'portal_system' && ['small_intestine', 'large_intestine', 'stomach', 'pancreas', 'duodenum'].includes(organId)) {
+        // When viewing portal circulation, show digestive organs in ghosted semi-transparency so mesenteric veins can be traced directly from gut to liver!
+        mesh.visible = true;
+        mesh.material.transparent = true;
+        mesh.material.opacity = isIsolate ? 0.18 : 0.25;
         if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
       } else {
         if (isIsolate) {
