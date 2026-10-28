@@ -395,13 +395,21 @@ export class ExplosionManager {
     //   - idx = 0 (Outermost Serosa/Adventitia, centeredStep < 0) moves to Back-Right (+X, -Y, -Z) as the outer cradle
     //   - idx = N-1 (Innermost Mucosa, centeredStep > 0) moves to Front-Left (-X, +Y, +Z) closest to the viewer,
     //     nested cleanly inside the concave cavity of the outer layers without cutting across outer walls!
+    // Step vectors strictly aligned along the outward normal vector (n_cut)
+    // at the center of each cutaway plane, guaranteeing zero lateral shearing and zero layer overlap:
+    //   - Stomach: n_cut = (-0.28, 0.12, 0.95) along anterior curved crest
+    //   - Duodenum: n_cut = (-0.55, 0.08, 0.83) along C-loop outer convexity
+    //   - Small Intestine: n_cut = (0.0, 0.0, 1.0) along anterior apex loops
+    //   - Large Intestine: n_cut = (0.0, 0.0, 1.0) along anterior Taenia coli (zero X/Y shearing)
+    //   - Gallbladder: n_cut = (-0.35, -0.38, 0.85) along fundus/body oblique cut
+    //   - Esophagus: n_cut = (0.0, 0.0, 1.0) along anterior longitudinal midline
     const organStepVectors = {
-      stomach: new THREE.Vector3(-7.6, 1.2, 5.4),
-      duodenum: new THREE.Vector3(-4.6, 0.8, 3.4),
-      small_intestine: new THREE.Vector3(-6.8, 1.0, 4.8),
-      large_intestine: new THREE.Vector3(-6.2, 0.9, 9.6),
-      gallbladder_tree: new THREE.Vector3(-6.8, 1.1, 4.2),
-      esophagus: new THREE.Vector3(-4.5, 0.5, 3.5)
+      stomach: new THREE.Vector3(-2.38, 1.02, 8.08),
+      duodenum: new THREE.Vector3(-4.51, 0.66, 6.81),
+      small_intestine: new THREE.Vector3(0.0, 0.0, 7.8),
+      large_intestine: new THREE.Vector3(0.0, 0.0, 9.2),
+      gallbladder_tree: new THREE.Vector3(-2.52, -2.74, 6.12),
+      esophagus: new THREE.Vector3(0.0, 0.0, 5.5)
     };
 
     const organColors = {
@@ -483,11 +491,15 @@ export class ExplosionManager {
     }
 
     // Update 3D dashed leader line connecting the exploded layers
-    if (activeGuidePoints && t > 0.02) {
-      this.stomachGuideLine.geometry.setFromPoints(activeGuidePoints);
-      this.stomachGuideLine.material.color.setHex(activeGuideColor);
-      this.stomachGuideLine.computeLineDistances();
-      this.stomachGuideLine.visible = true;
+    if (activeGuidePoints && activeGuidePoints.length >= 2 && activeGuidePoints.every(p => p && typeof p.x === 'number' && !isNaN(p.x)) && t > 0.02) {
+      try {
+        this.stomachGuideLine.geometry.setFromPoints(activeGuidePoints);
+        this.stomachGuideLine.material.color.setHex(activeGuideColor);
+        this.stomachGuideLine.computeLineDistances();
+        this.stomachGuideLine.visible = true;
+      } catch (err) {
+        this.stomachGuideLine.visible = false;
+      }
     } else {
       this.stomachGuideLine.visible = false;
     }

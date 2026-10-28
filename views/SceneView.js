@@ -221,7 +221,8 @@ export class SceneView {
       portal_vein: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),
       hepatic_artery: new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.30, metalness: 0.20, side: THREE.DoubleSide }),
       hepatic_veins: new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide }),
-      inferior_vena_cava: new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide })
+      inferior_vena_cava: new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide }),
+      pancreatic_duct: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, roughness: 0.20, metalness: 0.15, side: THREE.DoubleSide })
     };
 
     const couinaudColors = {
@@ -406,6 +407,9 @@ export class SceneView {
         baseMat = materials.inferior_vena_cava;
       } else if (low.includes('artery') || low.includes('coeliac') || low.includes('celiac')) {
         baseMat = materials.hepatic_artery;
+      } else if (low.includes('pancreatic_duct') || low.includes('pancreatic duct') || (organId === 'pancreas' && (low.includes('wirsung') || low.includes('santorini') || low.includes('duct')))) {
+        baseMat = materials.pancreatic_duct;
+        child.userData.isPancreaticDuct = true;
       }
 
       const mat = baseMat.clone();
@@ -780,6 +784,130 @@ export class SceneView {
    * Formats human-readable Vietnamese/Latin metadata for any hovered 3D mesh.
    */
   _buildHoverPayload(mesh, screenX, screenY) {
+    const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
+    const organId = mesh.userData.organId;
+
+    // 1. In Functional Heatmap Mode: Classify hit point into 5 Stomach or 4 Pancreas Functional Regions
+    if (isRegions && (organId === 'stomach' || mesh.userData.isStomachWallLayer)) {
+      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+      const localPt = mesh.worldToLocal(hitPt.clone());
+      const x = localPt.x, y = localPt.y, z = localPt.z;
+
+      let reg = 'corpus';
+      if (y > 120.2 && x > 1.2) reg = 'fundus';
+      else if (y >= 118.0 && x <= 2.5 && z <= 4.8) reg = 'cardia';
+      else if (x <= -0.8 && y <= 114.2) reg = 'pylorus';
+      else if (y <= 114.8 && x <= 3.5) reg = 'antrum';
+
+      const stomachRegionCards = {
+        fundus: {
+          color: '#f87171',
+          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          badge: 'Túi Hơi Dạ Dày',
+          title: 'Đáy Vị (Fundus Gastricum)',
+          subtitle: 'Vòm cong nằm phía trên mức lỗ tâm vị, thường chứa túi hơi dạ dày (Gastric air bubble) quan sát rõ trên phim X-quang bụng đứng không chuẩn bị.'
+        },
+        cardia: {
+          color: '#10b981',
+          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          badge: 'Chống Trào Ngược',
+          title: 'Tâm Vị & Ấn Tâm Vị (Pars Cardiaca & Incisura Cardiaca)',
+          subtitle: 'Vùng nối tiếp giữa thực quản và dạ dày, tuyến tâm vị tiết chất nhầy kiềm bảo vệ niêm mạc chống trào ngược dịch vị acid.'
+        },
+        corpus: {
+          color: '#fb7185',
+          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          badge: 'Tiết Acid & Pepsin',
+          title: 'Thân Vị (Corpus Gastricum)',
+          subtitle: 'Phần lớn nhất của dạ dày, chứa tuyến vị với Tế bào thành (tiết HCl pH 1.5 - 2 và Yếu tố nội sinh hấp thu B12) & Tế bào chính (tiết Pepsinogen tiêu đạm).'
+        },
+        antrum: {
+          color: '#a78bfa',
+          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          badge: 'Tiết Gastrin (Tế Bào G)',
+          title: 'Hang Môn Vị (Antrum Pyloricum)',
+          subtitle: 'Phần phình trước môn vị, chứa tế bào G tiết hoóc-môn Gastrin kích thích bài tiết acid dịch vị; đây là vị trí phổ biến nhất của viêm loét dạ dày do vi khuẩn H. pylori.'
+        },
+        pylorus: {
+          color: '#0ea5e9',
+          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          badge: 'Cơ Thắt Môn Vị',
+          title: 'Ống Môn Vị & Môn Vị (Canalis Pyloricus & Pylorus)',
+          subtitle: 'Đoạn tận cùng hẹp có cơ thắt môn vị tròn rất dày, hoạt động như van đóng mở điều hòa tống từng đợt vị trấp (chyme) xuống tá tràng.'
+        }
+      };
+      const c = stomachRegionCards[reg];
+      return {
+        organId: 'stomach',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: c.tag,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle,
+        color: c.color
+      };
+    }
+
+    if (isRegions && organId === 'pancreas') {
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      if (!low.includes('duct')) {
+        const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+        const localPt = mesh.worldToLocal(hitPt.clone());
+        const x = localPt.x;
+
+        let reg = 'body';
+        if (x < -1.5) reg = 'head';
+        else if (x < 0.2) reg = 'neck';
+        else if (x < 4.2) reg = 'body';
+        else reg = 'tail';
+
+        const pancRegionCards = {
+          head: {
+            color: '#f59e0b',
+            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            badge: 'Ngoại Tiết 98%',
+            title: 'Đầu Tụy & Mỏm Móc (Caput & Processus Uncinatus)',
+            subtitle: 'Nằm lọt trong khung chữ C tá tràng, chứa các nang tuyến ngoại tiết sản xuất enzym tiêu hóa (Amylase, Lipase, Trypsin) và kiềm NaHCO3.'
+          },
+          neck: {
+            color: '#eab308',
+            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            badge: 'Khuyết Tụy & TM Cửa',
+            title: 'Cổ Tụy & Khuyết Tụy (Collum Pancreatis)',
+            subtitle: 'Chỗ thắt hẹp kẹp bó mạch mạc treo tràng trên (SMA/SMV), mốc giải phẫu tối quan trọng tạo thành thân Tĩnh Mạch Cửa ngay phía sau.'
+          },
+          body: {
+            color: '#f97316',
+            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            badge: 'Băng Ngang L1-L2',
+            title: 'Thân Tụy (Corpus Pancreatis)',
+            subtitle: 'Chạy vắt ngang trước cột sống thắt lưng L1-L2, đè lên đám rối tạng (Celiac plexus) giải thích cơ chế cơn đau xuyên lưng trong viêm tụy cấp.'
+          },
+          tail: {
+            color: '#ec4899',
+            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            badge: 'Đảo Langerhans Nội Tiết',
+            title: 'Đuôi Tụy (Cauda Pancreatis)',
+            subtitle: 'Phần di động chạm rốn lách, tập trung mật độ cao nhất các Đảo tụy Langerhans (tế bào Beta tiết Insulin hạ đường huyết, Alpha tiết Glucagon).'
+          }
+        };
+        const c = pancRegionCards[reg];
+        return {
+          organId: 'pancreas',
+          wallLayerId: null,
+          x: screenX,
+          y: screenY,
+          tag: c.tag,
+          badge: c.badge,
+          title: c.title,
+          subtitle: c.subtitle,
+          color: c.color
+        };
+      }
+    }
+
     if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) {
       const shortThickness = (mesh.userData.wallLayerThickness || '').split('(')[0].trim();
       const organTitle = mesh.userData.organTitle ? mesh.userData.organTitle.toUpperCase() : 'MÔ HỌC';
@@ -799,7 +927,6 @@ export class SceneView {
       };
     }
 
-    const organId = mesh.userData.organId;
     const organ = this.appVM.organsData.find(o => o.id === organId);
     const raw = (mesh.userData.rawName || mesh.name || '').replace(/_/g, ' ');
     const low = raw.toLowerCase();
@@ -865,6 +992,34 @@ export class SceneView {
       else if (low.includes('submandibular')) subPartTitle = 'Tuyến Dưới Hàm (Submandibular Gland)';
       else if (low.includes('sublingual')) subPartTitle = 'Tuyến Dưới Lưỡi (Sublingual Gland)';
       else subPartTitle = 'Tuyến Nước Bọt Lớn';
+    } else if (organId === 'pancreas') {
+      if (low.includes('accessory')) {
+        return {
+          organId,
+          wallLayerId: null,
+          x: screenX,
+          y: screenY,
+          tag: 'HỆ THỐNG ỐNG TỤY NGOẠI TIẾT',
+          badge: 'Đổ Vào Nhú Tá Bé',
+          title: 'Ống Tụy Phụ (Santorini Duct)',
+          subtitle: 'Tách từ ống tụy chính ở đầu tụy, dẫn lưu dịch tụy đổ vào Nhú tá bé (nằm trên Nhú tá lớn 2 cm).',
+          color: '#38bdf8'
+        };
+      } else if (low.includes('duct')) {
+        return {
+          organId,
+          wallLayerId: null,
+          x: screenX,
+          y: screenY,
+          tag: 'HỆ THỐNG ỐNG TỤY NGOẠI TIẾT',
+          badge: 'Đổ Vào Nhú Tá Lớn (Oddi)',
+          title: 'Ống Tụy Chính (Main Pancreatic Duct of Wirsung)',
+          subtitle: 'Chạy dọc suốt chiều dài tụy từ đuôi đến đầu, hợp lưu cùng Ống mật chủ tại Bóng Vater đổ vào Nhú tá lớn.',
+          color: '#38bdf8'
+        };
+      } else {
+        subPartTitle = 'Nhu Mô Tuyến Tụy (Pancreatic Parenchyma — Tuyến Pha)';
+      }
     } else if (organId === 'portal_system') {
       const seg = (mesh.userData.couinaudSeg || '').toUpperCase();
       if (low.includes('portal_vein_segment') || seg) {
@@ -1093,6 +1248,8 @@ export class SceneView {
 
       if (validHit) {
         const hitMesh = validHit.object;
+        this._lastIntersectionPoint = validHit.point.clone();
+        this._lastHitMesh = hitMesh;
         this.renderer.domElement.style.cursor = 'pointer';
         this._setHoverHighlight(hitMesh);
 
@@ -1219,6 +1376,11 @@ export class SceneView {
 
     this.dissectionVM.subscribe('isCutawayOpen', () => {
       this._syncExplosion();
+    });
+
+    this.dissectionVM.subscribe('organDisplayMode', () => {
+      this._applyFunctionalHeatmaps();
+      this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
     });
 
     this.dissectionVM.subscribe('torsoSkinOpacity', (opacity) => {
@@ -1351,6 +1513,40 @@ export class SceneView {
         if (mesh.material.emissive) {
           mesh.material.emissive.setHex(organId === 'gallbladder_tree' ? 0x064e3b : 0x000000);
         }
+      } else if (selectedId === 'pancreas') {
+        const isDuct = rawNameLow.includes('pancreatic_duct') || rawNameLow.includes('pancreatic duct') || rawNameLow.includes('accessory') || (organId === 'pancreas' && rawNameLow.includes('duct'));
+        const isBile = organId === 'gallbladder_tree' && rawNameLow.includes('bile');
+        const isPancreaticVessel = (organId === 'portal_system' || organId === 'hepatic_artery') &&
+          (rawNameLow.includes('splenic') || rawNameLow.includes('mesenteric') || rawNameLow.includes('gastroduodenal') || rawNameLow.includes('coeliac'));
+        const isDuodenum = organId === 'duodenum';
+
+        if (organId === 'pancreas') {
+          mesh.visible = true;
+          if (isDuct) {
+            mesh.material = this.materials.pancreatic_duct;
+            mesh.material.transparent = false;
+            mesh.material.opacity = 1.0;
+            mesh.material.depthWrite = true;
+          } else {
+            // Pancreas parenchyma: ghosted semi-transparent so internal ducts shine through!
+            mesh.material.transparent = true;
+            mesh.material.opacity = isXRay ? 0.18 : 0.32;
+            mesh.material.depthWrite = false;
+          }
+        } else if (isBile || isPancreaticVessel || isDuodenum) {
+          // Keep biliary confluence, splenic/mesenteric vessels, and duodenum C-loop clearly visible as context!
+          mesh.visible = true;
+          mesh.material.transparent = isDuodenum;
+          mesh.material.opacity = isDuodenum ? 0.38 : 1.0;
+          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        } else {
+          mesh.visible = !isIsolate;
+          if (mesh.visible) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.10;
+            if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+          }
+        }
       } else if (organId === selectedId) {
         mesh.visible = true;
         // In Liver selection, make liver segments semi-transparent (0.38) so internal vascular tree shines through
@@ -1389,6 +1585,113 @@ export class SceneView {
           mesh.material.transparent = true;
           mesh.material.opacity = 0.12;
           if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        }
+      }
+    });
+
+    this._applyFunctionalHeatmaps();
+  }
+
+  /**
+   * Applies vertex-colored Regional Functional Heatmaps for Stomach (matching user illustration:
+   * Cardia, Fundus, Corpus, Antrum, Pylorus) and Pancreas (Head/Uncinate, Neck, Body, Tail).
+   */
+  _applyFunctionalHeatmaps() {
+    const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
+
+    // 1. Stomach Functional Heatmap (Matching user illustration 5 regions)
+    const stomachMeshes = this.stomachWallMeshes && this.stomachWallMeshes.length > 0
+      ? this.stomachWallMeshes
+      : this.clickableMeshes.filter(m => m.userData.organId === 'stomach');
+
+    const cFundus = new THREE.Color(0xf87171); // Salmon Red
+    const cCardia = new THREE.Color(0x10b981); // Emerald Green
+    const cCorpus = new THREE.Color(0xfb7185); // Peach Pink
+    const cAntrum = new THREE.Color(0xc084fc); // Lilac Purple
+    const cPylorus = new THREE.Color(0x38bdf8); // Sky Blue / Cyan
+
+    stomachMeshes.forEach(mesh => {
+      const geo = mesh.geometry;
+      if (!geo || !geo.attributes.position) return;
+
+      if (isRegions) {
+        if (!geo.attributes.color) {
+          const count = geo.attributes.position.count;
+          const colors = new Float32Array(count * 3);
+          const pos = geo.attributes.position;
+          for (let i = 0; i < count; i++) {
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = pos.getZ(i);
+            let c = cCorpus;
+            if (y > 120.2 && x > 1.2) {
+              c = cFundus;
+            } else if (y >= 118.0 && x <= 2.5 && z <= 4.8) {
+              c = cCardia;
+            } else if (x <= -0.8 && y <= 114.2) {
+              c = cPylorus;
+            } else if (y <= 114.8 && x <= 3.5) {
+              c = cAntrum;
+            }
+            colors[i * 3]     = c.r;
+            colors[i * 3 + 1] = c.g;
+            colors[i * 3 + 2] = c.b;
+          }
+          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
+        if (mesh.material) {
+          mesh.material.vertexColors = true;
+          mesh.material.needsUpdate = true;
+        }
+      } else {
+        if (mesh.material) {
+          mesh.material.vertexColors = false;
+          mesh.material.needsUpdate = true;
+        }
+      }
+    });
+
+    // 2. Pancreas Functional Heatmap (Head/Uncinate, Neck, Body, Tail)
+    const cHead = new THREE.Color(0xf59e0b); // Warm Amber (98% Exocrine)
+    const cNeck = new THREE.Color(0xeab308); // Lemon Yellow (Notch for SMA/SMV)
+    const cBody = new THREE.Color(0xf97316); // Deep Orange (Midline retroperitoneal)
+    const cTail = new THREE.Color(0xec4899); // Magenta/Pink (Endocrine Langerhans)
+
+    this.clickableMeshes.forEach(mesh => {
+      if (mesh.userData.organId !== 'pancreas') return;
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      if (low.includes('duct')) return; // Ducts stay solid porcelain cyan
+
+      const geo = mesh.geometry;
+      if (!geo || !geo.attributes.position) return;
+
+      if (isRegions) {
+        if (!geo.attributes.color) {
+          const count = geo.attributes.position.count;
+          const colors = new Float32Array(count * 3);
+          const pos = geo.attributes.position;
+          for (let i = 0; i < count; i++) {
+            const x = pos.getX(i);
+            let c = cBody;
+            if (x < -1.5) c = cHead;
+            else if (x < 0.2) c = cNeck;
+            else if (x < 4.2) c = cBody;
+            else c = cTail;
+
+            colors[i * 3]     = c.r;
+            colors[i * 3 + 1] = c.g;
+            colors[i * 3 + 2] = c.b;
+          }
+          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
+        if (mesh.material) {
+          mesh.material.vertexColors = true;
+          mesh.material.needsUpdate = true;
+        }
+      } else {
+        if (mesh.material) {
+          mesh.material.vertexColors = false;
+          mesh.material.needsUpdate = true;
         }
       }
     });

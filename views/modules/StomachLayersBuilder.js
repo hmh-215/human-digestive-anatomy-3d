@@ -370,9 +370,37 @@ export class StomachLayersBuilder {
         const y0 = posAttr.getY(i);
         const z0 = posAttr.getZ(i);
         const midZ = cutMidZAttr ? cutMidZAttr.getX(i) : localCenter.z;
-        // Use the un-displaced tube coordinate (z0 - midZ) for the 50% longitudinal cutaway
-        // so the posterior lumen wall of inner layers (Mucosa) is never clipped away!
-        cutDistArr[i] = z0 - midZ;
+
+        // Compute signed cutaway distance based on the anatomical cut lines
+        // ensuring explosion direction matches the normal at the center of each cut:
+        let cutDist = z0 - midZ;
+
+        if (organId === 'stomach') {
+          // Curved anterior sagittal/coronal cut following the anterior crest
+          // Normal n_cut ~= (-0.28, 0.12, 0.95)
+          const dx = x0 - localCenter.x;
+          const dy = y0 - localCenter.y;
+          cutDist = (z0 - midZ) - 0.28 * dx + 0.12 * dy;
+        } else if (organId === 'duodenum') {
+          // Outer convexity cut of C-loop wrapping around head of pancreas
+          // Normal n_cut points antero-laterally (-0.55, 0.08, 0.83)
+          const dx = x0 - (localCenter.x + 1.2);
+          cutDist = 0.83 * (z0 - midZ) - 0.55 * dx;
+        } else if (organId === 'gallbladder_tree') {
+          // Oblique cut across anterior fundus and body of gallbladder
+          // Normal n_cut ~= (-0.35, -0.38, 0.85)
+          const dx = x0 - localCenter.x;
+          const dy = y0 - localCenter.y;
+          cutDist = 0.85 * (z0 - midZ) - 0.35 * dx - 0.38 * dy;
+        } else if (organId === 'large_intestine') {
+          // Purely anterior along Taenia coli: strictly along Z axis
+          cutDist = z0 - midZ;
+        } else if (organId === 'esophagus' || organId === 'small_intestine') {
+          // Longitudinal anterior tube split: strictly along Z axis
+          cutDist = z0 - midZ;
+        }
+
+        cutDistArr[i] = cutDist;
 
         if (d > 0) {
           posAttr.setXYZ(

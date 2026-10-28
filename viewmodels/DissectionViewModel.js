@@ -16,6 +16,7 @@ export class DissectionViewModel extends Observable {
       isIsolateMode: false,
       isXRayMode: false,
       isCutawayOpen: false,
+      organDisplayMode: 'layers', // 'layers' (histological layers) or 'regions' (functional heatmap)
       torsoSkinOpacity: 0.50,
       stomachWallLayers: {
         stomach_serosa: true,
@@ -100,6 +101,16 @@ export class DissectionViewModel extends Observable {
 
   toggleCutaway() {
     this.state.isCutawayOpen = !this.state.isCutawayOpen;
+  }
+
+  setOrganDisplayMode(mode) {
+    if (mode !== 'layers' && mode !== 'regions') return;
+    this.state.organDisplayMode = mode;
+  }
+
+  toggleOrganDisplayMode() {
+    const next = this.state.organDisplayMode === 'layers' ? 'regions' : 'layers';
+    this.setOrganDisplayMode(next);
   }
 
   setTorsoSkinOpacity(opacity) {

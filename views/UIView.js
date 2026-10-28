@@ -36,6 +36,8 @@ export class UIView {
     this.cutawayBtn = document.getElementById('btn-stomach-cutaway');
     this.isolateBtn = document.getElementById('btn-isolate');
     this.xrayBtn = document.getElementById('btn-xray');
+    this.btnModeLayers = document.getElementById('btn-mode-layers');
+    this.btnModeRegions = document.getElementById('btn-mode-regions');
     this.resetCameraBtn = document.getElementById('btn-reset-camera');
     this.themeToggleBtn = document.getElementById('btn-theme-toggle');
 
@@ -146,6 +148,18 @@ export class UIView {
     if (this.xrayBtn) {
       this.xrayBtn.addEventListener('click', () => {
         this.dissectionVM.toggleXRayMode();
+      });
+    }
+
+    // 7b. Organ Display Mode Switcher (Layers vs Functional Regions)
+    if (this.btnModeLayers) {
+      this.btnModeLayers.addEventListener('click', () => {
+        this.dissectionVM.setOrganDisplayMode('layers');
+      });
+    }
+    if (this.btnModeRegions) {
+      this.btnModeRegions.addEventListener('click', () => {
+        this.dissectionVM.setOrganDisplayMode('regions');
       });
     }
 
@@ -336,6 +350,22 @@ export class UIView {
       if (this.cutawayBtn) {
         this.cutawayBtn.classList.toggle('active', isOpen);
         this.cutawayBtn.textContent = isOpen ? '✖ Đóng Mặt Cắt' : '✂️ Mặt Cắt Dọc 50%';
+      }
+    });
+
+    // 3b. Sync Organ Display Mode (Layers vs Regions)
+    this.dissectionVM.subscribe('organDisplayMode', (mode) => {
+      const isLayers = (mode === 'layers');
+      if (this.btnModeLayers) {
+        this.btnModeLayers.classList.toggle('active', isLayers);
+      }
+      if (this.btnModeRegions) {
+        this.btnModeRegions.classList.toggle('active', !isLayers);
+      }
+      if (this.explodeHelperText) {
+        if (!isLayers) {
+          this.explodeHelperText.textContent = '🗺️ Chế độ Phân Vùng Chức Năng (Heatmap): Rê chuột để xem tên và chức năng sinh lý/bệnh học từng phân vùng giải phẫu';
+        }
       }
     });
 
