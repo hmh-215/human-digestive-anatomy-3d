@@ -962,9 +962,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .body-pin {
   position: absolute;
   z-index: 3;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  padding: 4px 7px;
+  padding: 3.5px 8px;
   white-space: nowrap;
   border-radius: 20px;
   background: var(--bg-surface-elevated);
@@ -973,11 +973,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  transform: translateX(-50%);
 }
 
 .body-pin:hover {
   border-color: var(--primary);
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  transform: translateX(-50%) scale(1.06);
   z-index: 6;
 }
 
@@ -986,125 +988,59 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: #ffffff;
   border-color: #0284c7;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25), 0 4px 12px rgba(2, 132, 199, 0.35);
+  transform: translateX(-50%) scale(1.08);
   z-index: 7;
 }
 
-/* Spatial Pin Coordinates on Anatomical Silhouette (Matching User Diagram) */
+/* Spatial Pin Coordinates on Anatomical Silhouette (Matching Clinical Surface Anatomy) */
 .pin-oral {
   top: 14px;
   left: 50%;
-  transform: translateX(-50%);
-}
-.pin-oral:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-oral.active {
-  transform: translateX(-50%) scale(1.08);
 }
 
 .pin-esophagus {
-  top: 72px;
+  top: 66px;
   left: 50%;
-  transform: translateX(-50%);
-}
-.pin-esophagus:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-esophagus.active {
-  transform: translateX(-50%) scale(1.08);
 }
 
 .pin-liver {
-  top: 122px;
-  left: 8px;
-}
-.pin-liver:hover {
-  transform: scale(1.06);
-}
-.pin-liver.active {
-  transform: scale(1.08);
+  top: 118px;
+  left: 28%;
 }
 
 .pin-stomach {
-  top: 122px;
-  right: 8px;
-}
-.pin-stomach:hover {
-  transform: scale(1.06);
-}
-.pin-stomach.active {
-  transform: scale(1.08);
+  top: 118px;
+  left: 72%;
 }
 
 .pin-gallbladder {
   top: 164px;
-  left: 14px;
-}
-.pin-gallbladder:hover {
-  transform: scale(1.06);
-}
-.pin-gallbladder.active {
-  transform: scale(1.08);
+  left: 28%;
 }
 
 .pin-pancreas {
   top: 164px;
-  right: 14px;
-}
-.pin-pancreas:hover {
-  transform: scale(1.06);
-}
-.pin-pancreas.active {
-  transform: scale(1.08);
+  left: 72%;
 }
 
 .pin-duodenum {
-  top: 202px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.pin-duodenum:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-duodenum.active {
-  transform: translateX(-50%) scale(1.08);
+  top: 210px;
+  left: 36%;
 }
 
 .pin-portal {
-  top: 238px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 9.5px;
-}
-.pin-portal:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-portal.active {
-  transform: translateX(-50%) scale(1.08);
+  top: 210px;
+  left: 64%;
 }
 
 .pin-small-int {
-  top: 272px;
+  top: 256px;
   left: 50%;
-  transform: translateX(-50%);
-}
-.pin-small-int:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-small-int.active {
-  transform: translateX(-50%) scale(1.08);
 }
 
 .pin-large-int {
-  top: 304px;
+  top: 300px;
   left: 50%;
-  transform: translateX(-50%);
-}
-.pin-large-int:hover {
-  transform: translateX(-50%) scale(1.06);
-}
-.pin-large-int.active {
-  transform: translateX(-50%) scale(1.08);
 }
 
 /* Categorized List View */

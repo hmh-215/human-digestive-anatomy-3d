@@ -293,52 +293,52 @@ export class UIView {
           this.backSystemBtn.classList.remove('hidden');
 
           if (organId === 'stomach') {
-            this.explodeModeLabel.textContent = '💥 Tách 6 Lớp Dạ Dày (Trong → Ngoài):';
+            this.explodeModeLabel.textContent = 'Tách Lớp Dạ Dày:';
             this.explodeHelperText.textContent = 'Các lớp trong tiến về phía người xem, nằm gọn trong lòng lớp ngoài tương ứng';
           } else if (organId === 'esophagus') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Thực Quản (Trong → Ngoài):';
+            this.explodeModeLabel.textContent = 'Tách Lớp Thực Quản:';
             this.explodeHelperText.textContent = 'Vỏ xơ Adventitia → Cơ dọc → Cơ vòng → Dưới niêm mạc → Biểu mô lát tầng';
           } else if (organId === 'duodenum') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Tá Tràng (Trong → Ngoài):';
+            this.explodeModeLabel.textContent = 'Tách Lớp Tá Tràng:';
             this.explodeHelperText.textContent = 'Thanh mạc → Cơ dọc → Cơ vòng → Tuyến Brunner dưới niêm → Nếp vòng Kerckring';
           } else if (organId === 'small_intestine') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Ruột Non (Trong → Ngoài):';
+            this.explodeModeLabel.textContent = 'Tách Lớp Ruột Non:';
             this.explodeHelperText.textContent = 'Thanh mạc → Cơ dọc Auerbach → Cơ vòng → Dưới niêm mạc → Nhung mao Villi';
           } else if (organId === 'large_intestine') {
-            this.explodeModeLabel.textContent = '💥 Tách 5 Lớp Đại Tràng (Trong → Ngoài):';
-            this.explodeHelperText.textContent = 'Từ trong ra ngoài: Mucosa (Niêm mạc) > Submucosa (Dưới niêm) > Stratum (Cơ vòng & Cơ dọc) > Serosa (Thanh mạc)';
+            this.explodeModeLabel.textContent = 'Tách Lớp Đại Tràng:';
+            this.explodeHelperText.textContent = 'Từ trong ra ngoài: Niêm mạc → Dưới niêm → Cơ vòng & Cơ dọc → Thanh mạc';
           } else if (organId === 'gallbladder_tree') {
-            this.explodeModeLabel.textContent = '💥 Tách 4 Lớp Túi Mật & Đường Mật:';
+            this.explodeModeLabel.textContent = 'Tách Lớp Túi Mật & Đường Mật:';
             this.explodeHelperText.textContent = 'Thanh mạc & mô xơ quanh cơ → Lớp cơ trơn → Lớp đệm Lamina propria → Niêm mạc tổ ong';
           } else if (organId === 'liver') {
-            this.explodeModeLabel.textContent = '💥 Phân Tách 8 Hạ Phân Thùy Gan (Couinaud):';
+            this.explodeModeLabel.textContent = 'Phân Tách 8 Hạ Phân Thùy Gan:';
             this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) với nhu mô bán trong suốt lộ cây mạch máu gan';
           } else if (organId === 'portal_system') {
-            this.explodeModeLabel.textContent = '💥 Hệ Tĩnh Mạch Cửa Gan (Portal Venous System):';
-            this.explodeHelperText.textContent = 'TMC hợp bởi TM mạc treo tràng trên (SMV) & TM tỳ (Splenic), chia nhánh vào 8 hạ phân thùy gan';
+            this.explodeModeLabel.textContent = 'Hệ Tĩnh Mạch Cửa Gan:';
+            this.explodeHelperText.textContent = 'TMC hợp bởi TM mạc treo tràng trên & TM tỳ, chia nhánh vào 8 hạ phân thùy gan';
           } else if (organId === 'hepatic_artery') {
-            this.explodeModeLabel.textContent = '💥 Động Mạch Thân Tạng & Cây Động Mạch Gan:';
-            this.explodeHelperText.textContent = 'Thân tạng → ĐM gan chung (CHA) → ĐM gan riêng (PHA) chia 2 ngành P/T cấp máu dinh dưỡng gan';
+            this.explodeModeLabel.textContent = 'Động Mạch Thân Tạng & Gan:';
+            this.explodeHelperText.textContent = 'Thân tạng → ĐM gan chung → ĐM gan riêng chia 2 ngành P/T cấp máu dinh dưỡng gan';
           } else if (organId === 'hepatic_veins') {
-            this.explodeModeLabel.textContent = '💥 Các Tĩnh Mạch Gan & Tĩnh Mạch Chủ Dưới:';
+            this.explodeModeLabel.textContent = 'Các Tĩnh Mạch Gan:';
             this.explodeHelperText.textContent = '3 tĩnh mạch gan (Phải, Giữa, Trái) dẫn lưu máu khử oxy từ các hạ phân thùy gan đổ trực tiếp vào TMC dưới';
           } else if (organId === 'oral_cavity') {
-            this.explodeModeLabel.textContent = '💥 Vùng Miệng, Khung Hàm, Răng & Hầu:';
-            this.explodeHelperText.textContent = 'Bấm "✂️ Mặt Cắt Dọc 50%" để xem mặt phẳng cắt dọc chính giữa mặt (midsagittal cut) qua răng, cơ lưỡi và 3 tầng thành hầu!';
+            this.explodeModeLabel.textContent = 'Vùng Miệng & Hầu:';
+            this.explodeHelperText.textContent = 'Bấm "Mặt Cắt Dọc 50%" để xem mặt phẳng cắt dọc chính giữa mặt qua răng, cơ lưỡi và 3 tầng thành hầu';
           } else if (organId === 'pharynx') {
-            this.explodeModeLabel.textContent = '💥 Hệ Thống Hầu - Họng (3 Tầng):';
-            this.explodeHelperText.textContent = 'Tỵ hầu (Nasopharynx) → Khẩu hầu (Oropharynx) → Thanh hầu (Laryngopharynx) nối tiếp miệng thực quản tại C6';
+            this.explodeModeLabel.textContent = 'Hệ Thống Hầu - Họng:';
+            this.explodeHelperText.textContent = 'Tỵ hầu → Khẩu hầu → Thanh hầu nối tiếp miệng thực quản tại C6';
           } else if (organId === 'tongue') {
-            this.explodeModeLabel.textContent = '💥 Lưỡi & Gai Vị Giác (Lingua):';
+            this.explodeModeLabel.textContent = 'Lưỡi:';
             this.explodeHelperText.textContent = 'Khối cơ vân linh hoạt đảm nhiệm nhai, đảo thức ăn, nuốt và thụ cảm vị giác';
           } else if (organId === 'teeth_and_jaw') {
-            this.explodeModeLabel.textContent = '💥 Cung Răng & Khung Xương Hàm:';
-            this.explodeHelperText.textContent = 'Bộ 32 răng vĩnh viễn (cửa, nanh, cối) cắm sâu vào cung huyệt răng của xương hàm trên và xương hàm dưới';
+            this.explodeModeLabel.textContent = 'Cung Răng & Khung Xương Hàm:';
+            this.explodeHelperText.textContent = 'Bộ 32 răng vĩnh viễn cắm sâu vào cung huyệt răng của xương hàm trên và xương hàm dưới';
           } else if (organId === 'salivary_glands') {
-            this.explodeModeLabel.textContent = '💥 Các Tuyến Nước Bọt Lớn (Salivary Glands):';
-            this.explodeHelperText.textContent = '3 cặp tuyến đối xứng: Tuyến mang tai (ống Stensen), Tuyến dưới hàm (ống Wharton), Tuyến dưới lưỡi (ống Rivinus)';
+            this.explodeModeLabel.textContent = 'Tuyến Nước Bọt:';
+            this.explodeHelperText.textContent = '3 cặp tuyến đối xứng: Tuyến mang tai, Tuyến dưới hàm, Tuyến dưới lưỡi';
           } else {
-            this.explodeModeLabel.textContent = `💥 Tách Cấu Trúc ${organ.vietnameseName}:`;
+            this.explodeModeLabel.textContent = `Tách Cấu Trúc ${organ.vietnameseName}:`;
             this.explodeHelperText.textContent = 'Tách rời các cấu trúc con để rê chuột xem nhãn giải phẫu chi tiết';
           }
 
@@ -349,7 +349,7 @@ export class UIView {
         if (this.contextSubEl) this.contextSubEl.textContent = 'CHẾ ĐỘ TOÀN HỆ THỐNG';
         this.contextTitleEl.textContent = 'Toàn Hệ Tiêu Hóa';
         this.backSystemBtn.classList.add('hidden');
-        this.explodeModeLabel.textContent = '💥 Xếp Hàng Toàn Hệ Thống (4 Hàng):';
+        this.explodeModeLabel.textContent = 'Xếp Hàng Toàn Hệ Thống:';
         this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang';
         this._hideOrganDrawer();
       }
@@ -363,7 +363,7 @@ export class UIView {
       if (this.animateExplodeBtn) {
         const isExpanded = factor > 0.3;
         this.animateExplodeBtn.classList.toggle('active', isExpanded);
-        this.animateExplodeBtn.textContent = isExpanded ? '🔄 Thu Gọn' : '💥 Tách Lớp';
+        this.animateExplodeBtn.textContent = isExpanded ? 'Thu Gọn' : 'Tách Lớp';
       }
     });
 
@@ -397,7 +397,7 @@ export class UIView {
       }
       if (this.explodeHelperText) {
         if (!isLayers) {
-          this.explodeHelperText.textContent = '🗺️ Chế độ Phân Vùng Chức Năng (Heatmap): Rê chuột để xem tên và chức năng sinh lý/bệnh học từng phân vùng giải phẫu';
+          this.explodeHelperText.textContent = 'Chế độ Phân Vùng Chức Năng: Rê chuột để xem tên và chức năng sinh lý/bệnh học từng phân vùng giải phẫu';
         }
       }
     });
@@ -468,7 +468,7 @@ export class UIView {
     if (organ.subComponents && organ.subComponents.length > 0) {
       subListHtml = `
         <div class="drawer-section">
-          <h4>🧩 Cấu Trúc Con Phân Rã (${organ.subComponents.length} thành phần):</h4>
+          <h4>Cấu Trúc Con Phân Rã (${organ.subComponents.length} thành phần):</h4>
           <div class="sub-tags">
             ${organ.subComponents.map(s => `<span class="tag-chip">${s.name}</span>`).join('')}
           </div>
@@ -483,7 +483,7 @@ export class UIView {
       wallLayersHtml = `
         <div class="drawer-section">
           <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
-            🔬 Cấu Tạo Mô Học Thành ${organ.vietnameseName} (Trong → Ngoài: ${organ.wallLayers.length} Lớp):
+            Cấu Tạo Mô Học Thành ${organ.vietnameseName} (Trong → Ngoài: ${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
             Thứ tự từ <strong>Trong ra Ngoài</strong> (Mucosa &gt; Submucosa &gt; Stratum &gt; Serosa). Bấm vào từng tầng để làm sáng lớp 3D:
@@ -503,16 +503,16 @@ export class UIView {
                   <span class="wall-layer-thickness-badge">${posBadge} • ${l.thickness}</span>
                 </div>
                 <div class="wall-sub-block">
-                  <strong>📍 Đại thể:</strong> ${l.description}
+                  <strong>Đại thể:</strong> ${l.description}
                 </div>
                 <div class="wall-sub-block">
-                  <strong>🔬 Mô học vi thể:</strong> ${l.histology}
+                  <strong>Mô học vi thể:</strong> ${l.histology}
                 </div>
                 <div class="wall-sub-block">
-                  <strong>⚡ Sinh lý:</strong> ${l.physiology}
+                  <strong>Sinh lý:</strong> ${l.physiology}
                 </div>
                 <div class="wall-clinical-sub">
-                  <strong>⚠️ Lâm sàng ĐHYHN:</strong> ${l.clinicalNotes}
+                  <strong>Lâm sàng ĐHYHN:</strong> ${l.clinicalNotes}
                 </div>
               </div>
             `;
@@ -525,25 +525,25 @@ export class UIView {
     this.drawerContentEl.innerHTML = `
       <div class="drawer-badge">Tầng Giải Phẫu: ${organ.layer}</div>
       <div class="drawer-section">
-        <h4>📍 Vị Trí & Liên Quan Giải Phẫu:</h4>
+        <h4>Vị Trí & Liên Quan Giải Phẫu:</h4>
         <p>${organ.location}</p>
       </div>
       <div class="drawer-section">
-        <h4>🔬 Hình Thể Ngoài & Cấu Trúc Trong:</h4>
+        <h4>Hình Thể Ngoài & Cấu Trúc Trong:</h4>
         <p>${organ.structure}</p>
       </div>
       ${wallLayersHtml}
       ${subListHtml}
       <div class="drawer-section">
-        <h4>🩸 Mạch Máu & Thần Kinh Chi Phối:</h4>
+        <h4>Mạch Máu & Thần Kinh Chi Phối:</h4>
         <p>${organ.vasculature}</p>
       </div>
       <div class="drawer-section">
-        <h4>⚡ Chức Năng Tiêu Hóa Sinh Lý:</h4>
+        <h4>Chức Năng Tiêu Hóa Sinh Lý:</h4>
         <p>${organ.physiology}</p>
       </div>
       <div class="drawer-section highlight-box">
-        <h4>⚠️ Ý Nghĩa Ngoại Khoa & Lâm Sàng (ĐHYHN):</h4>
+        <h4>Ý Nghĩa Ngoại Khoa & Lâm Sàng (ĐHYHN):</h4>
         <p>${organ.clinicalNotes}</p>
       </div>
     `;
@@ -617,7 +617,7 @@ export class UIView {
         ${lm.clinicalSignificance ? `
           <div style="margin-top: 6px; padding: 7px 9px; background: rgba(225, 29, 72, 0.07); border-left: 3px solid #e11d48; border-radius: 4px; font-size: 11px; line-height: 1.45; color: var(--text-main);">
             <strong style="color: #e11d48; display: flex; align-items: center; gap: 4px; margin-bottom: 3px;">
-              🩺 Ý Nghĩa Khám & Dấu Hiệu:
+              Ý Nghĩa Khám & Dấu Hiệu:
             </strong>
             ${lm.clinicalSignificance}
           </div>
