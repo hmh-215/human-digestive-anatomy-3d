@@ -2457,6 +2457,16 @@ export class SceneView {
     animateFocus();
   }
 
+  setOrganCutSide(organId, side) {
+    if (this.stomachBuilder) {
+      this.stomachBuilder.setOrganCutSide(organId, side);
+    }
+  }
+
+  getOrganCutSide(organId) {
+    return this.stomachBuilder ? this.stomachBuilder.getOrganCutSide(organId) : 1.0;
+  }
+
   _animate() {
     requestAnimationFrame(this._animate);
     this.controls.update();

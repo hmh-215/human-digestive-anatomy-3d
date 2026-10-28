@@ -34,6 +34,7 @@ export class UIView {
     this.animateExplodeBtn = document.getElementById('btn-animate-explode');
 
     this.cutawayBtn = document.getElementById('btn-stomach-cutaway');
+    this.esoSideToggleBtn = document.getElementById('btn-eso-side-toggle');
     this.isolateBtn = document.getElementById('btn-isolate');
     this.xrayBtn = document.getElementById('btn-xray');
     this.toggleDisplayMode = document.getElementById('toggle-display-mode');
@@ -135,6 +136,18 @@ export class UIView {
     if (this.cutawayBtn) {
       this.cutawayBtn.addEventListener('click', () => {
         this.dissectionVM.toggleCutaway();
+      });
+    }
+
+    // 5b. Esophagus Cut Side Toggle (Ẩn nửa trái vs Ẩn nửa phải)
+    if (this.esoSideToggleBtn) {
+      this.esoSideToggleBtn.addEventListener('click', () => {
+        const sceneView = window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView;
+        if (!sceneView) return;
+        const curSide = sceneView.getOrganCutSide('esophagus');
+        const nextSide = (curSide > 0) ? -1.0 : 1.0;
+        sceneView.setOrganCutSide('esophagus', nextSide);
+        this.esoSideToggleBtn.textContent = (nextSide > 0) ? 'Ẩn Nửa Trái' : 'Ẩn Nửa Phải';
       });
     }
 
@@ -332,6 +345,8 @@ export class UIView {
         this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang';
         this._hideOrganDrawer();
       }
+
+      this._updateEsoSideToggle();
     });
 
     // 2. Sync Unified Explode Slider & Trigger Button Label
@@ -364,6 +379,7 @@ export class UIView {
         this.cutawayBtn.classList.toggle('active', isOpen);
         this.cutawayBtn.textContent = isOpen ? 'Đóng Mặt Cắt' : 'Mặt Cắt Dọc 50%';
       }
+      this._updateEsoSideToggle();
     });
 
     // 3b. Sync Organ Display Mode (Compact Switch: Layers vs Regions)
@@ -626,5 +642,18 @@ export class UIView {
         this.landmarksVM.selectLandmark(id);
       });
     });
+  }
+
+  _updateEsoSideToggle() {
+    if (!this.esoSideToggleBtn) return;
+    const selectedId = this.sceneVM.state.selectedOrganId;
+    const isCutaway = this.dissectionVM.state.isCutawayOpen;
+    const shouldShow = (selectedId === 'esophagus' && isCutaway);
+    this.esoSideToggleBtn.classList.toggle('hidden', !shouldShow);
+    if (shouldShow) {
+      const sceneView = window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView;
+      const side = sceneView ? sceneView.getOrganCutSide('esophagus') : 1.0;
+      this.esoSideToggleBtn.textContent = (side > 0) ? 'Ẩn Nửa Trái' : 'Ẩn Nửa Phải';
+    }
   }
 }

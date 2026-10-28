@@ -35,6 +35,30 @@ export class StomachLayersBuilder {
       'Sigmoid_colon',
       'Oesophagus'
     ]);
+
+    // Direction/side multiplier for cutaway: 1.0 (default, discards vCutDist > 0) or -1.0 (opposite half)
+    // Esophagus defaults to 1.0 which hides the anatomical left half (+X) as requested by user.
+    this.organCutSides = {
+      esophagus: 1.0,
+      stomach: 1.0,
+      duodenum: 1.0
+    };
+  }
+
+  setOrganCutSide(organId, side = 1.0) {
+    this.organCutSides[organId] = side;
+    const meshes = this.organLayersMap.get(organId);
+    if (meshes) {
+      meshes.forEach(m => {
+        if (m.material && m.material.userData && m.material.userData.uCutSide) {
+          m.material.userData.uCutSide.value = side;
+        }
+      });
+    }
+  }
+
+  getOrganCutSide(organId) {
+    return this.organCutSides[organId] !== undefined ? this.organCutSides[organId] : 1.0;
   }
 
   /**
@@ -106,16 +130,60 @@ export class StomachLayersBuilder {
   }
 
   /**
+   * Computes the longitudinal tube centerline X (`aCutMidX`) for the esophagus
+   * using an O(N) 1D vertical bucket grid along Y with a 5-sample smoothing filter.
+   * This splits the esophagus along the longitudinal vertical axis (as shown in user illustration 1).
+   * By default, vertices with (x - midX) > 0 (anatomical left half) are cut/hidden,
+   * cleanly exposing the internal esophageal lumen.
+   */
+  _computeEsophagusCutMidX(posAttr, cellY = 1.0) {
+    const count = posAttr.count;
+    const midX = new Float32Array(count);
+    const buckets = new Map();
+
+    for (let i = 0; i < count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const gy = Math.floor(y / cellY);
+      const b = buckets.get(gy);
+      if (!b) {
+        buckets.set(gy, { minX: x, maxX: x });
+      } else {
+        if (x < b.minX) b.minX = x;
+        if (x > b.maxX) b.maxX = x;
+      }
+    }
+
+    for (let i = 0; i < count; i++) {
+      const y = posAttr.getY(i);
+      const gy = Math.floor(y / cellY);
+      let sumMid = 0;
+      let weightSum = 0;
+      for (let dy = -2; dy <= 2; dy++) {
+        const b = buckets.get(gy + dy);
+        if (b) {
+          const w = 1.0 / (1.0 + Math.abs(dy));
+          sumMid += 0.5 * (b.minX + b.maxX) * w;
+          weightSum += w;
+        }
+      }
+      midX[i] = (weightSum > 0) ? (sumMid / weightSum) : posAttr.getX(i);
+    }
+
+    return midX;
+  }
+
+  /**
    * Computes the local 50% anterior-posterior tube centerline Z (`aCutMidZ`) for each vertex
-   * of a single hollow segment using an O(N) 3x3 spatial bucket grid in (X, Y).
-   * This ensures that curved segments at different Z depths (e.g. Transverse Colon vs.
-   * Descending/Sigmoid Colon, or Duodenum D1-D4) are each cut at their own exact 50%
+   * of a hollow segment using an O(N) spatial bucket grid in (X, Y) with smoothing.
+   * This ensures that curved segments at different Z depths (e.g. Duodenum D1-D4 C-loop,
+   * Stomach Greater/Lesser curvatures, Colon) are each cut at their own exact 50%
    * longitudinal tube midline so no segment ever disappears when cutaway is active.
    */
-  _computeSubMeshCutMidZ(posAttr) {
+  _computeSubMeshCutMidZ(posAttr, cellSize = 1.4) {
     const count = posAttr.count;
     const midZ = new Float32Array(count);
-    const cell = 2.5;
+    const cell = cellSize;
     const buckets = new Map();
 
     for (let i = 0; i < count; i++) {
@@ -134,8 +202,7 @@ export class StomachLayersBuilder {
       }
     }
 
-    // Smooth the tube centerline Z across a 5x5 neighborhood so Haustral pouches
-    // never create notches along the 50% longitudinal cut edge.
+    // Smooth the tube centerline Z across a 5x5 neighborhood
     for (let i = 0; i < count; i++) {
       const x = posAttr.getX(i);
       const y = posAttr.getY(i);
@@ -406,7 +473,24 @@ export class StomachLayersBuilder {
       ]
     };
 
-    const polyline = organCutPolylines[organId];
+    // Precompute cut plane/line metrics for the base geometry based on organ morphology
+    let precomputedMidValues = null;
+    if (organId === 'esophagus') {
+      // Longitudinal tube centerline X (median cut dividing left and right halves)
+      precomputedMidValues = this._computeEsophagusCutMidX(origGeo.attributes.position, 1.0);
+    } else if (organId === 'stomach') {
+      // Coronal bisection along Greater Curvature (bờ cong lớn) & Lesser Curvature (bờ cong nhỏ)
+      // matching the 3 views in user illustration 2 (ảnh 2)
+      precomputedMidValues = this._computeSubMeshCutMidZ(origGeo.attributes.position, 1.4);
+    } else if (organId === 'duodenum') {
+      // Continuous C-loop tube centerline cut tracing D1 -> D2 -> D3 -> D4
+      // matching crest and longitudinal lines in user illustration 3 (ảnh 3)
+      precomputedMidValues = this._computeSubMeshCutMidZ(origGeo.attributes.position, 1.1);
+    } else if (organId === 'large_intestine') {
+      precomputedMidValues = origGeo.attributes.aCutMidZ ? origGeo.attributes.aCutMidZ.array : this._computeSubMeshCutMidZ(origGeo.attributes.position, 2.0);
+    } else {
+      precomputedMidValues = this._computeSubMeshCutMidZ(origGeo.attributes.position, 1.4);
+    }
 
     const layerMeshes = [];
 
@@ -422,34 +506,14 @@ export class StomachLayersBuilder {
         const y0 = posAttr.getY(i);
         const z0 = posAttr.getZ(i);
 
-        // Project vertex (x0, y0) onto the landmark polyline to find the exact cut threshold Z.
-        // Pure piecewise linear interpolation guarantees 100% smooth cut edges passing exactly
-        // through the red line markings from the user illustration!
         let cutDist = 0;
-        if (polyline && polyline.length >= 2) {
-          let minDistSq = Infinity;
-          let bestZ = polyline[0].z;
-          for (let j = 0; j < polyline.length - 1; j++) {
-            const p1 = polyline[j];
-            const p2 = polyline[j + 1];
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
-            const segLenSq = dx * dx + dy * dy;
-            let t = 0.0;
-            if (segLenSq > 1e-6) {
-              t = Math.max(0.0, Math.min(1.0, ((x0 - p1.x) * dx + (y0 - p1.y) * dy) / segLenSq));
-            }
-            const projX = p1.x + t * dx;
-            const projY = p1.y + t * dy;
-            const distSq = (x0 - projX) * (x0 - projX) + (y0 - projY) * (y0 - projY);
-            if (distSq < minDistSq) {
-              minDistSq = distSq;
-              bestZ = p1.z + t * (p2.z - p1.z);
-            }
-          }
-          cutDist = z0 - bestZ;
+        if (organId === 'esophagus') {
+          // Esophagus: X relative to longitudinal midline X(Y).
+          // cutDist > 0 is anatomical left half (+X); cutDist <= 0 is right half (-X).
+          cutDist = x0 - precomputedMidValues[i];
         } else {
-          cutDist = z0 - localCenter.z;
+          // Stomach, Duodenum, Colon, Gallbladder, Small Intestine: Z relative to anatomical tube/coronal midline Z(X, Y).
+          cutDist = z0 - precomputedMidValues[i];
         }
 
         cutDistArr[i] = cutDist;
@@ -476,9 +540,11 @@ export class StomachLayersBuilder {
 
       mat.userData.uCutawayActive = { value: 0.0 };
       mat.userData.uCutThreshold = { value: 0.0 };
+      mat.userData.uCutSide = { value: (this.organCutSides[organId] !== undefined) ? this.organCutSides[organId] : 1.0 };
       mat.onBeforeCompile = (shader) => {
         shader.uniforms.uCutawayActive = mat.userData.uCutawayActive;
         shader.uniforms.uCutThreshold = mat.userData.uCutThreshold;
+        shader.uniforms.uCutSide = mat.userData.uCutSide;
         shader.vertexShader = `
           attribute float aCutDist;
           varying float vCutDist;
@@ -490,11 +556,12 @@ export class StomachLayersBuilder {
         shader.fragmentShader = `
           uniform float uCutawayActive;
           uniform float uCutThreshold;
+          uniform float uCutSide;
           varying float vCutDist;
         ` + shader.fragmentShader.replace(
           '#include <clipping_planes_fragment>',
           `#include <clipping_planes_fragment>
-           if (uCutawayActive > 0.5 && vCutDist > uCutThreshold) discard;`
+           if (uCutawayActive > 0.5 && (vCutDist * uCutSide) > uCutThreshold) discard;`
         );
       };
 
@@ -861,6 +928,7 @@ export class StomachLayersBuilder {
 
         const uActive = mesh.material.userData && mesh.material.userData.uCutawayActive;
         const uThresh = mesh.material.userData && mesh.material.userData.uCutThreshold;
+        const uSide = mesh.material.userData && mesh.material.userData.uCutSide;
 
         if (!shouldClipThisOrgan) {
           if (uActive) uActive.value = 0.0;
@@ -878,6 +946,10 @@ export class StomachLayersBuilder {
 
         if (uActive) uActive.value = 1.0;
         if (uThresh) uThresh.value = assembleBlend * centeredIdx * rimStep;
+        if (uSide) {
+          const sideVal = (this.organCutSides && this.organCutSides[organId] !== undefined) ? this.organCutSides[organId] : 1.0;
+          uSide.value = sideVal;
+        }
       });
     });
   }

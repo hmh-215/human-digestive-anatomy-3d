@@ -428,14 +428,14 @@ export class ExplosionManager {
     //   - Small Intestine: n_cut = (0.0, 0.0, 1.0) along anterior apex loops
     //   - Large Intestine: n_cut = (0.0, 0.0, 1.0) along anterior Taenia coli (zero X/Y shearing)
     //   - Gallbladder: n_cut = (-0.35, -0.38, 0.85) along fundus/body oblique cut
-    //   - Esophagus: n_cut = (0.0, 0.0, 1.0) along anterior longitudinal midline
+    //   - Esophagus: n_cut = (0.7, 0.0, 0.7) along left-anterior longitudinal midline
     const organStepVectors = {
       stomach: new THREE.Vector3(-2.38, 1.02, 8.08),
       duodenum: new THREE.Vector3(-4.51, 0.66, 6.81),
       small_intestine: new THREE.Vector3(0.0, 0.0, 7.8),
       large_intestine: new THREE.Vector3(0.0, 0.0, 9.2),
       gallbladder_tree: new THREE.Vector3(-2.52, -2.74, 6.12),
-      esophagus: new THREE.Vector3(0.0, 0.0, 5.5)
+      esophagus: new THREE.Vector3(3.8, 0.0, 4.2)
     };
 
     const organColors = {
