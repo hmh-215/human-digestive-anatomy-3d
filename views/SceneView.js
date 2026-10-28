@@ -820,6 +820,38 @@ export class SceneView {
   }
 
   /**
+   * Universal Hot-to-Cold Thermal Palette Generator.
+   * Samples n colors smoothly along the scientific thermal gradient:
+   * Hot (Red/Orange) -> Warm (Gold/Amber) -> Neutral (Green) -> Cool (Cyan) -> Cold (Blue/Violet).
+   * Selected dynamically based on the exact number of functional regions in each organ.
+   */
+  _getThermalPalette(n) {
+    if (n <= 1) return [new THREE.Color(0xef4444)];
+    const stops = [
+      new THREE.Color(0xef4444), // 0: Red (Nóng nhất)
+      new THREE.Color(0xf97316), // 1: Orange
+      new THREE.Color(0xfbbf24), // 2: Amber / Gold
+      new THREE.Color(0x10b981), // 3: Emerald Green
+      new THREE.Color(0x06b6d4), // 4: Cyan / Aqua
+      new THREE.Color(0x3b82f6), // 5: Cobalt Blue
+      new THREE.Color(0x8b5cf6)  // 6: Cold Violet (Lạnh nhất)
+    ];
+    const palette = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1);
+      const scaled = t * (stops.length - 1);
+      const idx = Math.floor(scaled);
+      const frac = scaled - idx;
+      if (idx >= stops.length - 1) {
+        palette.push(stops[stops.length - 1].clone());
+      } else {
+        palette.push(stops[idx].clone().lerp(stops[idx + 1], frac));
+      }
+    }
+    return palette;
+  }
+
+  /**
    * Formats human-readable Vietnamese/Latin metadata for any hovered 3D mesh.
    */
   _buildHoverPayload(mesh, screenX, screenY) {
@@ -838,39 +870,40 @@ export class SceneView {
       else if (x <= -0.8 && y <= 114.2) reg = 'pylorus';
       else if (y <= 114.8 && x <= 3.5) reg = 'antrum';
 
+      const palStom = this._getThermalPalette(5);
       const stomachRegionCards = {
         fundus: {
-          color: '#f87171',
-          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
-          badge: 'Túi Hơi Dạ Dày',
+          color: '#' + palStom[0].getHexString(),
+          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
+          badge: 'Túi Hơi Dạ Dày • Nóng Nhất',
           title: 'Đáy Vị (Fundus Gastricum)',
           subtitle: 'Vòm cong nằm phía trên mức lỗ tâm vị, thường chứa túi hơi dạ dày (Gastric air bubble) quan sát rõ trên phim X-quang bụng đứng không chuẩn bị.'
         },
         cardia: {
-          color: '#10b981',
-          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          color: '#' + palStom[1].getHexString(),
+          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
           badge: 'Chống Trào Ngược',
           title: 'Tâm Vị & Ấn Tâm Vị (Pars Cardiaca & Incisura Cardiaca)',
           subtitle: 'Vùng nối tiếp giữa thực quản và dạ dày, tuyến tâm vị tiết chất nhầy kiềm bảo vệ niêm mạc chống trào ngược dịch vị acid.'
         },
         corpus: {
-          color: '#fb7185',
-          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          color: '#' + palStom[2].getHexString(),
+          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
           badge: 'Tiết Acid & Pepsin',
           title: 'Thân Vị (Corpus Gastricum)',
           subtitle: 'Phần lớn nhất của dạ dày, chứa tuyến vị với Tế bào thành (tiết HCl pH 1.5 - 2 và Yếu tố nội sinh hấp thu B12) & Tế bào chính (tiết Pepsinogen tiêu đạm).'
         },
         antrum: {
-          color: '#a78bfa',
-          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
+          color: '#' + palStom[3].getHexString(),
+          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
           badge: 'Tiết Gastrin (Tế Bào G)',
           title: 'Hang Môn Vị (Antrum Pyloricum)',
           subtitle: 'Phần phình trước môn vị, chứa tế bào G tiết hoóc-môn Gastrin kích thích bài tiết acid dịch vị; đây là vị trí phổ biến nhất của viêm loét dạ dày do vi khuẩn H. pylori.'
         },
         pylorus: {
-          color: '#0ea5e9',
-          tag: 'PHÂN VÙNG DẠ DÀY (HÌNH MINH HỌA)',
-          badge: 'Cơ Thắt Môn Vị',
+          color: '#' + palStom[4].getHexString(),
+          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
+          badge: 'Cơ Thắt Môn Vị • Lạnh Nhất',
           title: 'Ống Môn Vị & Môn Vị (Canalis Pyloricus & Pylorus)',
           subtitle: 'Đoạn tận cùng hẹp có cơ thắt môn vị tròn rất dày, hoạt động như van đóng mở điều hòa tống từng đợt vị trấp (chyme) xuống tá tràng.'
         }
@@ -902,32 +935,33 @@ export class SceneView {
         else if (x < 4.2) reg = 'body';
         else reg = 'tail';
 
+        const palP = this._getThermalPalette(4);
         const pancRegionCards = {
           head: {
-            color: '#f59e0b',
-            tag: 'PHÂN VÙNG TUYẾN TỤY',
-            badge: 'Ngoại Tiết 98%',
+            color: '#' + palP[0].getHexString(),
+            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
+            badge: 'Ngoại Tiết 98% • Nóng Nhất',
             title: 'Đầu Tụy & Mỏm Móc (Caput & Processus Uncinatus)',
             subtitle: 'Nằm lọt trong khung chữ C tá tràng, chứa các nang tuyến ngoại tiết sản xuất enzym tiêu hóa (Amylase, Lipase, Trypsin) và kiềm NaHCO3.'
           },
           neck: {
-            color: '#eab308',
-            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            color: '#' + palP[1].getHexString(),
+            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
             badge: 'Khuyết Tụy & TM Cửa',
             title: 'Cổ Tụy & Khuyết Tụy (Collum Pancreatis)',
             subtitle: 'Chỗ thắt hẹp kẹp bó mạch mạc treo tràng trên (SMA/SMV), mốc giải phẫu tối quan trọng tạo thành thân Tĩnh Mạch Cửa ngay phía sau.'
           },
           body: {
-            color: '#f97316',
-            tag: 'PHÂN VÙNG TUYẾN TỤY',
+            color: '#' + palP[2].getHexString(),
+            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
             badge: 'Băng Ngang L1-L2',
             title: 'Thân Tụy (Corpus Pancreatis)',
             subtitle: 'Chạy vắt ngang trước cột sống thắt lưng L1-L2, đè lên đám rối tạng (Celiac plexus) giải thích cơ chế cơn đau xuyên lưng trong viêm tụy cấp.'
           },
           tail: {
-            color: '#ec4899',
-            tag: 'PHÂN VÙNG TUYẾN TỤY',
-            badge: 'Đảo Langerhans Nội Tiết',
+            color: '#' + palP[3].getHexString(),
+            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
+            badge: 'Đảo Langerhans Nội Tiết • Lạnh Nhất',
             title: 'Đuôi Tụy (Cauda Pancreatis)',
             subtitle: 'Phần di động chạm rốn lách, tập trung mật độ cao nhất các Đảo tụy Langerhans (tế bào Beta tiết Insulin hạ đường huyết, Alpha tiết Glucagon).'
           }
@@ -961,46 +995,47 @@ export class SceneView {
       else if (y <= 107.2 && x <= 0.5) reg = 'd3';
       else reg = 'd4';
 
+      const palD = this._getThermalPalette(6);
       const duodCards = {
         d1: {
-          color: '#38bdf8',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
-          badge: 'Hành Tá Tràng (D1) • L1',
+          color: '#' + palD[0].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
+          badge: 'Hành Tá Tràng (D1) • Nóng Nhất',
           title: 'Đoạn Trên - Hành Tá Tràng (Pars Superior / Bulbus Duodeni)',
           subtitle: 'Đoạn di động duy nhất của tá tràng, tiếp nối ống môn vị tại đốt sống L1. Niêm mạc nhẵn không có nếp van Kerckring; vị trí xuất hiện >90% các ổ loét tá tràng do acid dịch vị (Peptic Ulcer).'
         },
         flex_sup: {
-          color: '#0284c7',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          color: '#' + palD[1].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Góc Tá Trên L1',
           title: 'Góc Tá Trên (Flexura Duodeni Superior)',
           subtitle: 'Khúc ngoặt 90 độ giữa D1 và D2 nằm ngay dưới gan và túi mật, ngang mức bờ phải đốt sống thắt lưng L1.'
         },
         d2: {
-          color: '#10b981',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          color: '#' + palD[2].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Nhú Tá Lớn (Vater) • L2-L3',
           title: 'Đoạn Xuống & Nhú Tá Lớn (Pars Descendens & Papilla Duodeni Major)',
           subtitle: 'Chạy thẳng đứng dọc bờ phải cột sống L2-L3. Thành sau trong chứa Nhú tá lớn (Vater) có cơ thắt Oddi điều hòa dịch mật và tụy đổ vào, và Nhú tá bé của ống tụy phụ Santorini.'
         },
         flex_inf: {
-          color: '#f59e0b',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          color: '#' + palD[3].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Góc Tá Dưới L3',
           title: 'Góc Tá Dưới (Flexura Duodeni Inferior)',
           subtitle: 'Góc gấp khúc chuyển tiếp giữa đoạn xuống D2 và đoạn ngang D3 tại mức đốt sống L3.'
         },
         d3: {
-          color: '#f97316',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
+          color: '#' + palD[4].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Bắt Chéo ĐMC & TMC Dưới • L3',
           title: 'Đoạn Ngang (Pars Horizontalis / Pars Inferior)',
           subtitle: 'Chạy ngang sang trái băng qua trước IVC và Động mạch chủ bụng tại L3. Bị kẹp phía trước bởi Động mạch mạc treo tràng trên (SMA), có thể gây hội chứng kìm động mạch Wilkie.'
         },
         d4: {
-          color: '#ec4899',
-          tag: 'PHÂN VÙNG TÁ TRÀNG (C QUAI TÁ TRÀNG)',
-          badge: 'Dây Chằng Treitz • L2',
+          color: '#' + palD[5].getHexString(),
+          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
+          badge: 'Dây Chằng Treitz • Lạnh Nhất',
           title: 'Đoạn Lên & Góc Tá Hỗng Tràng (Pars Ascendens & Flexura Treitz)',
           subtitle: 'Chạy chếch lên trái đến L2 nối tiếp với hỗng tràng. Cố định bởi Cơ treo tá tràng (Dây chằng Treitz) - mốc ngoại khoa phân định ranh giới Xuất huyết tiêu hóa trên và Xuất huyết tiêu hóa dưới.'
         }
@@ -1032,39 +1067,40 @@ export class SceneView {
       else if (x >= 3.0 && y >= 87.0 && y < 106.0) reg = 'descending';
       else if (y < 93.0) reg = 'sigmoid';
 
+      const palC = this._getThermalPalette(5);
       const colonCards = {
         cecum: {
-          color: '#e11d48',
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
-          badge: 'Điểm McBurney • Hố Chậu P',
+          color: '#' + palC[0].getHexString(),
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
+          badge: 'Điểm McBurney • Nóng Nhất',
           title: 'Manh Tràng & Ruột Thừa (Caecum & Appendix Vermiformis)',
           subtitle: 'Túi cùng nằm ở hố chậu phải dưới van hồi manh tràng Bauhin. Ruột thừa chứa mô bạch huyết dày đặc, vị trí điểm đau ngoại khoa kinh điển McBurney trong viêm ruột thừa cấp.'
         },
         ascending: {
-          color: '#16a34a',
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          color: '#' + palC[1].getHexString(),
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Mạc Dính Toldt P • Góc Gan',
           title: 'Đại Tràng Lên & Góc Gan (Colon Ascendens & Flexura Coli Dextra)',
           subtitle: 'Chạy dọc rãnh đại tràng phải lên bờ dưới gan tạo thành Góc gan. Cố định bởi mạc dính Toldt phải; hấp thu chủ yếu nước và điện giải (Na+, Cl-).'
         },
         transverse: {
-          color: '#059669',
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          color: '#' + palC[2].getHexString(),
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Mạc Treo Di Động • Góc Lách',
           title: 'Đại Tràng Ngang & Góc Lách (Colon Transversum & Flexura Coli Sinistra)',
           subtitle: 'Đoạn dài nhất và di động nhất nhờ mạc treo đại tràng ngang. Treo cong hình chữ U từ góc gan sang góc lách; mạc nối lớn phủ mặt trước như tấm rào chắn chống viêm nhiễm ổ bụng.'
         },
         descending: {
-          color: '#0284c7',
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
+          color: '#' + palC[3].getHexString(),
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
           badge: 'Mạc Dính Toldt T • Mạn Sườn T',
           title: 'Đại Tràng Xuống (Colon Descendens)',
           subtitle: 'Chạy từ góc lách dọc mạn sườn trái xuống mào chậu. Cố định bởi mạc dính Toldt trái, lòng hẹp chứa phân đặc, vị trí thường gặp u dạng vòng nhẫn gây bán tắc ruột.'
         },
         sigmoid: {
-          color: '#8b5cf6',
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG',
-          badge: 'Mạc Treo Sigma • Hố Chậu T',
+          color: '#' + palC[4].getHexString(),
+          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
+          badge: 'Mạc Treo Sigma • Lạnh Nhất',
           title: 'Đại Tràng Sigma (Colon Sigmoideum)',
           subtitle: 'Quai ruột hình chữ S di động ở hố chậu trái nối tiếp trực tràng ngang mức S3. Có mạc treo riêng hình chữ V; vị trí hay gặp túi thừa đại tràng và xoắn đại tràng sigma.'
         }
@@ -1093,25 +1129,26 @@ export class SceneView {
       if (y > 138.0) reg = 'cervical';
       else if (y <= 123.0) reg = 'abdominal';
 
+      const palE = this._getThermalPalette(3);
       const esophCards = {
         cervical: {
-          color: '#38bdf8',
-          tag: 'PHÂN VÙNG THỰC QUẢN',
-          badge: 'Miệng Thực Quản C6',
+          color: '#' + palE[0].getHexString(),
+          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
+          badge: 'Miệng Thực Quản C6 • Nóng Nhất',
           title: 'Đoạn Cổ Thực Quản (Pars Cervicalis Oesophagi)',
           subtitle: 'Khởi đầu từ bờ dưới sụn nhẫn C6 (chỗ hẹp trên cùng ~15cm từ cung răng), đi sau khí quản và trước cột sống cổ.'
         },
         thoracic: {
-          color: '#f59e0b',
-          tag: 'PHÂN VÙNG THỰC QUẢN',
+          color: '#' + palE[1].getHexString(),
+          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
           badge: 'Chỗ Hẹp Quai ĐMC T4-T5',
           title: 'Đoạn Ngực Thực Quản (Pars Thoracica Oesophagi)',
           subtitle: 'Nằm trong trung thất sau, áp sát mặt sau tâm nhĩ trái và phế quản chính trái (chỗ hẹp thứ hai ~22.5cm và 27.5cm từ cung răng).'
         },
         abdominal: {
-          color: '#10b981',
-          tag: 'PHÂN VÙNG THỰC QUẢN',
-          badge: 'Lỗ Cơ Hoành T10 • Góc His',
+          color: '#' + palE[2].getHexString(),
+          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
+          badge: 'Lỗ Cơ Hoành T10 • Lạnh Nhất',
           title: 'Đoạn Bụng Thực Quản (Pars Abdominalis Oesophagi)',
           subtitle: 'Chui qua lỗ cơ hoành T10 (chỗ hẹp thứ ba ~40cm từ cung răng) dài khoảng 2-3cm trước khi đổ vào tâm vị dạ dày tại góc His; cơ thắt thực quản dưới (LES) ngăn trào ngược dạ dày thực quản (GERD).'
         }
@@ -1142,32 +1179,33 @@ export class SceneView {
       else if (z > 6.0) reg = 'fundus';
       else if (z <= 4.5) reg = 'neck';
 
+      const palG = this._getThermalPalette(4);
       const gbCards = {
         fundus: {
-          color: '#10b981',
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
-          badge: 'Điểm Đau Murphy • Sụn Sườn 9',
+          color: '#' + palG[0].getHexString(),
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
+          badge: 'Điểm Đau Murphy • Nóng Nhất',
           title: 'Đáy Túi Mật (Fundus Vesicae Biliaris)',
           subtitle: 'Phần nhô ra khỏi bờ dưới gan tại khuyết túi mật, tiếp xúc trực tiếp thành bụng trước tại giao điểm bờ ngoài cơ thẳng bụng phải và bờ sườn 9 (Điểm Murphy kinh điển).'
         },
         corpus: {
-          color: '#14b8a6',
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          color: '#' + palG[1].getHexString(),
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
           badge: 'Dự Trữ & Cô Đặc Dịch Mật',
           title: 'Thân Túi Mật (Corpus Vesicae Biliaris)',
           subtitle: 'Nằm áp sát vào hố túi mật ở mặt tạng của gan, có mô liên kết lỏng lẻo gắn chặt vào bao Glisson gan; niêm mạc tổ ong cô đặc dịch mật 5-10 lần bằng cách tái hấp thu nước.'
         },
         neck: {
-          color: '#f59e0b',
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
+          color: '#' + palG[2].getHexString(),
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
           badge: 'Túi Cùng Hartmann • Kẹt Sỏi Mật',
           title: 'Cổ Túi Mật & Túi Cùng Hartmann (Collum & Infundibulum)',
           subtitle: 'Hình chữ S uốn lượn nối vào ống túi mật; phần phình Hartmann là nơi sỏi mật hay bị kẹt gây ứ nước túi mật và viêm túi mật cấp.'
         },
         bile_duct: {
-          color: '#0284c7',
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT',
-          badge: 'Tam Giác Calot • Nhú Vater',
+          color: '#' + palG[3].getHexString(),
+          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
+          badge: 'Tam Giác Calot • Lạnh Nhất',
           title: 'Ống Mật Chủ (Ductus Choledochus)',
           subtitle: 'Dẫn mật từ hợp lưu ống gan chung và ống túi mật đi trong cuống gan (phía trước tĩnh mạch cửa, bên phải động mạch gan riêng) chui sau đầu tụy cắm vào nhú tá lớn D2 tá tràng.'
         }
@@ -1193,18 +1231,19 @@ export class SceneView {
       const x = localPt.x, y = localPt.y;
 
       const reg = (x > 0 || y > 98.0) ? 'jejunum' : 'ileum';
+      const palS = this._getThermalPalette(2);
       const siCards = {
         jejunum: {
-          color: '#f97316',
-          tag: 'PHÂN VÙNG RUỘT NON',
-          badge: 'Hấp Thu Đường Đạm • Nếp Gấp Villi',
+          color: '#' + palS[0].getHexString(),
+          tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
+          badge: 'Hấp Thu Đường Đạm • Nóng Nhất',
           title: 'Hỗng Tràng (Jejunum)',
           subtitle: 'Chiếm 2/5 trên ruột non, quai ruột xếp nằm ngang ở ô bụng trên trái. Thành dày, đỏ hồng do mạch máu dồi dào, quai cung động mạch thưa (1-2 bậc) với động mạch thẳng dài; nếp gấp vòng Kerckring và nhung mao dày đặc tối ưu hấp thu carbohydrate và amino acid.'
         },
         ileum: {
-          color: '#a855f7',
-          tag: 'PHÂN VÙNG RUỘT NON',
-          badge: 'Hấp Thu Muối Mật & B12 • Mảng Peyer',
+          color: '#' + palS[1].getHexString(),
+          tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
+          badge: 'Hấp Thu Muối Mật & B12 • Lạnh Nhất',
           title: 'Hồi Tràng (Ileum)',
           subtitle: 'Chiếm 3/5 dưới ruột non, quai ruột xếp thẳng đứng ở ô bụng dưới phải đổ vào manh tràng tại van Bauhin. Cung mạch phức tạp (3-5 tầng) với động mạch thẳng ngắn; tập trung các nang bạch huyết mảng Peyer miễn dịch và thụ thể tái hấp thu muối mật chu trình gan ruột và vitamin B12.'
         }
@@ -2126,12 +2165,13 @@ export class SceneView {
       }
     };
 
-    // 1. Stomach Functional Heatmap (5 regions)
-    const cFundus = new THREE.Color(0xf87171); // Salmon Red
-    const cCardia = new THREE.Color(0x10b981); // Emerald Green
-    const cCorpus = new THREE.Color(0xfb7185); // Peach Pink
-    const cAntrum = new THREE.Color(0xc084fc); // Lilac Purple
-    const cPylorus = new THREE.Color(0x38bdf8); // Sky Blue / Cyan
+    // 1. Stomach Functional Heatmap (5 regions: Hot -> Cold)
+    const palStomach = this._getThermalPalette(5);
+    const cFundus = palStomach[0];   // Hot Red (Đáy vị - Nóng nhất)
+    const cCardia = palStomach[1];   // Warm Orange (Tâm vị)
+    const cCorpus = palStomach[2];   // Gold / Amber (Thân vị)
+    const cAntrum = palStomach[3];   // Cyan (Hang vị)
+    const cPylorus = palStomach[4];  // Cold Violet (Môn vị - Lạnh nhất)
 
     const stomachTarget = (this.stomachWallMeshes && this.stomachWallMeshes.length > 0)
       ? this.stomachWallMeshes[0]
@@ -2144,11 +2184,12 @@ export class SceneView {
       return cCorpus;
     }, 'stomach');
 
-    // 2. Pancreas Functional Heatmap (4 regions)
-    const cPancHead = new THREE.Color(0xf59e0b); // Warm Amber
-    const cPancNeck = new THREE.Color(0xeab308); // Lemon Yellow
-    const cPancBody = new THREE.Color(0xf97316); // Deep Orange
-    const cPancTail = new THREE.Color(0xec4899); // Magenta/Pink
+    // 2. Pancreas Functional Heatmap (4 regions: Hot -> Cold)
+    const palPanc = this._getThermalPalette(4);
+    const cPancHead = palPanc[0]; // Hot Red (Đầu tụy - Nóng nhất)
+    const cPancNeck = palPanc[1]; // Warm Orange (Cổ tụy)
+    const cPancBody = palPanc[2]; // Emerald Green (Thân tụy)
+    const cPancTail = palPanc[3]; // Cold Violet (Đuôi tụy - Lạnh nhất)
 
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'pancreas') return;
@@ -2162,13 +2203,14 @@ export class SceneView {
       }, 'pancreas');
     });
 
-    // 3. Duodenum Functional Heatmap (Matching user illustration: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
-    const cD1 = new THREE.Color(0x38bdf8);       // Cyan (D1 Hành tá tràng)
-    const cFlexSup = new THREE.Color(0x0284c7);  // Ocean Blue (Góc tá trên L1)
-    const cD2 = new THREE.Color(0x10b981);       // Emerald Green (D2 Đoạn xuống & Nhú Vater)
-    const cFlexInf = new THREE.Color(0xf59e0b);  // Amber (Góc tá dưới L3)
-    const cD3 = new THREE.Color(0xf97316);       // Deep Orange (D3 Đoạn ngang)
-    const cD4 = new THREE.Color(0xec4899);       // Magenta / Rose (D4 Đoạn lên & Góc Treitz)
+    // 3. Duodenum Functional Heatmap (6 regions: Hot -> Cold)
+    const palDuod = this._getThermalPalette(6);
+    const cD1 = palDuod[0];      // Hot Red (D1 Hành tá tràng - Nóng nhất)
+    const cFlexSup = palDuod[1]; // Orange (Góc tá trên L1)
+    const cD2 = palDuod[2];      // Gold / Amber (D2 Đoạn xuống & Nhú Vater)
+    const cFlexInf = palDuod[3]; // Emerald Green (Góc tá dưới L3)
+    const cD3 = palDuod[4];      // Cyan (D3 Đoạn ngang)
+    const cD4 = palDuod[5];      // Cold Violet (D4 Đoạn lên & Góc Treitz - Lạnh nhất)
 
     const duodTarget = (this.duodenumWallMeshes && this.duodenumWallMeshes.length > 0)
       ? this.duodenumWallMeshes[0]
@@ -2182,12 +2224,13 @@ export class SceneView {
       return cD4;
     }, 'duodenum');
 
-    // 4. Large Intestine / Colon Functional Heatmap (Cecum/Appendix, Ascending, Transverse, Descending, Sigmoid)
-    const cAppendix = new THREE.Color(0xe11d48);   // Crimson (Manh tràng & Ruột thừa)
-    const cAscending = new THREE.Color(0x16a34a);  // Forest Green (Đại tràng lên & Góc gan)
-    const cTransverse = new THREE.Color(0x059669); // Teal Green (Đại tràng ngang & Góc lách)
-    const cDescending = new THREE.Color(0x0284c7); // Sky Blue (Đại tràng xuống)
-    const cSigmoid = new THREE.Color(0x8b5cf6);    // Purple (Đại tràng sigma)
+    // 4. Large Intestine / Colon Functional Heatmap (5 regions: Hot -> Cold)
+    const palColon = this._getThermalPalette(5);
+    const cAppendix = palColon[0];   // Hot Red (Manh tràng & Ruột thừa - Nóng nhất)
+    const cAscending = palColon[1];  // Orange (Đại tràng lên & Góc gan)
+    const cTransverse = palColon[2]; // Gold / Amber (Đại tràng ngang & Góc lách)
+    const cDescending = palColon[3]; // Cyan (Đại tràng xuống)
+    const cSigmoid = palColon[4];    // Cold Violet (Đại tràng sigma - Lạnh nhất)
 
     const colonTarget = (this.colonWallMeshes && this.colonWallMeshes.length > 0)
       ? this.colonWallMeshes[0]
@@ -2201,10 +2244,11 @@ export class SceneView {
       return cTransverse;
     }, 'large_intestine');
 
-    // 5. Esophagus Functional Heatmap (Cervical, Thoracic, Abdominal)
-    const cEsophCervical = new THREE.Color(0x38bdf8);  // Cyan (Đoạn cổ C6-T1)
-    const cEsophThoracic = new THREE.Color(0xf59e0b);  // Amber (Đoạn ngực T1-T10)
-    const cEsophAbdominal = new THREE.Color(0x10b981); // Emerald (Đoạn bụng T10-T11)
+    // 5. Esophagus Functional Heatmap (3 regions: Hot -> Cold)
+    const palEsoph = this._getThermalPalette(3);
+    const cEsophCervical = palEsoph[0];  // Hot Red (Đoạn cổ C6-T1 - Nóng nhất)
+    const cEsophThoracic = palEsoph[1];  // Emerald Green (Đoạn ngực T1-T10)
+    const cEsophAbdominal = palEsoph[2]; // Cold Violet (Đoạn bụng T10-T11 - Lạnh nhất)
 
     const esophTarget = (this.esophagusWallMeshes && this.esophagusWallMeshes.length > 0)
       ? this.esophagusWallMeshes[0]
@@ -2215,11 +2259,12 @@ export class SceneView {
       return cEsophThoracic;
     }, 'esophagus');
 
-    // 6. Gallbladder & Bile Duct Functional Heatmap (Fundus, Body, Neck/Hartmann, Bile Duct)
-    const cGbFundus = new THREE.Color(0x10b981);   // Emerald (Đáy túi mật / Điểm Murphy)
-    const cGbBody = new THREE.Color(0x14b8a6);     // Teal (Thân túi mật)
-    const cGbNeck = new THREE.Color(0xf59e0b);     // Amber (Cổ túi mật & Phễu Hartmann)
-    const cBileDuct = new THREE.Color(0x0284c7);   // Ocean Blue (Ống mật chủ)
+    // 6. Gallbladder & Bile Duct Functional Heatmap (4 regions: Hot -> Cold)
+    const palGb = this._getThermalPalette(4);
+    const cGbFundus = palGb[0];  // Hot Red (Đáy túi mật / Điểm Murphy - Nóng nhất)
+    const cGbBody = palGb[1];    // Warm Orange (Thân túi mật)
+    const cGbNeck = palGb[2];    // Emerald Green (Cổ túi mật & Phễu Hartmann)
+    const cBileDuct = palGb[3];  // Cold Violet (Ống mật chủ - Lạnh nhất)
 
     const gbTarget = (this.gallbladderWallMeshes && this.gallbladderWallMeshes.length > 0)
       ? this.gallbladderWallMeshes[0]
@@ -2233,9 +2278,10 @@ export class SceneView {
     const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
     applyColorsToMesh(bileDuctTarget, () => cBileDuct, 'gallbladder_tree');
 
-    // 7. Small Intestine Functional Heatmap (Jejunum, Ileum)
-    const cJejunum = new THREE.Color(0xf97316); // Deep Orange (Hỗng tràng)
-    const cIleum = new THREE.Color(0xa855f7);   // Lilac Purple (Hồi tràng)
+    // 7. Small Intestine Functional Heatmap (2 regions: Hot -> Cold)
+    const palSi = this._getThermalPalette(2);
+    const cJejunum = palSi[0]; // Hot Red (Hỗng tràng - Nóng)
+    const cIleum = palSi[1];   // Cold Violet (Hồi tràng - Lạnh)
 
     const siTarget = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
       ? this.smallIntestineWallMeshes[0]
@@ -2244,17 +2290,8 @@ export class SceneView {
       return (x > 0 || y > 98.0) ? cJejunum : cIleum;
     }, 'small_intestine');
 
-    // 8. Couinaud Liver Functional Heatmap (8 segments)
-    const cCouinaud = {
-      1: new THREE.Color(0xef4444),
-      2: new THREE.Color(0xf97316),
-      3: new THREE.Color(0xf59e0b),
-      4: new THREE.Color(0x10b981),
-      5: new THREE.Color(0x06b6d4),
-      6: new THREE.Color(0x3b82f6),
-      7: new THREE.Color(0x8b5cf6),
-      8: new THREE.Color(0xec4899)
-    };
+    // 8. Couinaud Liver Functional Heatmap (8 segments: Hot -> Cold)
+    const palLiver = this._getThermalPalette(8);
 
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'liver') return;
@@ -2263,7 +2300,7 @@ export class SceneView {
       const roman = segMatch ? segMatch[1].toUpperCase() : null;
       const romanMap = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8 };
       const segNum = roman ? romanMap[roman] : 1;
-      const segColor = cCouinaud[segNum] || cCouinaud[1];
+      const segColor = palLiver[segNum - 1] || palLiver[0];
       applyColorsToMesh(mesh, () => segColor, 'liver');
     });
   }
