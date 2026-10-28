@@ -1967,54 +1967,156 @@ export class SceneView {
    * - Esophagus (Cervical, Thoracic, Abdominal)
    * - Small Intestine (Jejunum, Ileum)
    * - Gallbladder & Biliary Tree (Fundus, Body, Neck/Hartmann, Common Bile Duct)
+   * - Liver (8 Couinaud Segments)
    *
-   * In Heatmap mode (regions), inner concentric layers are hidden to present an intact anatomical 3D organ.
+   * Requirement 2: In Isolated mode (or when selecting an organ in Cô Lập),
+   * other non-selected organs are hidden (if isIsolate === true) or ghosted transparent (if isIsolate === false).
+   *
+   * Requirement 3: In Heatmap mode (regions), by default all organs are neutral light gray.
+   * Only the isolated / selected organ receives vibrant functional heatmap colors.
    */
   _applyFunctionalHeatmaps() {
     const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
+    const selectedId = this.sceneVM.state.selectedOrganId;
+    const isIsolate = this.dissectionVM.state.isIsolateMode;
+    const isXRay = this.dissectionVM.state.isXRayMode;
 
-    // 0. Toggle layer visibility: in heatmap mode, show ONLY outermost layer (intact organ, no explosion)
+    // Neutral anatomical light gray palette
+    const cNeutralGray = new THREE.Color(0xd1d5db); // Tailwind slate-300 / neutral soft gray
+
+    // 0. Toggle concentric layer visibility:
+    // In heatmap mode (regions): inner concentric layers (idx > 0) are ALWAYS hidden.
+    // Outermost layer (idx === 0) visibility strictly respects whether another organ is isolated.
     if (this.stomachBuilder && this.stomachBuilder.organLayersMap) {
-      this.stomachBuilder.organLayersMap.forEach((layers) => {
+      this.stomachBuilder.organLayersMap.forEach((layers, organId) => {
         if (!layers || layers.length === 0) return;
+        const isThisSelected = (selectedId === organId);
+
         if (isRegions) {
-          layers[0].visible = true;
+          // Hide all inner concentric layers in heatmap mode
           for (let i = 1; i < layers.length; i++) {
             layers[i].visible = false;
           }
-        } else {
-          for (let i = 0; i < layers.length; i++) {
-            layers[i].visible = true;
-            if (layers[i].material) {
-              layers[i].material.vertexColors = false;
-              layers[i].material.needsUpdate = true;
+          const l0 = layers[0];
+          if (!selectedId) {
+            // Whole system mode: All organs visible in uniform light gray
+            l0.visible = true;
+            l0.material.transparent = isXRay;
+            l0.material.opacity = isXRay ? 0.35 : 1.0;
+            l0.material.depthWrite = !isXRay;
+          } else if (isThisSelected) {
+            // Isolated / Selected organ: Solid, sharp, full heatmap
+            l0.visible = true;
+            l0.material.transparent = isXRay;
+            l0.material.opacity = isXRay ? 0.45 : 1.0;
+            l0.material.depthWrite = true;
+          } else {
+            // Non-selected organs when one organ is isolated:
+            // Requirement 2: Hide completely if isIsolate, or show ghosted transparent
+            l0.visible = !isIsolate;
+            if (!isIsolate) {
+              l0.material.transparent = true;
+              l0.material.opacity = 0.12;
+              l0.material.depthWrite = false;
+              l0.material.vertexColors = false;
+              if (l0.material.color) l0.material.color.setHex(0xb0bccb);
             }
+          }
+        } else {
+          // In Layers mode (Mô Học):
+          if (selectedId && !isThisSelected) {
+            // Another organ is selected: hide inner layers, ghost or hide outer layer
+            for (let i = 0; i < layers.length; i++) {
+              if (i === 0) {
+                layers[0].visible = !isIsolate;
+                if (!isIsolate) {
+                  layers[0].material.transparent = true;
+                  layers[0].material.opacity = 0.12;
+                  layers[0].material.depthWrite = false;
+                }
+              } else {
+                layers[i].visible = false;
+              }
+              if (layers[i].material) {
+                layers[i].material.vertexColors = false;
+                layers[i].material.needsUpdate = true;
+              }
+            }
+          } else {
+            // Selected organ or Whole System: restore layers
+            const isClosedUnexploded = ((this.dissectionVM.state.explodeFactor || 0) < 0.005) &&
+                                       !this.dissectionVM.state.isCutawayOpen && !isXRay;
+            layers.forEach((lMesh, idx) => {
+              if (idx > 0 && isClosedUnexploded) {
+                lMesh.visible = false;
+              } else {
+                lMesh.visible = true;
+                lMesh.material.transparent = isXRay;
+                lMesh.material.opacity = isXRay ? 0.35 : 1.0;
+                lMesh.material.depthWrite = true;
+              }
+              if (lMesh.material) {
+                lMesh.material.vertexColors = false;
+                lMesh.material.needsUpdate = true;
+              }
+            });
           }
         }
       });
     }
 
-    const applyColorsToMesh = (mesh, colorFn) => {
+    const applyColorsToMesh = (mesh, colorFn, targetOrganId) => {
       if (!mesh) return;
       const geo = mesh.geometry;
       if (!geo || !geo.attributes.position) return;
 
       if (isRegions) {
-        if (!geo.attributes.color) {
-          const count = geo.attributes.position.count;
+        // Requirement 3: "mặc định tất cả các cơ quan màu xám nhạt --> chỉ khi cô lập thì hãy tô màu heatmap của mỗi cơ quan được chọn"
+        const isThisOrganIsolated = (selectedId === targetOrganId);
+
+        const count = geo.attributes.position.count;
+        let colorAttr = geo.attributes.color;
+        if (!colorAttr || colorAttr.count !== count) {
           const colors = new Float32Array(count * 3);
-          const pos = geo.attributes.position;
-          for (let i = 0; i < count; i++) {
-            const c = colorFn(pos.getX(i), pos.getY(i), pos.getZ(i), i);
-            colors[i * 3]     = c.r;
-            colors[i * 3 + 1] = c.g;
-            colors[i * 3 + 2] = c.b;
-          }
-          geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+          colorAttr = new THREE.BufferAttribute(colors, 3);
+          geo.setAttribute('color', colorAttr);
         }
+
+        const pos = geo.attributes.position;
+        const colors = colorAttr.array;
+
+        for (let i = 0; i < count; i++) {
+          const c = isThisOrganIsolated
+            ? colorFn(pos.getX(i), pos.getY(i), pos.getZ(i), i)
+            : cNeutralGray; // Light gray default when not isolated!
+          colors[i * 3]     = c.r;
+          colors[i * 3 + 1] = c.g;
+          colors[i * 3 + 2] = c.b;
+        }
+        colorAttr.needsUpdate = true;
+
         if (mesh.material) {
           mesh.material.vertexColors = true;
           mesh.material.needsUpdate = true;
+          if (isThisOrganIsolated) {
+            mesh.material.transparent = isXRay;
+            mesh.material.opacity = isXRay ? 0.45 : 1.0;
+            mesh.material.depthWrite = true;
+          } else if (selectedId) {
+            // Another organ is isolated: keep this non-isolated organ transparent light gray or hidden
+            mesh.visible = !isIsolate;
+            if (!isIsolate) {
+              mesh.material.transparent = true;
+              mesh.material.opacity = 0.12;
+              mesh.material.depthWrite = false;
+            }
+          } else {
+            // Whole system: uniform light gray
+            mesh.visible = true;
+            mesh.material.transparent = isXRay;
+            mesh.material.opacity = isXRay ? 0.35 : 1.0;
+            mesh.material.depthWrite = true;
+          }
         }
       } else {
         if (mesh.material) {
@@ -2040,7 +2142,7 @@ export class SceneView {
       if (x <= -0.8 && y <= 114.2) return cPylorus;
       if (y <= 114.8 && x <= 3.5) return cAntrum;
       return cCorpus;
-    });
+    }, 'stomach');
 
     // 2. Pancreas Functional Heatmap (4 regions)
     const cPancHead = new THREE.Color(0xf59e0b); // Warm Amber
@@ -2057,7 +2159,7 @@ export class SceneView {
         if (x < 0.2) return cPancNeck;
         if (x < 4.2) return cPancBody;
         return cPancTail;
-      });
+      }, 'pancreas');
     });
 
     // 3. Duodenum Functional Heatmap (Matching user illustration: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
@@ -2078,7 +2180,7 @@ export class SceneView {
       if (x < -3.8 && y < 106.5) return cFlexInf;
       if (y <= 107.2 && x <= 0.5) return cD3;
       return cD4;
-    });
+    }, 'duodenum');
 
     // 4. Large Intestine / Colon Functional Heatmap (Cecum/Appendix, Ascending, Transverse, Descending, Sigmoid)
     const cAppendix = new THREE.Color(0xe11d48);   // Crimson (Manh tràng & Ruột thừa)
@@ -2097,7 +2199,7 @@ export class SceneView {
       if (x >= 3.0 && y >= 87.0 && y < 106.0) return cDescending;
       if (y < 93.0) return cSigmoid;
       return cTransverse;
-    });
+    }, 'large_intestine');
 
     // 5. Esophagus Functional Heatmap (Cervical, Thoracic, Abdominal)
     const cEsophCervical = new THREE.Color(0x38bdf8);  // Cyan (Đoạn cổ C6-T1)
@@ -2111,7 +2213,7 @@ export class SceneView {
       if (y > 138.0) return cEsophCervical;
       if (y <= 123.0) return cEsophAbdominal;
       return cEsophThoracic;
-    });
+    }, 'esophagus');
 
     // 6. Gallbladder & Bile Duct Functional Heatmap (Fundus, Body, Neck/Hartmann, Bile Duct)
     const cGbFundus = new THREE.Color(0x10b981);   // Emerald (Đáy túi mật / Điểm Murphy)
@@ -2126,10 +2228,10 @@ export class SceneView {
       if (z > 6.0) return cGbFundus;
       if (z <= 4.5) return cGbNeck;
       return cGbBody;
-    });
+    }, 'gallbladder_tree');
 
     const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
-    applyColorsToMesh(bileDuctTarget, () => cBileDuct);
+    applyColorsToMesh(bileDuctTarget, () => cBileDuct, 'gallbladder_tree');
 
     // 7. Small Intestine Functional Heatmap (Jejunum, Ileum)
     const cJejunum = new THREE.Color(0xf97316); // Deep Orange (Hỗng tràng)
@@ -2140,6 +2242,29 @@ export class SceneView {
       : this.clickableMeshes.find(m => m.userData.organId === 'small_intestine');
     applyColorsToMesh(siTarget, (x, y) => {
       return (x > 0 || y > 98.0) ? cJejunum : cIleum;
+    }, 'small_intestine');
+
+    // 8. Couinaud Liver Functional Heatmap (8 segments)
+    const cCouinaud = {
+      1: new THREE.Color(0xef4444),
+      2: new THREE.Color(0xf97316),
+      3: new THREE.Color(0xf59e0b),
+      4: new THREE.Color(0x10b981),
+      5: new THREE.Color(0x06b6d4),
+      6: new THREE.Color(0x3b82f6),
+      7: new THREE.Color(0x8b5cf6),
+      8: new THREE.Color(0xec4899)
+    };
+
+    this.clickableMeshes.forEach(mesh => {
+      if (mesh.userData.organId !== 'liver') return;
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
+      const segMatch = low.match(/\((i|ii|iii|iv|v|vi|vii|viii)\)/i);
+      const roman = segMatch ? segMatch[1].toUpperCase() : null;
+      const romanMap = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8 };
+      const segNum = roman ? romanMap[roman] : 1;
+      const segColor = cCouinaud[segNum] || cCouinaud[1];
+      applyColorsToMesh(mesh, () => segColor, 'liver');
     });
   }
 

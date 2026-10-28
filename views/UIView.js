@@ -348,7 +348,11 @@ export class UIView {
 
     // 3. Sync Isolate, X-Ray, and Cutaway button states
     this.dissectionVM.subscribe('isIsolateMode', (isIsolate) => {
-      if (this.isolateBtn) this.isolateBtn.classList.toggle('active', isIsolate);
+      if (this.isolateBtn) {
+        this.isolateBtn.classList.toggle('active', isIsolate);
+        this.isolateBtn.textContent = isIsolate ? 'Bỏ Cô Lập' : 'Cô Lập';
+        this.isolateBtn.title = isIsolate ? 'Đang ẩn hoàn toàn cơ quan khác. Bấm để hiển thị dạng mờ (transparent)' : 'Đang hiện mờ cơ quan khác. Bấm để ẩn hoàn toàn';
+      }
     });
 
     this.dissectionVM.subscribe('isXRayMode', (isXRay) => {
