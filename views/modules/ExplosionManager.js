@@ -137,14 +137,16 @@ export class ExplosionManager {
         else if (low.includes('left_hepatic')) subVec.set(2.0, 2.5, 1.0);
         else subVec.set(0.0, 4.0, -2.0);
       } else if (organId === 'oral_cavity') {
-        if (low.includes('mandib') || (low.includes('lower') && low.includes('tooth')) || (low.includes('lower') && (low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')))) {
-          subVec.set(0.0, -2.5, 3.2);
-        } else if (low.includes('maxill') || (low.includes('upper') && low.includes('tooth')) || (low.includes('upper') && (low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')))) {
-          subVec.set(0.0, 2.5, 2.2);
+        const isUpper = low.includes('maxill') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
+        const isLower = low.includes('mandib') || (!isUpper && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
+        if (isLower) {
+          subVec.set(0.0, -2.5, 2.5);
+        } else if (isUpper) {
+          subVec.set(0.0, 2.5, 2.5);
         } else if (low.includes('gingiva')) {
-          subVec.set(0.0, -0.8, 3.0);
+          subVec.set(0.0, -1.8, 2.5);
         } else if (low.includes('tongue')) {
-          subVec.set(0.0, -1.0, 3.8);
+          subVec.set(0.0, -0.5, 3.8);
         } else if (low.includes('naso')) {
           subVec.set(0.0, 3.5, -2.0);
         } else if (low.includes('oro')) {
@@ -168,10 +170,9 @@ export class ExplosionManager {
         else if (low.includes('epiglottis')) subVec.set(0.0, -1.0, 2.0);
         else subVec.set(0.0, 1.0, 0.0);
       } else if (organId === 'teeth_and_jaw') {
-        if (low.includes('mandib')) subVec.set(0.0, -2.5, 3.5);
-        else if (low.includes('maxill')) subVec.set(0.0, 2.5, 2.5);
-        else if (low.includes('gingiva')) subVec.set(0.0, 0.0, 3.0);
-        else subVec.set(0.0, 0.0, 4.0);
+        const isUpper = low.includes('maxill') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
+        if (isUpper) subVec.set(0.0, 2.5, 2.5);
+        else subVec.set(0.0, -2.5, 2.5);
       } else if (organId === 'salivary_glands') {
         if (low.includes('parotid')) subVec.set(low.includes('r') ? -4.5 : 4.5, 2.0, -1.0);
         else if (low.includes('submandibular')) subVec.set(low.includes('r') ? -3.5 : 3.5, -2.0, 1.0);
@@ -187,17 +188,31 @@ export class ExplosionManager {
     // BUILD 4-ROW KNOLLING CATALOG GRID (Human Atlas 2D Row Layout)
     // =========================================================================
     // Identify compound anatomical structures that move as a unified exhibit in knolling:
-    // 1. Teeth and gums follow Mandible (lower arch) or Maxilla (upper arch)
-    const mandibleMesh = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('mandib'));
-    const maxillaMesh = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('maxillal') || (m.userData.rawName || m.name || '').toLowerCase().includes('maxilla'));
+    // 1. Mandible anchors the entire dental & jaw apparatus: all upper/lower teeth, gingiva, maxillae, tongue
+    const mandibleMesh = clickableMeshes.find(m => (m.userData.rawName || m.name || '') === 'Mandible')
+      || clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase() === 'mandible');
     
-    // 2. Portal venous branches follow Hepatic_portal_vein
-    const portalAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('portal_vein') || (m.userData.rawName || m.name || '').toLowerCase().includes('portal'));
+    // 2. Pharynx complex anchors pharynx, soft palate, uvula, epiglottis, hyoid bone
+    const pharynxAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '') === 'Oropharynx')
+      || clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('pharynx'));
+
+    // 3. Salivary glands complex anchors bilateral parotid, submandibular, and sublingual glands
+    const salivaryAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('parotid_glandl'))
+      || clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('parotid'));
+
+    // 4. Portal venous branches follow Hepatic_portal_vein
+    const portalAnchor = clickableMeshes.find(m => {
+      const n = (m.userData.rawName || m.name || '').toLowerCase();
+      return n === 'hepatic_portal_vein' || n === 'portal_vein' || n.includes('hepatic_portal');
+    }) || clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('portal'));
     
-    // 3. Hepatic arterial branches follow Coeliac_trunk
-    const celiacAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('coeliac') || (m.userData.rawName || m.name || '').toLowerCase().includes('celiac'));
+    // 5. Hepatic arterial branches follow Coeliac_trunk
+    const celiacAnchor = clickableMeshes.find(m => {
+      const n = (m.userData.rawName || m.name || '').toLowerCase();
+      return n.includes('coeliac') || n.includes('celiac');
+    });
     
-    // 4. Hepatic veins follow Inferior_vena_cava
+    // 6. Hepatic veins follow Inferior_vena_cava
     const ivcAnchor = clickableMeshes.find(m => (m.userData.rawName || m.name || '').toLowerCase().includes('cava'));
 
     clickableMeshes.forEach((mesh) => {
@@ -208,11 +223,30 @@ export class ExplosionManager {
       mesh.userData.knollingAnchor = null;
 
       if (organId === 'oral_cavity' || organId === 'teeth_and_jaw') {
-        const isLower = low.includes('inferior') || low.includes('mandib') || (!low.includes('superior') && !low.includes('maxill') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar') || low.includes('gingiva')));
-        const isUpper = low.includes('superior') || low.includes('maxill') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
-        const anchor = isLower ? mandibleMesh : (isUpper ? maxillaMesh : null);
-        if (anchor && mesh !== anchor) {
-          mesh.userData.knollingAnchor = anchor;
+        const isTeethOrJawOrTongue = low.includes('tooth') || low.includes('teeth') || low.includes('incisor') ||
+          low.includes('canine') || low.includes('premolar') || low.includes('molar') ||
+          low.includes('mandib') || low.includes('maxill') || low.includes('gingiva') || low.includes('tongue');
+        const isPharynxOrPalate = low.includes('pharynx') || low.includes('palate') || low.includes('uvula') || low.includes('epiglottis') || low.includes('hyoid');
+        const isGland = low.includes('gland');
+
+        if (isTeethOrJawOrTongue && mandibleMesh && mesh !== mandibleMesh) {
+          mesh.userData.knollingAnchor = mandibleMesh;
+        } else if (isPharynxOrPalate && pharynxAnchor && mesh !== pharynxAnchor) {
+          mesh.userData.knollingAnchor = pharynxAnchor;
+        } else if (isGland && salivaryAnchor && mesh !== salivaryAnchor) {
+          mesh.userData.knollingAnchor = salivaryAnchor;
+        }
+      } else if (organId === 'tongue') {
+        if (mandibleMesh && mesh !== mandibleMesh) {
+          mesh.userData.knollingAnchor = mandibleMesh;
+        }
+      } else if (organId === 'pharynx') {
+        if (pharynxAnchor && mesh !== pharynxAnchor) {
+          mesh.userData.knollingAnchor = pharynxAnchor;
+        }
+      } else if (organId === 'salivary_glands') {
+        if (salivaryAnchor && mesh !== salivaryAnchor) {
+          mesh.userData.knollingAnchor = salivaryAnchor;
         }
       } else if (organId === 'portal_system') {
         if (portalAnchor && mesh !== portalAnchor) {
@@ -270,10 +304,10 @@ export class ExplosionManager {
     row4.push(...byOrganPrimary('large_intestine'));
 
     const rowsConfig = [
-      { items: row1, yOffset: 24.0, xShift: 0.0,  maxCellDim: 7.5, gapX: 1.8, minSlotW: 4.8 },
-      { items: row2, yOffset: 8.5,  xShift: 2.0,  maxCellDim: 7.8, gapX: 1.8, minSlotW: 5.0 },
-      { items: row3, yOffset: -7.5, xShift: 15.0, maxCellDim: 10.2, gapX: 2.6, minSlotW: 8.2 },
-      { items: row4, yOffset: -23.5, xShift: 16.0, maxCellDim: 13.0, gapX: 4.5, minSlotW: 13.8 }
+      { items: row1, yOffset: 25.0, xShift: 0.0,  gapX: 1.8, minSlotW: 5.0 },
+      { items: row2, yOffset: 9.0,  xShift: 2.0,  gapX: 1.8, minSlotW: 5.2 },
+      { items: row3, yOffset: -7.5, xShift: 10.0, gapX: 2.6, minSlotW: 8.5 },
+      { items: row4, yOffset: -24.0, xShift: 12.0, gapX: 4.5, minSlotW: 14.0 }
     ];
 
     rowsConfig.forEach((rowCfg) => {
@@ -282,11 +316,9 @@ export class ExplosionManager {
 
       const slotWidths = items.map((mesh) => {
         const ls = mesh.userData.localSize || new THREE.Vector3(6, 6, 6);
-        const maxAxis = Math.max(0.1, ls.x, ls.y, ls.z);
-        const knollScale = Math.min(1.0, rowCfg.maxCellDim / maxAxis);
-        mesh.userData.knollingScale = knollScale;
-        const scaledW = ls.x * knollScale;
-        return Math.max(rowCfg.minSlotW, scaledW);
+        // Strictly 100% 1:1 Anatomical Scale: preserve authentic organ proportions without shrinking
+        mesh.userData.knollingScale = 1.0;
+        return Math.max(rowCfg.minSlotW, ls.x);
       });
 
       const totalWidth = slotWidths.reduce((acc, w) => acc + w, 0) + Math.max(0, items.length - 1) * rowCfg.gapX;
@@ -305,18 +337,11 @@ export class ExplosionManager {
       });
     });
 
-    // Synchronize knolling coordinates for all dependent anchored structures (teeth in jaws, vessels in vascular tree)
+    // Mark 1:1 true scale for all anchored dependent structures
     clickableMeshes.forEach((mesh) => {
-      const anchor = mesh.userData.knollingAnchor;
-      if (!anchor || !anchor.userData.knollingTargetCenter) return;
-
-      const anchorInitPos = anchor.userData.initialPos || anchor.position;
-      const meshInitPos = mesh.userData.initialPos || mesh.position;
-      const offset = meshInitPos.clone().sub(anchorInitPos);
-
-      const kScale = anchor.userData.knollingScale || 1.0;
-      mesh.userData.knollingScale = kScale;
-      mesh.userData.knollingTargetCenter = anchor.userData.knollingTargetCenter.clone().add(offset.multiplyScalar(kScale));
+      if (mesh.userData.knollingAnchor) {
+        mesh.userData.knollingScale = 1.0;
+      }
     });
   }
 
@@ -339,18 +364,18 @@ export class ExplosionManager {
 
     // 1. Handle Whole-System Knolling Grid Mode (Tab 1: `!selectedOrganId`)
     if (!selectedOrganId) {
+      // Step 1: Position all primary (unanchored) knolling slot holders at true 1:1 scale
       clickableMeshes.forEach((mesh) => {
+        if (mesh.userData.knollingAnchor) return; // Processed in Step 2
+
         const initPos = mesh.userData.initialPos || new THREE.Vector3();
         const initScale = mesh.userData.initialScale || new THREE.Vector3(1, 1, 1);
         const localCenter = mesh.userData.localCenter || new THREE.Vector3();
         const targetCenter = mesh.userData.knollingTargetCenter;
-        const knollScale = mesh.userData.knollingScale !== undefined ? mesh.userData.knollingScale : 1.0;
+
+        mesh.scale.copy(initScale); // Strictly 100% 1:1 true scale
 
         if (t > 0.001 && targetCenter) {
-          const s = 1.0 + (knollScale - 1.0) * t;
-          mesh.scale.set(initScale.x * s, initScale.y * s, initScale.z * s);
-
-          // Visual center at t=0 is (initPos + localCenter)
           const startCenterX = initPos.x + localCenter.x * initScale.x;
           const startCenterY = initPos.y + localCenter.y * initScale.y;
           const startCenterZ = initPos.z + localCenter.z * initScale.z;
@@ -360,12 +385,30 @@ export class ExplosionManager {
           const curCenterZ = startCenterZ + (targetCenter.z - startCenterZ) * t;
 
           mesh.position.set(
-            curCenterX - localCenter.x * mesh.scale.x,
-            curCenterY - localCenter.y * mesh.scale.y,
-            curCenterZ - localCenter.z * mesh.scale.z
+            curCenterX - localCenter.x * initScale.x,
+            curCenterY - localCenter.y * initScale.y,
+            curCenterZ - localCenter.z * initScale.z
           );
         } else {
-          mesh.scale.copy(initScale);
+          mesh.position.copy(initPos);
+        }
+        mesh.updateWorldMatrix(true, false);
+      });
+
+      // Step 2: Strictly rigid translation for all anchored dependent meshes (teeth, jaw, vessels)
+      clickableMeshes.forEach((mesh) => {
+        const anchor = mesh.userData.knollingAnchor;
+        if (!anchor) return;
+
+        const initPos = mesh.userData.initialPos || new THREE.Vector3();
+        const initScale = mesh.userData.initialScale || new THREE.Vector3(1, 1, 1);
+        mesh.scale.copy(initScale); // Strictly 100% 1:1 true scale
+
+        if (t > 0.001) {
+          const anchorInitPos = anchor.userData.initialPos || anchor.position;
+          const anchorDelta = anchor.position.clone().sub(anchorInitPos);
+          mesh.position.copy(initPos).add(anchorDelta);
+        } else {
           mesh.position.copy(initPos);
         }
         mesh.updateWorldMatrix(true, false);
@@ -483,15 +526,8 @@ export class ExplosionManager {
           );
           pos.addScaledVector(offset, t);
 
-          // For the wide U-shaped Colon frame, gently compress AP depth during explosion
-          // so that the anterior Transverse Colon of outer layers never clips the posterior
-          // Descending Colon of inner layers even at partial explosion (30-50%).
-          if (organId === 'large_intestine') {
-            const zCompress = 1.0 - 0.64 * Math.pow(t, 0.45);
-            mesh.scale.set(initScale.x, initScale.y, initScale.z * zCompress);
-          } else {
-            mesh.scale.copy(initScale);
-          }
+          // Strictly preserve 100% authentic 1:1 anatomical scale without artificial compression
+          mesh.scale.copy(initScale);
         } else {
           mesh.scale.copy(initScale);
         }

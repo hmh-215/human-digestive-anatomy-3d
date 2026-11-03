@@ -467,8 +467,8 @@ export class SceneView {
         }
       }
 
-      // 50% Midsagittal Cutaway Shader for Oral Cavity (Median vertical line X = 0)
-      if (organId === 'oral_cavity') {
+      // 50% Midsagittal Cutaway Shader for Oral Cavity soft tissues (exclude bone, teeth, gingiva)
+      if (organId === 'oral_cavity' && !child.userData.isBone && child.userData.oralSubPart !== 'teeth' && child.userData.oralSubPart !== 'gingiva') {
         mat.side = THREE.DoubleSide;
         mat.userData.uCutawayActive = { value: 0.0 };
         mat.onBeforeCompile = (shader) => {
@@ -1935,11 +1935,11 @@ export class SceneView {
       organLayersMap: this.stomachBuilder ? this.stomachBuilder.organLayersMap : null
     });
 
-    // Update Midsagittal 50% Cutaway for Oral Cavity & Coronal Cutaway for Vessels
+    // Update Midsagittal 50% Cutaway for Oral Cavity & Coronal Cutaway for Vessels (Isolated organ mode only)
     const isCutaway = this.dissectionVM.state.isCutawayOpen;
     const selectedId = this.sceneVM.state.selectedOrganId;
-    const shouldCutOral = isCutaway && (!selectedId || selectedId === 'oral_cavity');
-    const shouldCutStomachVessels = isCutaway && (!selectedId || selectedId === 'stomach');
+    const shouldCutOral = isCutaway && (selectedId === 'oral_cavity');
+    const shouldCutStomachVessels = isCutaway && (selectedId === 'stomach');
     this.clickableMeshes.forEach((mesh) => {
       if (mesh.userData.organId === 'oral_cavity' && mesh.material && mesh.material.userData && mesh.material.userData.uCutawayActive) {
         mesh.material.userData.uCutawayActive.value = shouldCutOral ? 1.0 : 0.0;
@@ -1979,11 +1979,11 @@ export class SceneView {
 
     this.dissectionVM.subscribe('explodeFactor', (factor) => {
       this._syncExplosion();
-      // In Whole-System Knolling Grid mode, frame the 4 horizontal rows comfortably
+      // In Whole-System Knolling Grid mode, frame the 4 horizontal rows comfortably at 1:1 true scale
       if (!this.sceneVM.state.selectedOrganId && factor >= 0.85) {
         this.controls.target.set(0.0, -0.35, 0.0);
-        if (this.camera.position.z < 16.5) {
-          this.camera.position.set(0.0, 0.0, 17.2);
+        if (this.camera.position.z < 26.0) {
+          this.camera.position.set(0.0, 0.5, 28.5);
         }
       }
     });
