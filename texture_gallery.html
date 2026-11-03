@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bộ Sưu Tập Texture 2D Mô Học Toàn Diện Hệ Tiêu Hóa (Nano Banana AI PBR)</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #151e32;
+      --card-border: #233554;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --tag-bg: #0369a1;
+    }
+    body.light {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --tag-bg: #e0f2fe;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 28px; line-height: 1.5; transition: background 0.2s, color 0.2s; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--card-border); flex-wrap: wrap; gap: 16px; }
+    h1 { font-size: 24px; font-weight: 700; }
+    .sub { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+    .btn-toggle { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    
+    .status-banner {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid var(--accent-green);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-banner .icon { font-size: 28px; }
+    .status-banner h3 { font-size: 16px; color: var(--accent-green); margin-bottom: 4px; }
+    .status-banner p { font-size: 13.5px; color: var(--text); }
+
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px; }
+    .nav-tab { background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 14px; white-space: nowrap; transition: all 0.2s; }
+    .nav-tab.active { background: var(--accent); color: #0f172a; font-weight: 600; border-color: var(--accent); }
+
+    .reference-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 32px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+    @media (max-width: 860px) {
+      .reference-section { grid-template-columns: 1fr; }
+    }
+    .reference-section img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: #fff;
+    }
+    .reference-desc h2 { font-size: 18px; color: var(--accent); margin-bottom: 12px; }
+    .reference-desc ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .reference-desc li { font-size: 13.5px; display: flex; align-items: baseline; gap: 8px; }
+    .reference-desc .badge { font-weight: 600; color: var(--accent); min-width: 130px; }
+
+    .organ-heading { font-size: 19px; font-weight: 700; color: var(--accent); margin: 32px 0 16px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s; }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -6px rgba(0,0,0,0.4); }
+    .card-header { padding: 12px 16px; border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 14.5px; font-weight: 600; }
+    .status-badge { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; }
+    .status-badge.done { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+    .card-img-wrap { padding: 10px; background: rgba(0,0,0,0.25); text-align: center; }
+    .card-img-wrap img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--card-border); cursor: pointer; transition: transform 0.2s; }
+    .card-img-wrap img:hover { transform: scale(1.02); }
+    .card-body { padding: 12px 16px; font-size: 13px; color: var(--text-muted); line-height: 1.5; flex-grow: 1; }
+    .card-footer { padding: 10px 16px; border-top: 1px solid var(--card-border); font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .card-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .card-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Bộ Sưu Tập Texture 2D Mô Học PBR (Nano Banana AI)</h1>
+      <div class="sub">19 Tệp Texture 2D Hoàn Chỉnh — Toàn Bộ Tạng Rỗng, Tạng Đặc & Phúc Mạc (ĐHYHN)</div>
+    </div>
+    <div>
+      <button class="btn-toggle" onclick="document.body.classList.toggle('light')">Chuyển Giao Diện Sáng / Tối</button>
+    </div>
+  </header>
+
+  <!-- SUCCESS BANNER -->
+  <div class="status-banner">
+    <div class="icon">✅</div>
+    <div>
+      <h3>Hoàn Tất 100% Bộ Texture 2D Độ Phân Giải Cao</h3>
+      <p>Hệ thống đã hoàn thành xuất sắc toàn bộ <strong>19 texture PBR 2D phẳng liền mạch (Seamless Tileable)</strong> cho tất cả các tầng mô học của 6 tạng rỗng (Dạ dày, Tá tràng, Ruột non, Đại tràng, Túi mật, Thực quản), cùng với Tạng đặc (Gan, Tụy) và Mạc nối lớn phúc mạc.</p>
+    </div>
+  </div>
+
+  <nav class="nav-tabs" id="tabNav">
+    <button class="nav-tab active" onclick="filterOrgan('all')">Tất cả tạng (19)</button>
+    <button class="nav-tab" onclick="filterOrgan('stomach')">Dạ dày (5)</button>
+    <button class="nav-tab" onclick="filterOrgan('duodenum')">Tá tràng (2)</button>
+    <button class="nav-tab" onclick="filterOrgan('small_intestine')">Ruột non (1)</button>
+    <button class="nav-tab" onclick="filterOrgan('colon')">Đại tràng (3)</button>
+    <button class="nav-tab" onclick="filterOrgan('gallbladder')">Túi mật (2)</button>
+    <button class="nav-tab" onclick="filterOrgan('esophagus')">Thực quản (2)</button>
+    <button class="nav-tab" onclick="filterOrgan('solid')">Tạng đặc & Phúc mạc (3)</button>
+  </nav>
+
+  <!-- REFERENCE DIAGRAM -->
+  <section class="reference-section">
+    <div>
+      <img src="./assets/textures/reference_histology_layers.png" alt="Reference Alimentary Canal Wall Histology">
+    </div>
+    <div class="reference-desc">
+      <h2>Mô Hình 5 Tầng Cơ Bản Của Ống Tiêu Hóa Đối Chiếu</h2>
+      <ul>
+        <li><span class="badge">1. Subserosa & Serosa:</span> Lớp thanh mạc mỏng, bóng, màu kem ngà ngọc trai ngoài cùng.</li>
+        <li><span class="badge">2. Longitudinal layer:</span> Tầng cơ dọc song song màu hồng đất terracotta của Muscularis externa.</li>
+        <li><span class="badge">3. Circular layer:</span> Tầng cơ vòng ôm ngang chu vi ống, màu hồng cam sọc ngang.</li>
+        <li><span class="badge">4. Submucosa:</span> Tầng dưới niêm mạc mô liên kết sợi collagen lượn sóng màu trắng kem.</li>
+        <li><span class="badge">5. Mucosa:</span> Tầng niêm mạc nếp gấp lượn sóng nhung mịn màu hồng đào trong cùng.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1. DẠ DÀY -->
+  <div class="organ-heading" data-group="stomach">1. Dạ dày (Stomach / Gaster)</div>
+  <div class="grid" data-group="stomach">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Thanh mạc (Serosa)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/serosa_diffuse.png" target="_blank"><img src="./assets/textures/serosa_diffuse.png"></a></div>
+      <div class="card-body">Màng thanh mạc ngoài cùng láng bóng, gam màu kem ngà ngọc trai và hồng phớt biểu mô trung mô.</div>
+      <div class="card-footer"><span>serosa_diffuse.png (786 KB)</span><a href="./assets/textures/serosa_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cơ dọc (Stratum Longitudinale)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/longitudinal_muscle_diffuse.png" target="_blank"><img src="./assets/textures/longitudinal_muscle_diffuse.png"></a></div>
+      <div class="card-body">Thớ cơ trơn song song dọc theo thành ống, màu hồng đất terracotta ấm, rãnh phân tách bó cơ rất sắc nét.</div>
+      <div class="card-footer"><span>longitudinal_muscle_diffuse.png (615 KB)</span><a href="./assets/textures/longitudinal_muscle_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cơ vòng (Stratum Circulare)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/circular_muscle_diffuse.png" target="_blank"><img src="./assets/textures/circular_muscle_diffuse.png"></a></div>
+      <div class="card-body">Các vòng cơ ôm ngang theo chu vi lòng ống (sọc ngang), màu hồng cam đất gạch xếp lớp đồng tâm.</div>
+      <div class="card-footer"><span>circular_muscle_diffuse.png (990 KB)</span><a href="./assets/textures/circular_muscle_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cơ chéo 45° (Fibrae Obliquae)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/stomach_oblique_diffuse.png" target="_blank"><img src="./assets/textures/stomach_oblique_diffuse.png"></a></div>
+      <div class="card-body">Lớp cơ trong cùng đặc thù chỉ có ở dạ dày: các dải thớ cơ trơn chạy chéo góc 45 độ màu terracotta và dusky rose.</div>
+      <div class="card-footer"><span>stomach_oblique_diffuse.png (1.38 MB)</span><a href="./assets/textures/stomach_oblique_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Dưới niêm mạc (Tela Submucosa)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/submucosa_diffuse.png" target="_blank"><img src="./assets/textures/submucosa_diffuse.png"></a></div>
+      <div class="card-body">Mô liên kết sợi collagen trắng kem ngọc trai với các bó sợi đan xen uốn lượn mềm mại nâng đỡ niêm mạc.</div>
+      <div class="card-footer"><span>submucosa_diffuse.png (1.01 MB)</span><a href="./assets/textures/submucosa_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc nếp lượn sóng (Mucosa)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/mucosa_diffuse.png" target="_blank"><img src="./assets/textures/mucosa_diffuse.png"></a></div>
+      <div class="card-body">Lớp niêm mạc lót trong lòng ống với nếp gấp lượn sóng mềm mại, màu hồng đào tươi sáng nhung mịn.</div>
+      <div class="card-footer"><span>mucosa_diffuse.png (986 KB)</span><a href="./assets/textures/mucosa_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 2. TÁ TRÀNG -->
+  <div class="organ-heading" data-group="duodenum">2. Tá tràng (Duodenum)</div>
+  <div class="grid" data-group="duodenum">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Dưới niêm mạc - Tuyến Brunner</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/duodenum_brunner_diffuse.png" target="_blank"><img src="./assets/textures/duodenum_brunner_diffuse.png"></a></div>
+      <div class="card-body">Đặc trưng độc nhất của tá tràng: các chùm hạt tuyến Brunner màu cam hổ phách và nâu vàng trên nền mô kem.</div>
+      <div class="card-footer"><span>duodenum_brunner_diffuse.png (1.05 MB)</span><a href="./assets/textures/duodenum_brunner_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc - Nếp vòng Kerckring</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/duodenum_kerckring_diffuse.png" target="_blank"><img src="./assets/textures/duodenum_kerckring_diffuse.png"></a></div>
+      <div class="card-body">Nếp gấp vòng Kerckring (Plicae circulares) song song chạy ngang chu vi thành tá tràng giúp làm chậm nhũ trấp.</div>
+      <div class="card-footer"><span>duodenum_kerckring_diffuse.png (1.11 MB)</span><a href="./assets/textures/duodenum_kerckring_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 3. RUỘT NON -->
+  <div class="organ-heading" data-group="small_intestine">3. Ruột non (Small Intestine)</div>
+  <div class="grid" data-group="small_intestine">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc - Thảm nhung mao Villi</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/small_intestine_villi_diffuse.png" target="_blank"><img src="./assets/textures/small_intestine_villi_diffuse.png"></a></div>
+      <div class="card-body">Thảm nhung mao ruột Villi mịn như tơ nhung màu vàng mật ong và hoàng thổ (ochre), cấu trúc chồi nhú hấp thu vi thể.</div>
+      <div class="card-footer"><span>small_intestine_villi_diffuse.png (1.43 MB)</span><a href="./assets/textures/small_intestine_villi_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 4. ĐẠI TRÀNG -->
+  <div class="organ-heading" data-group="colon">4. Đại tràng / Ruột già (Colon)</div>
+  <div class="grid" data-group="colon">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Thanh mạc & Bọng mỡ mạc nối</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/colon_epiploic_diffuse.png" target="_blank"><img src="./assets/textures/colon_epiploic_diffuse.png"></a></div>
+      <div class="card-body">Màng thanh mạc láng bóng đính kèm các túi bọng mỡ mạc nối màu vàng nhạt (Appendices epiploicae) đặc thù.</div>
+      <div class="card-footer"><span>colon_epiploic_diffuse.png (772 KB)</span><a href="./assets/textures/colon_epiploic_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Cơ dọc - 3 dải Taeniae Coli</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/colon_taeniae_diffuse.png" target="_blank"><img src="./assets/textures/colon_taeniae_diffuse.png"></a></div>
+      <div class="card-body">3 dải cơ dọc tập trung Taeniae Coli màu kem ngà nổi gờ sắc nét trên nền cơ dọc màu hồng đất salmon-terracotta.</div>
+      <div class="card-footer"><span>colon_taeniae_diffuse.png (601 KB)</span><a href="./assets/textures/colon_taeniae_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc - Nếp bán nguyệt</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/colon_semilunar_diffuse.png" target="_blank"><img src="./assets/textures/colon_semilunar_diffuse.png"></a></div>
+      <div class="card-body">Niêm mạc hồng đào mịn không nhung mao với các nếp bán nguyệt cong hình lưỡi liềm (Plicae semilunares coli).</div>
+      <div class="card-footer"><span>colon_semilunar_diffuse.png (659 KB)</span><a href="./assets/textures/colon_semilunar_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 5. TÚI MẬT -->
+  <div class="organ-heading" data-group="gallbladder">5. Túi mật (Gallbladder)</div>
+  <div class="grid" data-group="gallbladder">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tầng cơ đan chéo đa hướng</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/gallbladder_muscle_diffuse.png" target="_blank"><img src="./assets/textures/gallbladder_muscle_diffuse.png"></a></div>
+      <div class="card-body">Bó sợi cơ trơn đan chéo đa hướng (chéo, ngang, dọc đan xen như mạng lưới) tạo sức ép co thắt tống mật toàn diện.</div>
+      <div class="card-footer"><span>gallbladder_muscle_diffuse.png (1.27 MB)</span><a href="./assets/textures/gallbladder_muscle_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc hốc tổ ong</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/gallbladder_honeycomb_diffuse.png" target="_blank"><img src="./assets/textures/gallbladder_honeycomb_diffuse.png"></a></div>
+      <div class="card-body">Cấu trúc hình học đa giác dạng tổ ong (polygonal honeycomb) viền hồng san hô nổi trên nền hốc rượu vang sâu màu.</div>
+      <div class="card-footer"><span>gallbladder_honeycomb_diffuse.png (981 KB)</span><a href="./assets/textures/gallbladder_honeycomb_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 6. THỰC QUẢN -->
+  <div class="organ-heading" data-group="esophagus">6. Thực quản (Esophagus)</div>
+  <div class="grid" data-group="esophagus">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Vỏ ngoài liên kết lỏng (Adventitia)</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/esophagus_adventitia_diffuse.png" target="_blank"><img src="./assets/textures/esophagus_adventitia_diffuse.png"></a></div>
+      <div class="card-body">Mô liên kết sợi thưa lỏng lẻo gắn thành thực quản vào trung thất, màu kem hồng ngà với vi mạch li ti.</div>
+      <div class="card-footer"><span>esophagus_adventitia_diffuse.png (855 KB)</span><a href="./assets/textures/esophagus_adventitia_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Niêm mạc biểu mô lát tầng</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/esophagus_squamous_diffuse.png" target="_blank"><img src="./assets/textures/esophagus_squamous_diffuse.png"></a></div>
+      <div class="card-body">Biểu mô lát tầng không sừng hóa màu hồng nhạt trơn nhẵn, nếp gấp dọc thẳng chạy theo trục ống thực quản.</div>
+      <div class="card-footer"><span>esophagus_squamous_diffuse.png (542 KB)</span><a href="./assets/textures/esophagus_squamous_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 7. TẠNG ĐẶC & PHÚC MẠC -->
+  <div class="organ-heading" data-group="solid">7. Tạng đặc & Phúc mạc (Solid Organs & Peritoneum)</div>
+  <div class="grid" data-group="solid">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Gan - Nhu mô & Bao Glisson</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/liver_parenchyma_diffuse.png" target="_blank"><img src="./assets/textures/liver_parenchyma_diffuse.png"></a></div>
+      <div class="card-body">Nhu mô gan màu nâu hạt dẻ ấm (mahogany), hoa văn tiểu thùy lục giác vi thể (~1mm) cùng ánh bóng ướt bao Glisson.</div>
+      <div class="card-footer"><span>liver_parenchyma_diffuse.png (1.26 MB)</span><a href="./assets/textures/liver_parenchyma_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tụy - Bề mặt chùm nang hạt sỏi</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/pancreas_lobular_diffuse.png" target="_blank"><img src="./assets/textures/pancreas_lobular_diffuse.png"></a></div>
+      <div class="card-body">Cấu trúc thùy hạt sỏi (cobblestone lobulated) của các chùm nang tụy ngoại tiết màu vàng kem phớt hồng thịt.</div>
+      <div class="card-footer"><span>pancreas_lobular_diffuse.png (1.13 MB)</span><a href="./assets/textures/pancreas_lobular_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Mạc nối lớn - Tấm rèm ren mỡ</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/greater_omentum_diffuse.png" target="_blank"><img src="./assets/textures/greater_omentum_diffuse.png"></a></div>
+      <div class="card-body">Tấm rèm mỡ dạng mắt lưới ren thủng lỗ (fenestrated lace-like adipose apron) với cụm mỡ vàng và vi mạch mạc nối.</div>
+      <div class="card-footer"><span>greater_omentum_diffuse.png (1.05 MB)</span><a href="./assets/textures/greater_omentum_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <script>
+    function filterOrgan(group) {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('[data-group]').forEach(el => {
+        if (group === 'all' || el.dataset.group === group) {
+          el.style.display = el.tagName === 'DIV' && el.classList.contains('grid') ? 'grid' : 'flex';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

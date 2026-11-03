@@ -191,16 +191,37 @@ export class SceneView {
 
     this.explosionManager = new ExplosionManager(this.scene, this.masterRoot, this.stomachBuilder);
 
+    const tex = this.proceduralTextures.getTextures();
+
     const materials = {
-      liver: new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.38, metalness: 0.12, side: THREE.DoubleSide }),
+      liver: new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: tex.liverTexture,
+        roughness: 0.32,
+        metalness: 0.10,
+        side: THREE.DoubleSide
+      }),
       gallbladder_tree: new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x064e3b, roughness: 0.25, metalness: 0.2, side: THREE.DoubleSide }),
       stomach: new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.45, metalness: 0.1, side: THREE.DoubleSide }),
-      pancreas: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.55, metalness: 0.15, side: THREE.DoubleSide }),
+      pancreas: new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: tex.pancreasTexture,
+        roughness: 0.58,
+        metalness: 0.08,
+        side: THREE.DoubleSide
+      }),
       duodenum: new THREE.MeshStandardMaterial({ color: 0xf97316, roughness: 0.4, metalness: 0.1, side: THREE.DoubleSide }),
       small_intestine: new THREE.MeshStandardMaterial({ color: 0xf87171, roughness: 0.5, metalness: 0.08, side: THREE.DoubleSide }),
       large_intestine: new THREE.MeshStandardMaterial({ color: 0x84cc16, roughness: 0.48, metalness: 0.1, side: THREE.DoubleSide }),
       esophagus: new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 0.4, metalness: 0.05, side: THREE.DoubleSide }),
-      peritoneum_omentum: new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.65, transparent: true, opacity: 0.45, side: THREE.DoubleSide }),
+      peritoneum_omentum: new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        map: tex.greaterOmentumTexture,
+        roughness: 0.60,
+        transparent: true,
+        opacity: 0.65,
+        side: THREE.DoubleSide
+      }),
 
       // Upper GI PBR Materials
       pharynx: new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.42, metalness: 0.08, side: THREE.DoubleSide }),
