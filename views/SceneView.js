@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261103_v21';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261103_v21';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261103_v21';
-import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261103_v21';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261103_v22';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261103_v22';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261103_v22';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261103_v22';
 
 /**
  * SceneView.js
@@ -166,8 +166,12 @@ export class SceneView {
     Promise.all([
       loadModel('./assets/models/DigestiveSystem.glb'),
       loadModel('./assets/models/UpperDigestiveTract.glb'),
-      loadModel('./assets/models/HepaticVessels.glb')
-    ]).then(([digestiveGltf, upperGltf, hepaticGltf]) => {
+      loadModel('./assets/models/HepaticVessels.glb'),
+      fetch('./data/si_tube_progress.bin?v=20261103_v22').then(r => r.arrayBuffer()).catch(() => null)
+    ]).then(([digestiveGltf, upperGltf, hepaticGltf, siBuffer]) => {
+      if (siBuffer) {
+        this.siTubeProgress = new Float32Array(siBuffer);
+      }
       this._updateLoadingProgress(85, 'Đang khởi tạo các tầng mô học & mạch máu gan PBR...');
       this._processDigestiveScene(digestiveGltf.scene, upperGltf.scene, hepaticGltf.scene);
       this._hideLoadingOverlay();
@@ -1012,6 +1016,10 @@ export class SceneView {
    * Generates n discrete colors sampled evenly along the continuous pastel thermal spectrum.
    */
   _getThermalPalette(n) {
+    if (n === 2) {
+      // 2 Distinct Clinical Thermal Steps for Small Intestine (Jejunum Hot Coral -> Ileum Soft Cornflower Blue)
+      return [new THREE.Color(0xff477e), new THREE.Color(0x54a0ff)];
+    }
     if (n <= 1) return [new THREE.Color(0xff477e)];
     const palette = [];
     for (let i = 0; i < n; i++) {
@@ -1397,26 +1405,34 @@ export class SceneView {
       };
     }
 
-    // 6. Small Intestine Functional Heatmap Regions
+    // 6. Small Intestine Functional Heatmap Regions (Geodesic Tube Progress along jejunoileal loop trajectory)
     if (isRegions && (organId === 'small_intestine' || mesh.userData.organId === 'small_intestine')) {
-      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-      const localPt = mesh.worldToLocal(hitPt.clone());
-      const x = localPt.x, y = localPt.y;
+      let progress = 0.5;
+      if (this.siTubeProgress && this._lastHitIntersection && this._lastHitIntersection.face) {
+        const vIdx = this._lastHitIntersection.face.a;
+        if (this.siTubeProgress[vIdx] !== undefined) {
+          progress = this.siTubeProgress[vIdx];
+        }
+      } else {
+        const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
+        const localPt = mesh.worldToLocal(hitPt.clone());
+        progress = (localPt.x > 0 || localPt.y > 98.0) ? 0.2 : 0.8;
+      }
 
-      const reg = (x > 0 || y > 98.0) ? 'jejunum' : 'ileum';
+      const reg = (progress <= 0.40) ? 'jejunum' : 'ileum';
       const palS = this._getThermalPalette(2);
       const siCards = {
         jejunum: {
           color: '#' + palS[0].getHexString(),
           tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
-          badge: 'Hấp Thu Đường Đạm • Nóng Nhất',
+          badge: 'Hấp Thu Đường Đạm • 2/5 Trên Ruột Non',
           title: 'Hỗng Tràng (Jejunum)',
           subtitle: 'Chiếm 2/5 trên ruột non, quai ruột xếp nằm ngang ở ô bụng trên trái. Thành dày, đỏ hồng do mạch máu dồi dào, quai cung động mạch thưa (1-2 bậc) với động mạch thẳng dài; nếp gấp vòng Kerckring và nhung mao dày đặc tối ưu hấp thu carbohydrate và amino acid.'
         },
         ileum: {
           color: '#' + palS[1].getHexString(),
           tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
-          badge: 'Hấp Thu Muối Mật & B12 • Lạnh Nhất',
+          badge: 'Hấp Thu Muối Mật & B12 • 3/5 Dưới Ruột Non',
           title: 'Hồi Tràng (Ileum)',
           subtitle: 'Chiếm 3/5 dưới ruột non, quai ruột xếp thẳng đứng ở ô bụng dưới phải đổ vào manh tràng tại van Bauhin. Cung mạch phức tạp (3-5 tầng) với động mạch thẳng ngắn; tập trung các nang bạch huyết mảng Peyer miễn dịch và thụ thể tái hấp thu muối mật chu trình gan ruột và vitamin B12.'
         }
@@ -1875,6 +1891,7 @@ export class SceneView {
         const hitMesh = validHit.object;
         this._lastIntersectionPoint = validHit.point.clone();
         this._lastHitMesh = hitMesh;
+        this._lastHitIntersection = validHit;
         this.renderer.domElement.style.cursor = 'pointer';
         this._setHoverHighlight(hitMesh);
 
@@ -2538,13 +2555,23 @@ export class SceneView {
     applyColorsToMesh(bileDuctTarget, () => palG[3], 'gallbladder_tree');
 
     // 7. Small Intestine Functional Heatmap (2 Discrete Steps: Jejunum -> Ileum)
+    // Topological Arc-Length / Geodesic Division: Proximal 40% = Jejunum (Hot Coral), Distal 60% = Ileum (Soft Cornflower Blue)
     const palS = this._getThermalPalette(2);
-    const siTarget = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
-      ? this.smallIntestineWallMeshes[0]
-      : this.clickableMeshes.find(m => m.userData.organId === 'small_intestine');
-    applyColorsToMesh(siTarget, (x, y) => {
-      return (x > 0 || y > 98.0) ? palS[0] : palS[1];
-    }, 'small_intestine');
+    const siMeshes = (this.smallIntestineWallMeshes && this.smallIntestineWallMeshes.length > 0)
+      ? this.smallIntestineWallMeshes
+      : this.clickableMeshes.filter(m => m.userData.organId === 'small_intestine');
+
+    siMeshes.forEach(mesh => {
+      applyColorsToMesh(mesh, (x, y, z, vertexIndex) => {
+        let progress = 0.5;
+        if (this.siTubeProgress && vertexIndex !== undefined) {
+          progress = this.siTubeProgress[vertexIndex];
+        } else {
+          progress = (x > 0 || y > 98.0) ? 0.2 : 0.8;
+        }
+        return (progress <= 0.40) ? palS[0] : palS[1];
+      }, 'small_intestine');
+    });
 
     // 8. Couinaud Liver Functional Heatmap (8 segments: Hot -> Cold)
     const palLiver = this._getThermalPalette(8);
