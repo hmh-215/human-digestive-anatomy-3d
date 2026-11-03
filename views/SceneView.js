@@ -1981,9 +1981,9 @@ export class SceneView {
       this._syncExplosion();
       // In Whole-System Knolling Grid mode, frame the 4 horizontal rows comfortably at 1:1 true scale
       if (!this.sceneVM.state.selectedOrganId && factor >= 0.85) {
-        this.controls.target.set(0.0, -0.35, 0.0);
-        if (this.camera.position.z < 26.0) {
-          this.camera.position.set(0.0, 0.5, 28.5);
+        this.controls.target.set(0.0, -0.85, 0.0);
+        if (this.camera.position.z < 30.0) {
+          this.camera.position.set(0.0, -0.85, 33.5);
         }
       }
     });

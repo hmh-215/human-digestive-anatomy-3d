@@ -260,6 +260,13 @@ export class ExplosionManager {
         if (ivcAnchor && mesh !== ivcAnchor) {
           mesh.userData.knollingAnchor = ivcAnchor;
         }
+      } else if (organId === 'large_intestine') {
+        if (mesh.name === 'colon_epiploic_appendages' || mesh.userData.isEpiploicAppendage) {
+          const colonSerosa = clickableMeshes.find(m => m.name === 'colon_serosa');
+          if (colonSerosa) {
+            mesh.userData.knollingAnchor = colonSerosa;
+          }
+        }
       }
     });
 
@@ -304,10 +311,10 @@ export class ExplosionManager {
     row4.push(...byOrganPrimary('large_intestine'));
 
     const rowsConfig = [
-      { items: row1, yOffset: 25.0, xShift: 0.0,  gapX: 1.8, minSlotW: 5.0 },
-      { items: row2, yOffset: 9.0,  xShift: 2.0,  gapX: 1.8, minSlotW: 5.2 },
-      { items: row3, yOffset: -7.5, xShift: 10.0, gapX: 2.6, minSlotW: 8.5 },
-      { items: row4, yOffset: -24.0, xShift: 12.0, gapX: 4.5, minSlotW: 14.0 }
+      { items: row1, yOffset: 38.0, xShift: 0.0, gapX: 4.0, minSlotW: 7.5 },
+      { items: row2, yOffset: 8.0,  xShift: 0.0, gapX: 4.0, minSlotW: 7.5 },
+      { items: row3, yOffset: -20.0, xShift: 0.0, gapX: 6.0, minSlotW: 16.0 },
+      { items: row4, yOffset: -54.0, xShift: 0.0, gapX: 8.0, minSlotW: 26.0 }
     ];
 
     rowsConfig.forEach((rowCfg) => {
@@ -315,10 +322,16 @@ export class ExplosionManager {
       if (!items || items.length === 0) return;
 
       const slotWidths = items.map((mesh) => {
-        const ls = mesh.userData.localSize || new THREE.Vector3(6, 6, 6);
+        let w = (mesh.userData.localSize ? mesh.userData.localSize.x : 6);
+        const orgId = mesh.userData.organId;
+        if (orgId === 'portal_system' || orgId === 'hepatic_artery' || orgId === 'hepatic_veins') {
+          w = Math.max(w, 11.0);
+        } else if (orgId === 'peritoneum_omentum') {
+          w = Math.max(w, 15.0);
+        }
         // Strictly 100% 1:1 Anatomical Scale: preserve authentic organ proportions without shrinking
         mesh.userData.knollingScale = 1.0;
-        return Math.max(rowCfg.minSlotW, ls.x);
+        return Math.max(rowCfg.minSlotW, w);
       });
 
       const totalWidth = slotWidths.reduce((acc, w) => acc + w, 0) + Math.max(0, items.length - 1) * rowCfg.gapX;
@@ -399,6 +412,7 @@ export class ExplosionManager {
       clickableMeshes.forEach((mesh) => {
         const anchor = mesh.userData.knollingAnchor;
         if (!anchor) return;
+        if (mesh.parent === anchor) return; // Meshes parented directly to anchor inherit transform automatically
 
         const initPos = mesh.userData.initialPos || new THREE.Vector3();
         const initScale = mesh.userData.initialScale || new THREE.Vector3(1, 1, 1);
@@ -473,12 +487,12 @@ export class ExplosionManager {
     //   - Gallbladder: n_cut = (-0.35, -0.38, 0.85) along fundus/body oblique cut
     //   - Esophagus: n_cut = (0.7, 0.0, 0.7) along left-anterior longitudinal midline
     const organStepVectors = {
-      stomach: new THREE.Vector3(-2.38, 1.02, 8.08),
-      duodenum: new THREE.Vector3(-4.51, 0.66, 6.81),
-      small_intestine: new THREE.Vector3(0.0, 0.0, 7.8),
-      large_intestine: new THREE.Vector3(0.0, 0.0, 9.2),
-      gallbladder_tree: new THREE.Vector3(-2.52, -2.74, 6.12),
-      esophagus: new THREE.Vector3(3.8, 0.0, 4.2)
+      stomach: new THREE.Vector3(-2.8, 1.2, 9.8),
+      duodenum: new THREE.Vector3(-5.2, 0.8, 8.5),
+      small_intestine: new THREE.Vector3(0.0, 0.0, 10.2),
+      large_intestine: new THREE.Vector3(0.0, 0.0, 12.0),
+      gallbladder_tree: new THREE.Vector3(-3.0, -3.2, 7.8),
+      esophagus: new THREE.Vector3(4.5, 0.0, 5.5)
     };
 
     const organColors = {
