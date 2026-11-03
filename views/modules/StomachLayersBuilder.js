@@ -594,6 +594,95 @@ export class StomachLayersBuilder {
 
     const layers = this.createLayers('large_intestine', dummyMesh, organsData);
     parentGroup.remove(dummyMesh);
+
+    // Build dedicated 3D Epiploic Appendages (Bọng Mỡ Mạc Nối) ribbon along the Taenia omentalis line
+    // grouped with the Serosa layer (layers[0]) as per clinical reference
+    const omentalMesh = (taeniaMeshes || []).find(m => m.name === 'Omental_taenia') || (taeniaMeshes || [])[0];
+    if (omentalMesh && layers && layers.length > 0) {
+      const epiploicGeo = omentalMesh.geometry.clone();
+      this._assignAnatomicalUVs(epiploicGeo);
+
+      // Offset vertices outward along their normals by +0.045 cm so the fatty lobules sit proud on the serosa
+      const posAttr = epiploicGeo.attributes.position;
+      const normAttr = epiploicGeo.attributes.normal;
+      const dOffset = 0.045;
+      for (let i = 0; i < posAttr.count; i++) {
+        const nx = normAttr ? normAttr.getX(i) : 0;
+        const ny = normAttr ? normAttr.getY(i) : 0;
+        const nz = normAttr ? normAttr.getZ(i) : 1;
+        posAttr.setXYZ(
+          i,
+          posAttr.getX(i) + nx * dOffset,
+          posAttr.getY(i) + ny * dOffset,
+          posAttr.getZ(i) + nz * dOffset
+        );
+      }
+      posAttr.needsUpdate = true;
+
+      // Precompute coronal cutaway midline metric matching the colon's cutting spline
+      const precomputedMidZ = this._computeColonCutMidZ(posAttr);
+      const cutDistArr = new Float32Array(posAttr.count);
+      for (let i = 0; i < posAttr.count; i++) {
+        cutDistArr[i] = posAttr.getZ(i) - precomputedMidZ[i];
+      }
+      epiploicGeo.setAttribute('aCutDist', new THREE.BufferAttribute(cutDistArr, 1));
+
+      const tex = this.proceduralTextures.getTextures();
+      const epiploicMat = new THREE.MeshStandardMaterial({
+        map: tex.colonEpiploicTexture || tex.serosaTexture,
+        roughness: 0.65,
+        metalness: 0.05,
+        side: THREE.DoubleSide
+      });
+
+      // Hook cutaway shader uniforms to the serosa layer's uniform objects so cutaways update synchronously
+      const serosaMat = layers[0].material;
+      if (serosaMat.userData && serosaMat.userData.uCutawayActive) {
+        epiploicMat.userData.uCutawayActive = serosaMat.userData.uCutawayActive;
+        epiploicMat.userData.uCutThreshold = serosaMat.userData.uCutThreshold;
+        epiploicMat.userData.uCutSide = serosaMat.userData.uCutSide;
+        epiploicMat.onBeforeCompile = (shader) => {
+          shader.uniforms.uCutawayActive = epiploicMat.userData.uCutawayActive;
+          shader.uniforms.uCutThreshold = epiploicMat.userData.uCutThreshold;
+          shader.uniforms.uCutSide = epiploicMat.userData.uCutSide;
+          shader.vertexShader = `
+            attribute float aCutDist;
+            varying float vCutDist;
+          ` + shader.vertexShader.replace(
+            '#include <begin_vertex>',
+            `#include <begin_vertex>
+             vCutDist = aCutDist;`
+          );
+          shader.fragmentShader = `
+            uniform float uCutawayActive;
+            uniform float uCutThreshold;
+            uniform float uCutSide;
+            varying float vCutDist;
+          ` + shader.fragmentShader.replace(
+            '#include <clipping_planes_fragment>',
+            `#include <clipping_planes_fragment>
+             if (uCutawayActive > 0.5 && (vCutDist * uCutSide) > uCutThreshold) discard;`
+          );
+        };
+      }
+
+      const epiploicMesh = new THREE.Mesh(epiploicGeo, epiploicMat);
+      epiploicMesh.name = 'colon_epiploic_appendages';
+      epiploicMesh.castShadow = true;
+      epiploicMesh.receiveShadow = true;
+      epiploicMesh.userData = {
+        ...layers[0].userData,
+        isEpiploicAppendage: true,
+        wallLayerName: 'Bọng Mỡ Mạc Nối (Appendices Epiploicae)',
+        wallLayerDesc: 'Túi mỡ phúc mạc đính dọc theo dải mạc nối của đại tràng',
+        wallLayerColor: '#eab308'
+      };
+
+      // Group directly with Serosa layer (layers[0])
+      layers[0].add(epiploicMesh);
+      layers[0].userData.epiploicMesh = epiploicMesh;
+    }
+
     return layers;
   }
 

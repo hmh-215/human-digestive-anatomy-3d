@@ -288,8 +288,10 @@ export class ProceduralTextures {
     // =========================================================================
     // 4. ĐẠI TRÀNG / RUỘT GIÀ (COLON — 5 HISTOLOGICAL LAYERS)
     // =========================================================================
-    // Colon Serosa with Appendices Epiploicae
-    result.colonSerosaTexture = this._loadTexture('./assets/textures/colon_epiploic_diffuse.png', 2, 2);
+    // Colon Serosa (smooth glistening peritoneum)
+    result.colonSerosaTexture = this._loadTexture('./assets/textures/serosa_diffuse.png', 2, 2);
+    // Dedicated Epiploic Appendages (Bọng mỡ mạc nối)
+    result.colonEpiploicTexture = this._loadTexture('./assets/textures/colon_epiploic_diffuse.png', 2, 6);
 
     // Colon Longitudinal Muscle with Taeniae Coli
     result.colonLongitudinalMuscleTexture = this._loadTexture('./assets/textures/colon_taeniae_diffuse.png', 1, 2);

@@ -245,6 +245,7 @@ export class SceneView {
       inferior_vena_cava: new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.32, metalness: 0.18, side: THREE.DoubleSide }),
       pancreatic_duct: new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, roughness: 0.20, metalness: 0.15, side: THREE.DoubleSide })
     };
+    this.materials = materials;
 
     const couinaudColors = {
       'segment of liver (i)': 0x854d0e,
@@ -448,10 +449,20 @@ export class SceneView {
         child.userData.isPancreaticDuct = true;
       }
 
+      // Ensure mesh has UV coordinates for diffuse textures
+      if (child.isMesh && child.geometry && !child.geometry.attributes.uv) {
+        this.stomachBuilder._assignAnatomicalUVs(child.geometry);
+      }
+
       const mat = baseMat.clone();
       for (const [k, hex] of Object.entries(couinaudColors)) {
         if (low.includes(k)) {
-          mat.color.setHex(hex);
+          child.userData.couinaudColor = hex;
+          // In standard histology mode, preserve authentic liver texture without dark tinting;
+          // discrete step heatmaps are dynamically applied in _applyFunctionalHeatmaps
+          if (organId !== 'liver') {
+            mat.color.setHex(hex);
+          }
           break;
         }
       }
@@ -528,6 +539,12 @@ export class SceneView {
         this.clickableMeshes.push(lMesh);
         this.allVisceralMeshes.push(lMesh);
       });
+      // Register dedicated Epiploic Appendages (Bọng Mỡ Mạc Nối) ribbon grouped with Serosa
+      if (colonLayers[0] && colonLayers[0].userData && colonLayers[0].userData.epiploicMesh) {
+        const epiMesh = colonLayers[0].userData.epiploicMesh;
+        this.clickableMeshes.push(epiMesh);
+        this.allVisceralMeshes.push(epiMesh);
+      }
     }
 
     // Normalize bounding box of digestive system to target height 9.8 centered at origin
@@ -2137,16 +2154,17 @@ export class SceneView {
         if (organId === 'pancreas') {
           mesh.visible = true;
           if (isDuct) {
-            mesh.material = this.materials.pancreatic_duct;
+            if (this.materials && this.materials.pancreatic_duct) {
+              mesh.material = this.materials.pancreatic_duct;
+            }
             mesh.material.transparent = false;
             mesh.material.opacity = 1.0;
             mesh.material.depthWrite = true;
           } else {
-            // In Heatmap mode, parenchyma is solid so the functional heatmap is fully visible!
-            // In Layers mode, parenchyma is ghosted semi-transparent so internal ducts shine through!
-            mesh.material.transparent = isXRay || (!isRegions);
-            mesh.material.opacity = isRegions ? (isXRay ? 0.45 : 1.0) : (isXRay ? 0.18 : 0.32);
-            mesh.material.depthWrite = isRegions;
+            // Opaque solid organ with lobular acinar texture visible
+            mesh.material.transparent = isXRay;
+            mesh.material.opacity = isXRay ? 0.45 : 1.0;
+            mesh.material.depthWrite = !isXRay;
           }
         } else if (isBile || isPancreaticVessel || isDuodenum) {
           if (isRegions && isIsolate) {
@@ -2167,10 +2185,11 @@ export class SceneView {
         }
       } else if (organId === selectedId) {
         mesh.visible = true;
-        // In Liver selection, make liver segments semi-transparent (0.38) so internal vascular tree shines through
-        mesh.material.transparent = isXRay || (selectedId === 'liver');
-        mesh.material.opacity = isXRay ? 0.45 : (selectedId === 'liver' ? 0.38 : (isBone ? 0.85 : 1.0));
-        if (mesh.material.emissive) mesh.material.emissive.setHex(0x221508);
+        // Opaque solid organ with authentic hepatic parenchyma texture visible
+        mesh.material.transparent = isXRay;
+        mesh.material.opacity = isXRay ? 0.45 : (isBone ? 0.85 : 1.0);
+        mesh.material.depthWrite = !isXRay;
+        if (mesh.material.emissive) mesh.material.emissive.setHex(selectedId === 'liver' ? 0x110800 : 0x000000);
       } else if (selectedId === 'liver' && isLiverOrVascular(organId)) {
         // When Liver is selected, keep portal system, hepatic arteries & veins solid and sharp inside the liver segments!
         mesh.visible = true;
