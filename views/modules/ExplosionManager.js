@@ -311,10 +311,10 @@ export class ExplosionManager {
     row4.push(...byOrganPrimary('large_intestine'));
 
     const rowsConfig = [
-      { items: row1, yOffset: 38.0, xShift: 0.0, gapX: 4.0, minSlotW: 7.5 },
-      { items: row2, yOffset: 8.0,  xShift: 0.0, gapX: 4.0, minSlotW: 7.5 },
-      { items: row3, yOffset: -20.0, xShift: 0.0, gapX: 6.0, minSlotW: 16.0 },
-      { items: row4, yOffset: -54.0, xShift: 0.0, gapX: 8.0, minSlotW: 26.0 }
+      { items: row1, yOffset: 44.0, xShift: 0.0, gapX: 5.0, minSlotW: 8.5 },
+      { items: row2, yOffset: 12.0, xShift: 0.0, gapX: 5.0, minSlotW: 8.5 },
+      { items: row3, yOffset: -24.0, xShift: 0.0, gapX: 7.0, minSlotW: 18.0 },
+      { items: row4, yOffset: -66.0, xShift: 0.0, gapX: 9.0, minSlotW: 30.0 }
     ];
 
     rowsConfig.forEach((rowCfg) => {
@@ -325,9 +325,11 @@ export class ExplosionManager {
         let w = (mesh.userData.localSize ? mesh.userData.localSize.x : 6);
         const orgId = mesh.userData.organId;
         if (orgId === 'portal_system' || orgId === 'hepatic_artery' || orgId === 'hepatic_veins') {
-          w = Math.max(w, 11.0);
+          w = Math.max(w, 12.0);
         } else if (orgId === 'peritoneum_omentum') {
-          w = Math.max(w, 15.0);
+          w = Math.max(w, 18.0);
+        } else if (orgId === 'large_intestine') {
+          w = Math.max(w, 28.0);
         }
         // Strictly 100% 1:1 Anatomical Scale: preserve authentic organ proportions without shrinking
         mesh.userData.knollingScale = 1.0;

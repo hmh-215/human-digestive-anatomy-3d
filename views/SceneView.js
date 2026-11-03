@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js';
-import { ExplosionManager } from './modules/ExplosionManager.js';
-import { HoverCalloutView } from './modules/HoverCalloutView.js';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261103_v21';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261103_v21';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261103_v21';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261103_v21';
 
 /**
  * SceneView.js
@@ -467,28 +467,40 @@ export class SceneView {
         }
       }
 
-      // 50% Midsagittal Cutaway Shader for Oral Cavity soft tissues (exclude bone, teeth, gingiva)
-      if (organId === 'oral_cavity' && !child.userData.isBone && child.userData.oralSubPart !== 'teeth' && child.userData.oralSubPart !== 'gingiva') {
-        mat.side = THREE.DoubleSide;
-        mat.userData.uCutawayActive = { value: 0.0 };
-        mat.onBeforeCompile = (shader) => {
-          shader.uniforms.uCutawayActive = mat.userData.uCutawayActive;
-          shader.vertexShader = `
-            varying vec3 vLocalPos;
-          ` + shader.vertexShader.replace(
-            '#include <begin_vertex>',
-            `#include <begin_vertex>
-             vLocalPos = position;`
-          );
-          shader.fragmentShader = `
-            uniform float uCutawayActive;
-            varying vec3 vLocalPos;
-          ` + shader.fragmentShader.replace(
-            '#include <clipping_planes_fragment>',
-            `#include <clipping_planes_fragment>
-             if (uCutawayActive > 0.5 && vLocalPos.x > 0.001) discard;`
-          );
-        };
+      // 50% Midsagittal Cutaway Shader for Oral Cavity (soft tissues, jawbones, teeth, and glands)
+      if (organId === 'oral_cavity') {
+        const rawNameLow = child.name.toLowerCase();
+        const isLeftStructure = rawNameLow.endsWith('l') || rawNameLow.includes('maxillal') || rawNameLow.includes('_l');
+        const isRightStructure = rawNameLow.endsWith('r') || rawNameLow.includes('maxillar') || rawNameLow.includes('_r');
+        const isMidline = ['mandib', 'gingiva', 'tongue', 'pharynx', 'palat', 'uvula', 'epiglottis', 'hyoid'].some(k => rawNameLow.includes(k));
+
+        if (isMidline || isLeftStructure) {
+          mat.side = THREE.DoubleSide;
+          mat.userData.uCutawayActive = { value: 0.0 };
+          mat.onBeforeCompile = (shader) => {
+            shader.uniforms.uCutawayActive = mat.userData.uCutawayActive;
+            shader.vertexShader = `
+              varying vec3 vLocalPos;
+            ` + shader.vertexShader.replace(
+              '#include <begin_vertex>',
+              `#include <begin_vertex>
+               vLocalPos = position;`
+            );
+
+            const discardRule = isLeftStructure
+              ? `if (uCutawayActive > 0.5) discard;`
+              : `if (uCutawayActive > 0.5 && vLocalPos.x > 0.001) discard;`;
+
+            shader.fragmentShader = `
+              uniform float uCutawayActive;
+              varying vec3 vLocalPos;
+            ` + shader.fragmentShader.replace(
+              '#include <clipping_planes_fragment>',
+              `#include <clipping_planes_fragment>
+               ${discardRule}`
+            );
+          };
+        }
       }
 
       // 50% Coronal Cutaway Discard Shader for Circulatory Vessels (Stomach anterior region)
@@ -1981,9 +1993,9 @@ export class SceneView {
       this._syncExplosion();
       // In Whole-System Knolling Grid mode, frame the 4 horizontal rows comfortably at 1:1 true scale
       if (!this.sceneVM.state.selectedOrganId && factor >= 0.85) {
-        this.controls.target.set(0.0, -0.85, 0.0);
-        if (this.camera.position.z < 30.0) {
-          this.camera.position.set(0.0, -0.85, 33.5);
+        this.controls.target.set(0.0, -1.0, 0.0);
+        if (this.camera.position.z < 38.0) {
+          this.camera.position.set(0.0, -1.0, 42.0);
         }
       }
     });
@@ -2167,7 +2179,8 @@ export class SceneView {
             mesh.material.depthWrite = !isXRay;
           }
         } else if (isBile || isPancreaticVessel || isDuodenum) {
-          if (isRegions && isIsolate) {
+          if (isIsolate) {
+            // When isolating Pancreas, separate and hide vascular vessels, bile ducts, and duodenum
             mesh.visible = false;
           } else {
             mesh.visible = true;
@@ -2191,11 +2204,16 @@ export class SceneView {
         mesh.material.depthWrite = !isXRay;
         if (mesh.material.emissive) mesh.material.emissive.setHex(selectedId === 'liver' ? 0x110800 : 0x000000);
       } else if (selectedId === 'liver' && isLiverOrVascular(organId)) {
-        // When Liver is selected, keep portal system, hepatic arteries & veins solid and sharp inside the liver segments!
-        mesh.visible = true;
-        mesh.material.transparent = false;
-        mesh.material.opacity = 1.0;
-        if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        if (isIsolate) {
+          // When isolating Liver in isolate mode, separate and hide vascular trees so Liver is purely isolated
+          mesh.visible = false;
+        } else {
+          // When Liver is selected in overview mode, keep portal system, hepatic arteries & veins solid and sharp inside the liver segments!
+          mesh.visible = true;
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        }
       } else if (isLiverOrVascular(selectedId) && organId === 'liver') {
         // When viewing portal system or hepatic artery/vein, keep liver parenchyma ghosted (opacity 0.22)
         mesh.visible = true;

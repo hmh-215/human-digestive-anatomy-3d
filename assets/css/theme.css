@@ -970,42 +970,47 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .pin-liver {
-  top: 118px;
-  left: 28%;
+  top: 136px;
+  left: 26%;
 }
 
 .pin-stomach {
-  top: 118px;
-  left: 72%;
+  top: 136px;
+  left: 74%;
 }
 
 .pin-gallbladder {
-  top: 164px;
-  left: 28%;
+  top: 178px;
+  left: 26%;
 }
 
 .pin-pancreas {
-  top: 164px;
-  left: 72%;
+  top: 178px;
+  left: 74%;
 }
 
 .pin-duodenum {
-  top: 210px;
-  left: 36%;
+  top: 220px;
+  left: 32%;
 }
 
 .pin-portal {
-  top: 210px;
-  left: 64%;
+  top: 220px;
+  left: 68%;
 }
 
 .pin-small-int {
-  top: 256px;
-  left: 50%;
+  top: 262px;
+  left: 36%;
+}
+
+.pin-peritoneum {
+  top: 262px;
+  left: 68%;
 }
 
 .pin-large-int {
-  top: 300px;
+  top: 304px;
   left: 50%;
 }
 
