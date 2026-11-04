@@ -35,7 +35,6 @@ export class UIView {
 
     this.cutawayBtn = document.getElementById('btn-stomach-cutaway');
     this.isolateBtn = document.getElementById('btn-isolate');
-    this.xrayBtn = document.getElementById('btn-xray');
     this.toggleDisplayMode = document.getElementById('toggle-display-mode');
     this.labelModeLayers = document.getElementById('label-mode-layers');
     this.labelModeRegions = document.getElementById('label-mode-regions');
@@ -77,6 +76,7 @@ export class UIView {
         this._setDockTabUI('system');
         this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
         this.sceneVM.resetCamera();
+        this.sceneVM.selectOrgan(null);
       });
     }
 
@@ -112,6 +112,7 @@ export class UIView {
         this._setDockTabUI('system');
         this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
         this.sceneVM.resetCamera();
+        this.sceneVM.selectOrgan(null);
       });
     }
 
@@ -123,6 +124,7 @@ export class UIView {
           this._setDockTabUI('system');
           this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
           this.sceneVM.resetCamera();
+          this.sceneVM.selectOrgan(null);
         } else {
           this._setDockTabUI('organ');
           this.dissectionVM.setState({ isIsolateMode: true });
@@ -145,14 +147,7 @@ export class UIView {
       });
     }
 
-    // 7. X-Ray Mode Toggle
-    if (this.xrayBtn) {
-      this.xrayBtn.addEventListener('click', () => {
-        this.dissectionVM.toggleXRayMode();
-      });
-    }
-
-    // 7b. Organ Display Mode Switcher (Compact Switch: Layers <-> Regions)
+    // 7. Organ Display Mode Switcher (Compact Switch: Layers <-> Regions)
     if (this.toggleDisplayMode) {
       this.toggleDisplayMode.addEventListener('change', (e) => {
         this.dissectionVM.setOrganDisplayMode(e.target.checked ? 'regions' : 'layers');
@@ -291,7 +286,7 @@ export class UIView {
             this.explodeHelperText.textContent = 'Thanh mạc & mô xơ quanh cơ → Lớp cơ trơn → Lớp đệm Lamina propria → Niêm mạc tổ ong';
           } else if (organId === 'liver') {
             this.explodeModeLabel.textContent = 'Phân Tách 8 Hạ Phân Thùy Gan:';
-            this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) với nhu mô bán trong suốt lộ cây mạch máu gan';
+            this.explodeHelperText.textContent = 'Tách rời 8 hạ phân thùy gan (I → VIII) với nhu mô gan sắc nét';
           } else if (organId === 'portal_system') {
             this.explodeModeLabel.textContent = 'Hệ Tĩnh Mạch Cửa Gan:';
             this.explodeHelperText.textContent = 'TMC hợp bởi TM mạc treo tràng trên & TM tỳ, chia nhánh vào 8 hạ phân thùy gan';
@@ -353,10 +348,6 @@ export class UIView {
         this.isolateBtn.textContent = isIsolate ? 'Bỏ Cô Lập' : 'Cô Lập';
         this.isolateBtn.title = isIsolate ? 'Đang ẩn hoàn toàn cơ quan khác. Bấm để hiển thị dạng mờ (transparent)' : 'Đang hiện mờ cơ quan khác. Bấm để ẩn hoàn toàn';
       }
-    });
-
-    this.dissectionVM.subscribe('isXRayMode', (isXRay) => {
-      if (this.xrayBtn) this.xrayBtn.classList.toggle('active', isXRay);
     });
 
     this.dissectionVM.subscribe('isCutawayOpen', (isOpen) => {

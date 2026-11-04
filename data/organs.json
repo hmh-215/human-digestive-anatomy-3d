@@ -374,6 +374,109 @@
       "clinicalNotes": "Sỏi túi mật rất phổ biến. Sỏi kẹt ở cổ túi mật gây cơn đau quặn mật và viêm túi mật cấp (dấu hiệu Murphy dương tính). Tam giác Calot là mốc phẫu thuật sống còn trong cắt túi mật nội soi để phẫu tích an toàn ĐM túi mật và tránh cắt nhầm vào Ống mật chủ. Sỏi ống mật chủ rơi xuống kẹt tại cơ vòng Oddi gây Tam chứng Charcot (Đau - Sốt - Vàng da) và Viêm tụy cấp do trào ngược dịch mật vào ống tụy."
     },
     {
+      "id": "bile_duct",
+      "vietnameseName": "Ống Dẫn Mật (Ống Mật Chủ)",
+      "latinName": "Ductus Choledochus & Ductus Biliares",
+      "englishName": "Bile Duct & Common Bile Duct",
+      "system": "biliary",
+      "layer": 3,
+      "color": "#10b981",
+      "canLocalExplode": true,
+      "subComponents": [
+        {
+          "id": "bile_common_hepatic",
+          "name": "Ống Gan Chung (Common Hepatic Duct)",
+          "explodeVector": [
+            0.1,
+            0.2,
+            0.1
+          ]
+        },
+        {
+          "id": "bile_cystic_duct",
+          "name": "Ống Túi Mật (Cystic Duct)",
+          "explodeVector": [
+            0.3,
+            0.0,
+            0.2
+          ]
+        },
+        {
+          "id": "bile_choledochus",
+          "name": "Ống Mật Chủ (Common Bile Duct)",
+          "explodeVector": [
+            -0.1,
+            -0.2,
+            0.2
+          ]
+        },
+        {
+          "id": "bile_sphincter_oddi",
+          "name": "Cơ Vòng Oddi & Bóng Gan Tụy (Sphincter of Oddi)",
+          "explodeVector": [
+            -0.2,
+            -0.4,
+            0.3
+          ]
+        }
+      ],
+      "wallLayers": [
+        {
+          "id": "bile_adventitia",
+          "name": "Lớp 1: Vỏ Xơ Ngoài (Tunica Adventitia / Fibrosa)",
+          "latinName": "Tunica Fibrosa Ductus Choledochi",
+          "layerOrder": 1,
+          "thickness": "0.2 - 0.4 mm",
+          "color": "#84cc16",
+          "description": "Lớp mô liên kết sợi collagen bao bọc bên ngoài ống dẫn mật, cố định ống trong mạc nối nhỏ và rãnh tụy tá tràng.",
+          "histology": "Mô liên kết đặc giàu sợi collagen, sợi chun và đám rối mao mạch nuôi dưỡng thành ống mật.",
+          "physiology": "Bảo vệ cơ học và neo giữ đường mật trong cuống gan.",
+          "clinicalNotes": "Trong phẫu tích tam giác Calot, bảo tồn vỏ xơ giúp tránh làm tổn thương mạch máu nuôi dưỡng ống mật chủ."
+        },
+        {
+          "id": "bile_muscularis",
+          "name": "Lớp 2: Lớp Cơ Trơn & Cơ Vòng Oddi (Tunica Muscularis & Sphincter Oddi)",
+          "latinName": "Tunica Muscularis & Sphincter Oddi",
+          "layerOrder": 2,
+          "thickness": "0.3 - 0.8 mm",
+          "color": "#be123c",
+          "description": "Lớp cơ trơn gồm sợi dọc và sợi vòng; dày đặc tại đoạn cuối tạo thành cơ vòng Oddi kiểm soát dòng chảy mật vào tá tràng.",
+          "histology": "Các bó tế bào cơ trơn đan chéo; tại nhú tá lớn các bó cơ vòng dày lên tạo cơ thắt cơ học Oddi.",
+          "physiology": "Điều hòa nhịp nhàng dòng chảy mật và dịch tụy vào lòng D2 tá tràng, chống trào ngược dịch tá tràng lên đường mật.",
+          "clinicalNotes": "Rối loạn chức năng cơ vòng Oddi hoặc sỏi kẹt gây viêm tụy cấp và viêm đường mật cấp."
+        },
+        {
+          "id": "bile_submucosa",
+          "name": "Lớp 3: Lớp Đệm Tuyến Dưới Niêm (Tela Submucosa & Glandulae Biliosae)",
+          "latinName": "Tela Submucosa & Glandulae Mucosae Biliosae",
+          "layerOrder": 3,
+          "thickness": "0.2 - 0.5 mm",
+          "color": "#e2e8f0",
+          "description": "Mô liên kết chứa nhiều mạch máu nhỏ và các tuyến nhầy đường mật tiết chất nhầy bảo vệ bề mặt ống mật.",
+          "histology": "Mô liên kết lỏng lẻo giàu vi mạch, bạch huyết và các tuyến nhầy ống dẫn mật (Glandulae mucosae biliosae).",
+          "physiology": "Bài tiết chất nhầy bảo vệ biểu mô khỏi tác động xói mòn của muối mật.",
+          "clinicalNotes": "Tuyến đường mật có thể phì đại trong viêm xơ đường mật mạn tính."
+        },
+        {
+          "id": "bile_mucosa",
+          "name": "Lớp 4: Niêm Mạc Biểu Mô Trụ Đơn (Tunica Mucosa)",
+          "latinName": "Tunica Mucosa Ductus Biliaris",
+          "layerOrder": 4,
+          "thickness": "0.2 - 0.4 mm",
+          "color": "#eab308",
+          "description": "Biểu mô trụ đơn với các nếp gấp dọc, ngấm sắc tố mật vàng óng, dẫn mật lưu thông thông suốt từ gan/túi mật.",
+          "histology": "Lớp tế bào biểu mô trụ đơn tiết nhầy (Cholangiocytes) lợp trên màng đáy mỏng.",
+          "physiology": "Điều tiết bài tiết bicarbonat và dịch loãng theo kích thích của Secretin.",
+          "clinicalNotes": "Ung thư đường mật (Cholangiocarcinoma) xuất phát từ biểu mô cholangiocytes của lớp niêm mạc này."
+        }
+      ],
+      "location": "Đường dẫn mật ngoài gan nối từ cuống gan qua mạc nối nhỏ xuống phía sau D1 tá tràng và rãnh tụy tá tràng đổ vào D2 tá tràng.",
+      "structure": "Gồm ống gan chung, ống túi mật và ống mật chủ (Common bile duct) dài 7-8 cm.",
+      "vasculature": "Được cấp máu bởi các nhánh nhỏ từ ĐM gan riêng và ĐM vị tá tràng chạy dọc hai bên thành ống mật.",
+      "physiology": "Dẫn dịch mật từ gan và túi mật xuống tá tràng nhũ hóa chất béo.",
+      "clinicalNotes": "Sỏi ống mật chủ gây tắc nghẽn tạo tam chứng Charcot (Đau bụng HSP, Sốt run, Vàng da)."
+    },
+    {
       "id": "pancreas",
       "vietnameseName": "Tụy Tạng (Tụy)",
       "latinName": "Pancreas",

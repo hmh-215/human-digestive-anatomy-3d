@@ -14,7 +14,6 @@ export class DissectionViewModel extends Observable {
       localExplodeOrganId: null,
       localExplodeFactor: 0.0,
       isIsolateMode: false,
-      isXRayMode: false,
       isCutawayOpen: false,
       organDisplayMode: 'layers', // 'layers' (histological layers) or 'regions' (functional heatmap)
       torsoSkinOpacity: 0.50,
@@ -95,10 +94,6 @@ export class DissectionViewModel extends Observable {
     this.state.isIsolateMode = !this.state.isIsolateMode;
   }
 
-  toggleXRayMode() {
-    this.state.isXRayMode = !this.state.isXRayMode;
-  }
-
   toggleCutaway() {
     this.state.isCutawayOpen = !this.state.isCutawayOpen;
   }
@@ -129,7 +124,6 @@ export class DissectionViewModel extends Observable {
       this.state.localExplodeOrganId = null;
       this.state.localExplodeFactor = 0.0;
       this.state.isIsolateMode = false;
-      this.state.isXRayMode = false;
       this.state.isCutawayOpen = false;
       this.state.torsoSkinOpacity = 0.65;
       this.state.stomachWallExplodeFactor = 0.0;

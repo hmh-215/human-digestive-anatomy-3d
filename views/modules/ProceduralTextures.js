@@ -416,7 +416,91 @@ export class ProceduralTextures {
     result.esoMucosaBump = result.longitudinalMuscleBump;
 
     // =========================================================================
-    // 7. TẠNG ĐẶC & PHÚC MẠC (SOLID ORGANS & PERITONEUM)
+    // 7. ỐNG DẪN MẬT (BILE DUCT — 4 HISTOLOGICAL LAYERS)
+    // =========================================================================
+    // Layer 1: Tunica Fibrosa / Adventitia (Vỏ mô liên kết xơ ngoài cùng)
+    {
+      const c = createCanvas(256);
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#6b7f5e'; // Olive-tinted fibrous adventitia
+      ctx.fillRect(0, 0, 256, 256);
+      ctx.strokeStyle = 'rgba(215, 230, 200, 0.45)';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 40; i++) {
+        ctx.beginPath();
+        let y = Math.random() * 256;
+        ctx.moveTo(0, y);
+        ctx.bezierCurveTo(75, y + (Math.random() - 0.5) * 25, 175, y + (Math.random() - 0.5) * 25, 256, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'rgba(180, 50, 50, 0.4)';
+      ctx.lineWidth = 1.0;
+      for (let i = 0; i < 15; i++) {
+        ctx.beginPath();
+        let sx = Math.random() * 256, sy = Math.random() * 256;
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(sx + (Math.random() - 0.5) * 40, sy + Math.random() * 35);
+        ctx.stroke();
+      }
+      result.bileAdventitiaTexture = new THREE.CanvasTexture(c);
+      result.bileAdventitiaTexture.wrapS = THREE.RepeatWrapping;
+      result.bileAdventitiaTexture.wrapT = THREE.RepeatWrapping;
+      result.bileAdventitiaTexture.repeat.set(2, 3);
+    }
+
+    // Layer 2: Tunica Muscularis (Lớp cơ trơn & cơ vòng Oddi)
+    result.bileMuscleTexture = this._loadTexture('./assets/textures/circular_muscle_diffuse.png', 2, 3) || result.circularMuscleTexture || result.gbMuscleTexture;
+    result.bileMuscleBump = result.circularMuscleBump || result.obliqueMuscleBump;
+
+    // Layer 3: Tela Submucosa / Lamina Propria (Lớp đệm giàu mạch & tuyến ống mật)
+    result.bileSubmucosaTexture = this._loadTexture('./assets/textures/submucosa_diffuse.png', 2, 2) || result.gbSubmucosaTexture;
+    result.bileSubmucosaBump = result.submucosaBump;
+
+    // Layer 4: Tunica Mucosa (Biểu mô trụ đơn & nếp gấp dọc ngấm dịch mật vàng óng)
+    {
+      const c = createCanvas(256);
+      const ctx = c.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 256, 0);
+      grad.addColorStop(0, '#c99833');
+      grad.addColorStop(0.5, '#e0b54a');
+      grad.addColorStop(1, '#b58326');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 256, 256);
+
+      // Fine longitudinal mucosal folds (plicae longitudinales)
+      ctx.strokeStyle = 'rgba(110, 75, 15, 0.4)';
+      for (let x = 0; x < 256; x += 16) {
+        ctx.lineWidth = 2.0;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.bezierCurveTo(x + 4, 85, x - 4, 170, x, 256);
+        ctx.stroke();
+      }
+      result.bileMucosaTexture = new THREE.CanvasTexture(c);
+      result.bileMucosaTexture.wrapS = THREE.RepeatWrapping;
+      result.bileMucosaTexture.wrapT = THREE.RepeatWrapping;
+      result.bileMucosaTexture.repeat.set(2, 3);
+
+      const bc = createCanvas(256);
+      const bctx = bc.getContext('2d');
+      bctx.fillStyle = '#808080';
+      bctx.fillRect(0, 0, 256, 256);
+      bctx.strokeStyle = '#ffffff';
+      for (let x = 0; x < 256; x += 16) {
+        bctx.lineWidth = 2.5;
+        bctx.beginPath();
+        bctx.moveTo(x, 0);
+        bctx.bezierCurveTo(x + 4, 85, x - 4, 170, x, 256);
+        bctx.stroke();
+      }
+      result.bileMucosaBump = new THREE.CanvasTexture(bc);
+      result.bileMucosaBump.wrapS = THREE.RepeatWrapping;
+      result.bileMucosaBump.wrapT = THREE.RepeatWrapping;
+      result.bileMucosaBump.repeat.set(2, 3);
+    }
+
+    // =========================================================================
+    // 8. TẠNG ĐẶC & PHÚC MẠC (SOLID ORGANS & PERITONEUM)
     // =========================================================================
     result.liverTexture = this._loadTexture('./assets/textures/liver_parenchyma_diffuse.png', 3, 3);
     result.pancreasTexture = this._loadTexture('./assets/textures/pancreas_lobular_diffuse.png', 3, 3);

@@ -382,6 +382,18 @@ export class SceneView {
         return;
       }
 
+      // Synthesize 4 Concentric Histological Layers for Bile Duct
+      if (child.name === 'Bile_duct') {
+        const layers = this.stomachBuilder.createLayers('bile_duct', child, this.appVM.organsData);
+        this.bileDuctWallMeshes = layers;
+        layers.forEach((lMesh) => {
+          lMesh.userData.organId = 'gallbladder_tree';
+          this.clickableMeshes.push(lMesh);
+          this.allVisceralMeshes.push(lMesh);
+        });
+        return;
+      }
+
       // Task 3: Synthesize 5 Concentric Histological Layers for Esophagus
       if (child.name === 'Oesophagus' || organId === 'esophagus') {
         const layers = this.stomachBuilder.createLayers('esophagus', child, this.appVM.organsData);
@@ -2029,10 +2041,6 @@ export class SceneView {
       this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
     });
 
-    this.dissectionVM.subscribe('isXRayMode', () => {
-      this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
-    });
-
     this.dissectionVM.subscribe('isCutawayOpen', () => {
       this._syncExplosion();
     });
@@ -2097,7 +2105,6 @@ export class SceneView {
 
   _updateOrganVisuals(selectedId) {
     const isIsolate = this.dissectionVM.state.isIsolateMode;
-    const isXRay = this.dissectionVM.state.isXRayMode;
     const isCutaway = this.dissectionVM.state.isCutawayOpen;
     const explodeFactor = this.dissectionVM.state.explodeFactor || 0;
     const visibleLayers = this.dissectionVM.state.visibleLayers;
@@ -2124,9 +2131,9 @@ export class SceneView {
 
       if (isWallLayer) {
         const layerIdx = mesh.userData.wallLayerIndex || 0;
-        const isClosedUnexploded = (explodeFactor < 0.005) && !isCutaway && !isXRay;
+        const isClosedUnexploded = (explodeFactor < 0.005) && !isCutaway;
 
-        // When a hollow organ is completely closed (0% explode, no cutaway, no X-ray),
+        // When a hollow organ is completely closed (0% explode, no cutaway),
         // or when viewing another organ in non-exploded mode, inner layers (idx > 0)
         // are physically enclosed inside Serosa/Adventitia (idx === 0) and should not render on the exterior.
         if (layerIdx > 0 && (isClosedUnexploded || (selectedId && selectedId !== organId))) {
@@ -2136,13 +2143,15 @@ export class SceneView {
 
         if (!selectedId) {
           mesh.visible = true;
-          mesh.material.transparent = isXRay;
-          mesh.material.opacity = isXRay ? 0.35 : 1.0;
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          mesh.material.depthWrite = true;
           if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
         } else if (selectedId === organId) {
           mesh.visible = true;
-          mesh.material.transparent = isXRay;
-          mesh.material.opacity = isXRay ? 0.45 : 1.0;
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          mesh.material.depthWrite = true;
           if (mesh.material.emissive) {
             if (activeWallLayerId && mesh.userData.wallLayerId === activeWallLayerId) {
               mesh.material.emissive.setHex(0x331111);
@@ -2157,6 +2166,7 @@ export class SceneView {
             mesh.visible = true;
             mesh.material.transparent = true;
             mesh.material.opacity = 0.12;
+            mesh.material.depthWrite = false;
             if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
           }
         }
@@ -2167,8 +2177,10 @@ export class SceneView {
 
       if (!selectedId) {
         mesh.visible = true;
-        mesh.material.transparent = isXRay || organId === 'peritoneum_omentum' || isBone;
-        mesh.material.opacity = isXRay ? 0.35 : (organId === 'peritoneum_omentum' ? 0.45 : (isBone ? 0.85 : 1.0));
+        const isOmentum = (organId === 'peritoneum_omentum');
+        mesh.material.transparent = isOmentum;
+        mesh.material.opacity = isOmentum ? 0.45 : 1.0;
+        mesh.material.depthWrite = true;
         if (mesh.material.emissive) {
           mesh.material.emissive.setHex(organId === 'gallbladder_tree' ? 0x064e3b : 0x000000);
         }
@@ -2191,9 +2203,9 @@ export class SceneView {
             mesh.material.depthWrite = true;
           } else {
             // Opaque solid organ with lobular acinar texture visible
-            mesh.material.transparent = isXRay;
-            mesh.material.opacity = isXRay ? 0.45 : 1.0;
-            mesh.material.depthWrite = !isXRay;
+            mesh.material.transparent = false;
+            mesh.material.opacity = 1.0;
+            mesh.material.depthWrite = true;
           }
         } else if (isBile || isPancreaticVessel || isDuodenum) {
           if (isIsolate) {
@@ -2215,10 +2227,10 @@ export class SceneView {
         }
       } else if (organId === selectedId) {
         mesh.visible = true;
-        // Opaque solid organ with authentic hepatic parenchyma texture visible
-        mesh.material.transparent = isXRay;
-        mesh.material.opacity = isXRay ? 0.45 : (isBone ? 0.85 : 1.0);
-        mesh.material.depthWrite = !isXRay;
+        // Opaque solid organ (Liver, etc.) with authentic texture visible
+        mesh.material.transparent = false;
+        mesh.material.opacity = 1.0;
+        mesh.material.depthWrite = true;
         if (mesh.material.emissive) mesh.material.emissive.setHex(selectedId === 'liver' ? 0x110800 : 0x000000);
       } else if (selectedId === 'liver' && isLiverOrVascular(organId)) {
         if (isIsolate) {
@@ -2241,7 +2253,7 @@ export class SceneView {
         // Related vascular branches remain visible
         mesh.visible = true;
         mesh.material.transparent = false;
-        mesh.material.opacity = 0.95;
+        mesh.material.opacity = 1.0;
         if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
       } else if (selectedId === 'portal_system' && ['small_intestine', 'large_intestine', 'stomach', 'pancreas', 'duodenum'].includes(organId)) {
         // When viewing portal circulation, show digestive organs in ghosted semi-transparency so mesenteric veins can be traced directly from gut to liver!
@@ -2256,6 +2268,7 @@ export class SceneView {
           mesh.visible = true;
           mesh.material.transparent = true;
           mesh.material.opacity = 0.12;
+          mesh.material.depthWrite = false;
           if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
         }
       }
@@ -2286,7 +2299,6 @@ export class SceneView {
     const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
     const selectedId = this.sceneVM.state.selectedOrganId;
     const isIsolate = this.dissectionVM.state.isIsolateMode;
-    const isXRay = this.dissectionVM.state.isXRayMode;
 
     // Neutral anatomical light gray palette (Tailwind slate-200 / clean elegant medical light gray)
     const cNeutralGray = new THREE.Color(0xe2e8f0);
@@ -2355,14 +2367,14 @@ export class SceneView {
           if (!selectedId) {
             // Whole system mode: All organs visible in uniform light gray
             l0.visible = true;
-            l0.material.transparent = isXRay;
-            l0.material.opacity = isXRay ? 0.35 : 1.0;
-            l0.material.depthWrite = !isXRay;
+            l0.material.transparent = false;
+            l0.material.opacity = 1.0;
+            l0.material.depthWrite = true;
           } else if (isThisSelected) {
             // Isolated / Selected organ: Solid, sharp, full heatmap
             l0.visible = true;
-            l0.material.transparent = isXRay;
-            l0.material.opacity = isXRay ? 0.45 : 1.0;
+            l0.material.transparent = false;
+            l0.material.opacity = 1.0;
             l0.material.depthWrite = true;
           } else {
             // Non-selected organs when one organ is isolated
@@ -2394,14 +2406,14 @@ export class SceneView {
           } else {
             // Selected organ or Whole System: restore layers
             const isClosedUnexploded = ((this.dissectionVM.state.explodeFactor || 0) < 0.005) &&
-                                       !this.dissectionVM.state.isCutawayOpen && !isXRay;
+                                       !this.dissectionVM.state.isCutawayOpen;
             layers.forEach((lMesh, idx) => {
               if (idx > 0 && isClosedUnexploded) {
                 lMesh.visible = false;
               } else {
                 lMesh.visible = true;
-                lMesh.material.transparent = isXRay;
-                lMesh.material.opacity = isXRay ? 0.35 : 1.0;
+                lMesh.material.transparent = false;
+                lMesh.material.opacity = 1.0;
                 lMesh.material.depthWrite = true;
               }
             });
@@ -2445,8 +2457,8 @@ export class SceneView {
           mesh.material.vertexColors = true;
           mesh.material.needsUpdate = true;
           if (isThisOrganIsolated) {
-            mesh.material.transparent = isXRay;
-            mesh.material.opacity = isXRay ? 0.45 : 1.0;
+            mesh.material.transparent = false;
+            mesh.material.opacity = 1.0;
             mesh.material.depthWrite = true;
           } else if (selectedId) {
             // Another organ is isolated: keep this non-isolated organ transparent light gray or hidden
@@ -2459,9 +2471,10 @@ export class SceneView {
           } else {
             // Whole system: uniform light gray
             mesh.visible = true;
-            mesh.material.transparent = isXRay || (organTargetId === 'peritoneum_omentum');
-            mesh.material.opacity = (organTargetId === 'peritoneum_omentum') ? 0.10 : (isXRay ? 0.35 : 1.0);
-            mesh.material.depthWrite = organTargetId !== 'peritoneum_omentum';
+            const isOmentum = (targetOrganId === 'peritoneum_omentum');
+            mesh.material.transparent = isOmentum;
+            mesh.material.opacity = isOmentum ? 0.25 : 1.0;
+            mesh.material.depthWrite = !isOmentum;
           }
         }
       } else {
@@ -2551,7 +2564,9 @@ export class SceneView {
       else return palG[1];
     }, 'gallbladder_tree');
 
-    const bileDuctTarget = this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
+    const bileDuctTarget = (this.bileDuctWallMeshes && this.bileDuctWallMeshes.length > 0)
+      ? this.bileDuctWallMeshes[0]
+      : this.clickableMeshes.find(m => m.name === 'Bile_duct' || (m.userData.organId === 'gallbladder_tree' && m.name.includes('Bile')));
     applyColorsToMesh(bileDuctTarget, () => palG[3], 'gallbladder_tree');
 
     // 7. Small Intestine Functional Heatmap (2 Discrete Steps: Jejunum -> Ileum)
@@ -2624,8 +2639,9 @@ export class SceneView {
           }
         } else {
           mesh.visible = true;
-          mesh.material.transparent = isXRay;
-          mesh.material.opacity = isXRay ? 0.35 : 0.85;
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          mesh.material.depthWrite = true;
           mesh.material.vertexColors = false;
           if (mesh.material.color) mesh.material.color.copy(cNeutralGray);
           mesh.material.needsUpdate = true;

@@ -267,6 +267,14 @@ export class ExplosionManager {
             mesh.userData.knollingAnchor = colonSerosa;
           }
         }
+      } else if (organId === 'gallbladder_tree' || (mesh.userData.wallLayerId && mesh.userData.wallLayerId.startsWith('bile_'))) {
+        const wallIdx = mesh.userData.wallLayerIndex;
+        if (wallIdx !== undefined && mesh.userData.wallLayerId && mesh.userData.wallLayerId.startsWith('bile_')) {
+          const gbMeshes = clickableMeshes.filter(m => m.userData.wallLayerId && m.userData.wallLayerId.startsWith('gb_'));
+          if (gbMeshes[wallIdx]) {
+            mesh.userData.knollingAnchor = gbMeshes[wallIdx];
+          }
+        }
       }
     });
 
@@ -473,6 +481,7 @@ export class ExplosionManager {
       'small_intestine',
       'large_intestine',
       'gallbladder_tree',
+      'bile_duct',
       'esophagus'
     ];
 
@@ -487,6 +496,7 @@ export class ExplosionManager {
     //   - Small Intestine: n_cut = (0.0, 0.0, 1.0) along anterior apex loops
     //   - Large Intestine: n_cut = (0.0, 0.0, 1.0) along anterior Taenia coli (zero X/Y shearing)
     //   - Gallbladder: n_cut = (-0.35, -0.38, 0.85) along fundus/body oblique cut
+    //   - Bile Duct: n_cut = (-0.25, -0.28, 0.90) along tubular midline
     //   - Esophagus: n_cut = (0.7, 0.0, 0.7) along left-anterior longitudinal midline
     const organStepVectors = {
       stomach: new THREE.Vector3(-2.8, 1.2, 9.8),
@@ -494,6 +504,7 @@ export class ExplosionManager {
       small_intestine: new THREE.Vector3(0.0, 0.0, 10.2),
       large_intestine: new THREE.Vector3(0.0, 0.0, 12.0),
       gallbladder_tree: new THREE.Vector3(-3.0, -3.2, 7.8),
+      bile_duct: new THREE.Vector3(-1.8, -2.0, 7.2),
       esophagus: new THREE.Vector3(4.5, 0.0, 5.5)
     };
 
@@ -503,6 +514,7 @@ export class ExplosionManager {
       small_intestine: 0xf87171,
       large_intestine: 0x84cc16,
       gallbladder_tree: 0x10b981,
+      bile_duct: 0x10b981,
       esophagus: 0xec4899
     };
 
@@ -520,7 +532,7 @@ export class ExplosionManager {
 
       if (!layerMeshes || layerMeshes.length === 0) return;
 
-      const isThisOrganSelected = (selectedOrganId === organId);
+      const isThisOrganSelected = (selectedOrganId === organId) || (selectedOrganId === 'gallbladder_tree' && organId === 'bile_duct');
       const N = layerMeshes.length;
       const stepVec = organStepVectors[organId] || new THREE.Vector3(-6.0, 1.0, 4.5);
       const guidePoints = [];

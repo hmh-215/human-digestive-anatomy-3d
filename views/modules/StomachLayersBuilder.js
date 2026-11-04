@@ -24,6 +24,7 @@ export class StomachLayersBuilder {
     this.smallIntestineWallMeshes = [];
     this.colonWallMeshes = [];
     this.gallbladderWallMeshes = [];
+    this.bileDuctWallMeshes = [];
     this.esophagusWallMeshes = [];
     this.baseCenterWorld = new THREE.Vector3(0.688, 0.339, 0.206);
 
@@ -730,7 +731,43 @@ export class StomachLayersBuilder {
       this._assignAnatomicalUVs(origGeo);
     }
 
-    const organData = (organsData || []).find(o => o.id === organId);
+    let organData = (organsData || []).find(o => o.id === organId);
+    if (!organData && organId === 'bile_duct') {
+      organData = {
+        id: 'bile_duct',
+        vietnameseName: 'Ống Dẫn Mật (Bile Duct)',
+        wallLayers: [
+          {
+            id: 'bile_adventitia',
+            name: 'Lớp 1: Vỏ Xơ Ngoài (Tunica Adventitia / Fibrosa)',
+            latinName: 'Tunica Fibrosa Ductus Choledochi',
+            layerOrder: 1,
+            color: '#84cc16'
+          },
+          {
+            id: 'bile_muscularis',
+            name: 'Lớp 2: Lớp Cơ Trơn & Cơ Vòng Oddi (Tunica Muscularis & Sphincter Oddi)',
+            latinName: 'Tunica Muscularis & Sphincter Oddi',
+            layerOrder: 2,
+            color: '#be123c'
+          },
+          {
+            id: 'bile_submucosa',
+            name: 'Lớp 3: Lớp Đệm Tuyến Dưới Niêm (Tela Submucosa & Glandulae Biliosae)',
+            latinName: 'Tela Submucosa & Glandulae Mucosae Biliosae',
+            layerOrder: 3,
+            color: '#e2e8f0'
+          },
+          {
+            id: 'bile_mucosa',
+            name: 'Lớp 4: Niêm Mạc Biểu Mô Trụ Đơn (Tunica Mucosa)',
+            latinName: 'Tunica Mucosa Ductus Biliaris',
+            layerOrder: 4,
+            color: '#eab308'
+          }
+        ]
+      };
+    }
     const wallLayersDef = (organData && organData.wallLayers) || [];
     const count = wallLayersDef.length || (organId === 'stomach' ? 6 : 5);
 
@@ -745,6 +782,7 @@ export class StomachLayersBuilder {
       small_intestine: 0.035,
       large_intestine: 0.44,
       gallbladder_tree: 0.08,
+      bile_duct: 0.042,
       esophagus: 0.12
     };
     const maxInset = safeMaxInsetMap[organId] !== undefined ? safeMaxInsetMap[organId] : 0.08;
@@ -763,6 +801,7 @@ export class StomachLayersBuilder {
       small_intestine: new THREE.Vector3(0.0, -10.0, 11.0),
       large_intestine: new THREE.Vector3(0.0, -4.0, 3.0),
       gallbladder_tree: new THREE.Vector3(-8.0, 2.0, 12.0),
+      bile_duct: new THREE.Vector3(-8.0, 2.0, 12.0),
       esophagus: new THREE.Vector3(2.0, 15.0, -4.0)
     };
     const sysVec = organSysVecs[organId] || new THREE.Vector3(0, 0, 5);
@@ -820,6 +859,11 @@ export class StomachLayersBuilder {
         new THREE.Vector3(-5.8, 112.5, 6.2),
         new THREE.Vector3(-4.5, 113.8, 7.5),
         new THREE.Vector3(-3.2, 114.5, 5.8)
+      ],
+      bile_duct: [
+        new THREE.Vector3(-4.5, 115.0, 3.5),
+        new THREE.Vector3(-3.0, 112.0, 3.5),
+        new THREE.Vector3(-2.0, 109.0, 3.2)
       ],
       small_intestine: [
         new THREE.Vector3(-2.0, 108.0, 5.5),
@@ -968,6 +1012,8 @@ export class StomachLayersBuilder {
       this.colonWallMeshes = layerMeshes;
     } else if (organId === 'gallbladder_tree') {
       this.gallbladderWallMeshes = layerMeshes;
+    } else if (organId === 'bile_duct') {
+      this.bileDuctWallMeshes = layerMeshes;
     } else if (organId === 'esophagus') {
       this.esophagusWallMeshes = layerMeshes;
     }
@@ -976,6 +1022,41 @@ export class StomachLayersBuilder {
   }
 
   _getMaterialsForOrgan(organId, tex) {
+    if (organId === 'bile_duct') {
+      return [
+        new THREE.MeshStandardMaterial({
+          map: tex.bileAdventitiaTexture,
+          roughness: 0.35,
+          metalness: 0.04,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.bileMuscleTexture,
+          bumpMap: tex.bileMuscleBump,
+          bumpScale: 0.02,
+          roughness: 0.45,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.bileSubmucosaTexture,
+          bumpMap: tex.bileSubmucosaBump,
+          bumpScale: 0.015,
+          roughness: 0.40,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        }),
+        new THREE.MeshStandardMaterial({
+          map: tex.bileMucosaTexture,
+          bumpMap: tex.bileMucosaBump,
+          bumpScale: 0.035,
+          roughness: 0.28,
+          metalness: 0.05,
+          side: THREE.DoubleSide
+        })
+      ];
+    }
+
     if (organId === 'gallbladder_tree') {
       return [
         new THREE.MeshStandardMaterial({
@@ -1276,7 +1357,7 @@ export class StomachLayersBuilder {
     const t = Math.max(0, Math.min(1, wallExplodeFactor || 0));
 
     this.organLayersMap.forEach((meshes, organId) => {
-      const shouldClipThisOrgan = isCutawayOpen && ((!selectedOrganId) || (selectedOrganId === organId));
+      const shouldClipThisOrgan = isCutawayOpen && ((!selectedOrganId) || (selectedOrganId === organId) || (selectedOrganId === 'gallbladder_tree' && organId === 'bile_duct'));
       const N = meshes.length;
 
       meshes.forEach((mesh, idx) => {
