@@ -5,7 +5,8 @@ import * as THREE from 'three';
  * 
  * Synthesizes anatomically accurate 3D procedural meshes for the peritoneal ligaments of the human liver:
  * 1. Falciform Ligament (Dây chằng liềm / Ligamentum falciforme hepatis):
- *    Double-layered glistening peritoneal crescent fold along the umbilical / interlobar groove.
+ *    Double-layered glistening peritoneal crescent fold along the umbilical / interlobar groove
+ *    between the Left Lobe (Segments II & III) and Segment IV (Thùy vuông).
  * 2. Round Ligament of the Liver (Dây chằng tròn gan / Ligamentum teres hepatis):
  *    Dense cylindrical fibrous cord (obliterated umbilical vein) running in the free inferior margin
  *    and into the umbilical fissure toward the left portal vein.
@@ -33,35 +34,35 @@ export class LiverLigamentsBuilder {
 
     // Common PBR Materials
     const falciformMat = new THREE.MeshStandardMaterial({
-      color: 0xf1f5f9,
+      color: 0xf8fafc,
       emissive: 0x0f172a,
-      emissiveIntensity: 0.1,
-      roughness: 0.22,
+      emissiveIntensity: 0.08,
+      roughness: 0.20,
       metalness: 0.05,
       transparent: true,
-      opacity: 0.72,
+      opacity: 0.70,
       side: THREE.DoubleSide,
-      depthWrite: true
+      depthWrite: false
     });
 
     const coronaryMat = new THREE.MeshStandardMaterial({
-      color: 0xf8fafc,
+      color: 0xf1f5f9,
       emissive: 0x0f172a,
-      emissiveIntensity: 0.1,
-      roughness: 0.26,
+      emissiveIntensity: 0.08,
+      roughness: 0.22,
       metalness: 0.05,
       transparent: true,
       opacity: 0.68,
       side: THREE.DoubleSide,
-      depthWrite: true
+      depthWrite: false
     });
 
     const roundLigMat = new THREE.MeshStandardMaterial({
       color: 0xfef08a,
-      emissive: 0x422006,
+      emissive: 0x713f12,
       emissiveIntensity: 0.15,
-      roughness: 0.42,
-      metalness: 0.06,
+      roughness: 0.38,
+      metalness: 0.08,
       side: THREE.DoubleSide
     });
 
@@ -69,34 +70,38 @@ export class LiverLigamentsBuilder {
       color: 0xe2e8f0,
       emissive: 0x1e293b,
       emissiveIntensity: 0.12,
-      roughness: 0.38,
-      metalness: 0.05,
+      roughness: 0.35,
+      metalness: 0.06,
       side: THREE.DoubleSide
     });
 
     // =========================================================================
     // 1. DÂY CHẰNG LIỀM (Falciform Ligament / Ligamentum Falciforme Hepatis)
+    // Runs in the true anatomical interlobar groove between the Left Lobe (Segments II & III)
+    // and Segment IV (Thùy vuông), from the umbilical notch up to the superior coronary leaf.
     // =========================================================================
+    // Measured surface coordinates along the interlobar fissure + normal offset to prevent clipping
     const visceralP = [
-      new THREE.Vector3(-2.78, 113.23, 8.81),
-      new THREE.Vector3(-2.74, 113.83, 9.04),
-      new THREE.Vector3(-2.77, 116.16, 9.40),
-      new THREE.Vector3(-2.87, 117.96, 9.64),
-      new THREE.Vector3(-2.94, 120.07, 9.83),
-      new THREE.Vector3(-2.91, 122.14, 9.68),
-      new THREE.Vector3(-2.68, 124.01, 8.65),
-      new THREE.Vector3(-2.81, 125.13, 6.59)
+      new THREE.Vector3(0.65, 115.60, 9.25),
+      new THREE.Vector3(0.72, 117.10, 9.60),
+      new THREE.Vector3(0.78, 118.60, 9.85),
+      new THREE.Vector3(0.75, 120.10, 10.00),
+      new THREE.Vector3(0.60, 121.60, 9.98),
+      new THREE.Vector3(0.45, 122.90, 9.68),
+      new THREE.Vector3(0.25, 123.90, 8.88),
+      new THREE.Vector3(0.06, 124.75, 5.68)
     ];
 
+    // Parietal reflection extending toward anterior abdominal wall and anterior diaphragm
     const parietalA = [
-      new THREE.Vector3(-2.50, 112.20, 10.40),
-      new THREE.Vector3(-2.55, 113.40, 10.75),
-      new THREE.Vector3(-2.60, 115.80, 11.20),
-      new THREE.Vector3(-2.70, 118.00, 11.50),
-      new THREE.Vector3(-2.75, 120.20, 11.60),
-      new THREE.Vector3(-2.70, 122.40, 11.35),
-      new THREE.Vector3(-2.55, 124.30, 10.15),
-      new THREE.Vector3(-2.81, 125.70, 7.50)
+      new THREE.Vector3(0.65, 114.20, 10.60),
+      new THREE.Vector3(0.72, 116.00, 11.10),
+      new THREE.Vector3(0.78, 117.80, 11.55),
+      new THREE.Vector3(0.75, 119.50, 11.75),
+      new THREE.Vector3(0.60, 121.20, 11.65),
+      new THREE.Vector3(0.45, 122.80, 11.35),
+      new THREE.Vector3(0.25, 124.30, 10.35),
+      new THREE.Vector3(0.06, 125.65, 6.90)
     ];
 
     const curveV = new THREE.CatmullRomCurve3(visceralP);
@@ -145,7 +150,7 @@ export class LiverLigamentsBuilder {
       vietnameseName: 'Dây Chằng Liềm',
       latinName: 'Ligamentum Falciforme Hepatis',
       englishName: 'Falciform Ligament of Liver',
-      description: 'Nếp phúc mạc hình lưỡi liềm bám từ mặt trước-trên của gan lên cơ hoành và thành bụng trước, phân chia hình thể ngoài gan thành thùy phải và thùy trái.',
+      description: 'Nếp phúc mạc hình lưỡi liềm bám từ rãnh liên thùy mặt trước-trên của gan lên cơ hoành và thành bụng trước, phân chia hình thể ngoài gan thành thùy phải và thùy trái.',
       clinicalNotes: 'Trong phẫu thuật nội soi ổ bụng, dây chằng liềm là mốc định vị đường giữa và là ranh giới phân tách thùy gan trái (HPT IV) khỏi thùy gan phải.',
       initialPos: falciformMesh.position.clone(),
       initialScale: falciformMesh.scale.clone(),
@@ -156,19 +161,23 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 2. DÂY CHẰNG TRÒN GAN (Round Ligament / Ligamentum Teres Hepatis)
+    // Dense fibrous cord in the free inferior margin of falciform ligament,
+    // running from the umbilical fissure / notch toward the umbilicus, and posteriorly
+    // connecting to the left portal vein in the fissure for ligamentum teres.
     // =========================================================================
     const roundLigPoints = [
-      new THREE.Vector3(-2.56, 116.95, 3.08),  // Rốn gan / Nhánh trái TMC
-      new THREE.Vector3(-2.55, 117.15, 4.00),
-      new THREE.Vector3(-2.56, 116.19, 5.49),
-      new THREE.Vector3(-2.69, 115.50, 6.96),  // Rãnh dây chằng tròn ở mặt tạng
-      new THREE.Vector3(-2.78, 113.23, 8.81),  // Khuyết dây chằng tròn ở bờ dưới gan
-      new THREE.Vector3(-2.50, 111.50, 10.20), // Chạy trong bờ dưới tự do của dây chằng liềm
-      new THREE.Vector3(-2.10, 109.00, 11.20),
-      new THREE.Vector3(-1.60, 106.50, 12.00)  // Hướng về rốn (Umbilicus)
+      new THREE.Vector3(0.35, 117.80, 3.80),   // Rốn gan / Nhánh trái Tĩnh mạch cửa
+      new THREE.Vector3(0.50, 117.10, 5.80),
+      new THREE.Vector3(0.60, 116.30, 7.80),   // Rãnh dây chằng tròn mặt tạng
+      new THREE.Vector3(0.65, 115.60, 9.25),   // Khuyết dây chằng tròn bờ dưới gan
+      new THREE.Vector3(0.68, 114.20, 10.10),  // Bờ dưới tự do của dây chằng liềm
+      new THREE.Vector3(0.72, 112.50, 10.80),
+      new THREE.Vector3(0.76, 110.50, 11.40),
+      new THREE.Vector3(0.80, 108.00, 11.90),
+      new THREE.Vector3(0.85, 105.00, 12.30)   // Hướng về rốn (Umbilicus)
     ];
     const roundLigCurve = new THREE.CatmullRomCurve3(roundLigPoints);
-    const roundLigGeom = new THREE.TubeGeometry(roundLigCurve, 48, 0.15, 12, false);
+    const roundLigGeom = new THREE.TubeGeometry(roundLigCurve, 48, 0.13, 12, false);
     const roundLigMesh = new THREE.Mesh(roundLigGeom, roundLigMat);
     roundLigMesh.name = 'round_ligament';
     roundLigMesh.castShadow = true;
@@ -190,19 +199,24 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 3. DÂY CHẰNG VÀNH - LÁ TRÊN (Coronary Ligament - Superior Leaf)
+    // Sits atop the superior crest of the liver with smooth normal offset (+Y)
+    // bounding the superior border of the Bare Area.
     // =========================================================================
     const supLeafInner = [
-      new THREE.Vector3(-9.93, 123.86, 0.61),
-      new THREE.Vector3(-7.59, 125.41, 1.02),
-      new THREE.Vector3(-5.43, 125.77, 2.64),
-      new THREE.Vector3(-3.38, 125.50, 3.77),
-      new THREE.Vector3(-0.53, 124.81, 4.84),
-      new THREE.Vector3(2.94, 124.67, 5.01),
-      new THREE.Vector3(5.52, 124.31, 3.88),
-      new THREE.Vector3(8.11, 122.88, 3.61)
+      new THREE.Vector3(-10.13, 123.60, 2.14),
+      new THREE.Vector3(-9.22,  124.68, 0.67),
+      new THREE.Vector3(-8.03,  125.38, 1.47),
+      new THREE.Vector3(-6.31,  125.82, 1.72),
+      new THREE.Vector3(-4.99,  125.86, 3.04),
+      new THREE.Vector3(-2.86,  125.48, 5.08),
+      new THREE.Vector3( 0.06,  124.78, 5.57), // Điểm gặp Dây chằng liềm
+      new THREE.Vector3( 2.94,  124.78, 5.01),
+      new THREE.Vector3( 5.02,  124.56, 4.02),
+      new THREE.Vector3( 7.13,  123.68, 3.85),
+      new THREE.Vector3( 7.88,  123.18, 3.15)  // Đỉnh thùy trái gan
     ];
 
-    const supLeafOuter = supLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y + 0.55, pt.z + 0.45));
+    const supLeafOuter = supLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y + 0.50, pt.z + 0.35));
     const supCurveI = new THREE.CatmullRomCurve3(supLeafInner);
     const supCurveO = new THREE.CatmullRomCurve3(supLeafOuter);
     const supSteps = 32;
@@ -248,17 +262,21 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 4. DÂY CHẰNG VÀNH - LÁ DƯỚI (Coronary Ligament - Inferior Leaf)
+    // Sits at the posterior inferior border of the Bare Area, offset smoothly outward (-Z, -Y).
     // =========================================================================
     const infLeafInner = [
-      new THREE.Vector3(-9.56, 115.08, -3.13),
-      new THREE.Vector3(-7.90, 115.31, -4.86),
-      new THREE.Vector3(-5.74, 115.02, -2.15),
-      new THREE.Vector3(-4.06, 115.54, 0.57)
+      new THREE.Vector3(-9.60, 117.20, -3.55),
+      new THREE.Vector3(-8.80, 117.18, -4.50),
+      new THREE.Vector3(-7.92, 117.20, -5.15),
+      new THREE.Vector3(-6.35, 117.45, -5.45),
+      new THREE.Vector3(-4.77, 117.82, -4.88),
+      new THREE.Vector3(-3.61, 117.65, -3.50),
+      new THREE.Vector3(-2.00, 117.85, -1.25)
     ];
-    const infLeafOuter = infLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y - 0.50, pt.z - 0.55));
+    const infLeafOuter = infLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y - 0.45, pt.z - 0.50));
     const infCurveI = new THREE.CatmullRomCurve3(infLeafInner);
     const infCurveO = new THREE.CatmullRomCurve3(infLeafOuter);
-    const infSteps = 20;
+    const infSteps = 24;
     const ptsII = infCurveI.getPoints(infSteps);
     const ptsIO = infCurveO.getPoints(infSteps);
 
@@ -301,12 +319,13 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 5. DÂY CHẰNG TAM GIÁC TRÁI (Left Triangular Ligament)
+    // Slender peritoneal triangle continuing smoothly from the left tip of superior leaf.
     // =========================================================================
     const leftTriGeom = new THREE.BufferGeometry();
     const lPos = [
-      8.11, 122.88, 3.61,  // Đỉnh bám đầu trái gan
-      9.60, 124.20, 2.80,  // Đỉnh vươn ra cơ hoành
-      6.80, 123.60, 3.80   // Gốc liên tiếp lá trên
+      7.88, 123.18, 3.15,  // Đỉnh bám đầu trái gan (khớp lá trên)
+      8.90, 123.90, 2.50,  // Đỉnh vươn ra cơ hoành
+      6.80, 123.68, 3.85   // Gốc liên tiếp lá trên
     ];
     leftTriGeom.setAttribute('position', new THREE.Float32BufferAttribute(lPos, 3));
     leftTriGeom.setIndex([0, 1, 2]);
@@ -331,12 +350,13 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 6. DÂY CHẰNG TAM GIÁC PHẢI (Right Triangular Ligament)
+    // Lateral apex of the bare area where superior and inferior leaves converge.
     // =========================================================================
     const rightTriGeom = new THREE.BufferGeometry();
     const rPos = [
-      -9.93, 123.86, 0.61,  // Gặp lá trên
-      -10.80, 121.50, -1.20, // Đỉnh nhọn bám cơ hoành
-      -9.56, 115.08, -3.13  // Gặp lá dưới
+      -10.13, 123.60,  2.14,  // Gặp lá trên
+      -11.20, 120.50, -0.80,  // Đỉnh nhọn bám cơ hoành
+      -9.60,  117.20, -3.55   // Gặp lá dưới
     ];
     rightTriGeom.setAttribute('position', new THREE.Float32BufferAttribute(rPos, 3));
     rightTriGeom.setIndex([0, 1, 2]);
@@ -361,12 +381,13 @@ export class LiverLigamentsBuilder {
 
     // =========================================================================
     // 7. DÂY CHẰNG TĨNH MẠCH (Ligamentum Venosum)
+    // Fibrous cord in the posterior fissure for ligamentum venosum between Caudate lobe (I) and Left lobe (II).
     // =========================================================================
     const venosumPoints = [
-      new THREE.Vector3(-2.56, 116.95, 3.08),  // Rốn gan (nhánh trái TMC)
-      new THREE.Vector3(-2.25, 118.80, 2.20),
-      new THREE.Vector3(-2.00, 121.20, 1.30),
-      new THREE.Vector3(-1.80, 123.50, 0.50)   // Đổ vào Tĩnh mạch chủ dưới (IVC)
+      new THREE.Vector3( 0.35, 117.80, 3.80),  // Rốn gan (nhánh trái TMC)
+      new THREE.Vector3( 0.15, 119.50, 2.50),
+      new THREE.Vector3(-0.10, 121.50, 1.60),
+      new THREE.Vector3(-0.40, 123.50, 0.80)   // Đổ vào Tĩnh mạch chủ dưới (IVC)
     ];
     const venosumCurve = new THREE.CatmullRomCurve3(venosumPoints);
     const venosumGeom = new THREE.TubeGeometry(venosumCurve, 32, 0.10, 10, false);
@@ -395,7 +416,7 @@ export class LiverLigamentsBuilder {
       allVisceralMeshes.push(mesh);
     });
 
-    console.log(`[LiverLigamentsBuilder] Đã dựng thành công 7 dây chằng gan 3D chính thống.`);
+    console.log(`[LiverLigamentsBuilder] Đã dựng thành công 7 dây chằng gan 3D chính thống (tọa độ rãnh liên thùy chuẩn xác).`);
     return this.ligamentMeshes;
   }
 

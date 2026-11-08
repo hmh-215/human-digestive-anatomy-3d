@@ -87,16 +87,31 @@ export class ExplosionManager {
 
       if (organId === 'liver') {
         if (mesh.userData.isLigament) {
-          const anchorTag = (mesh.userData.couinaudAnchor || '').toLowerCase();
-          if (anchorTag.includes('segment_i') && !anchorTag.includes('segment_iv')) subVec.set(0.5, 4.5, -2.5);
-          else if (anchorTag.includes('segment_ii')) subVec.set(6.5, 3.8, -1.0);
-          else if (anchorTag.includes('segment_iii')) subVec.set(6.8, -3.2, 1.8);
-          else if (anchorTag.includes('segment_iv')) subVec.set(1.5, -2.8, 2.2);
-          else if (anchorTag.includes('segment_v') && !anchorTag.includes('segment_vi') && !anchorTag.includes('segment_vii') && !anchorTag.includes('segment_viii')) subVec.set(-3.2, -4.2, 2.0);
-          else if (anchorTag.includes('segment_vi') && !anchorTag.includes('segment_vii')) subVec.set(-8.2, -3.8, -1.5);
-          else if (anchorTag.includes('segment_vii')) subVec.set(-8.0, 4.2, -1.5);
-          else if (anchorTag.includes('segment_viii')) subVec.set(-3.0, 4.8, 1.5);
-          else subVec.set(0.0, 0.0, 0.0);
+          const ligName = (mesh.name || mesh.userData.subPartId || '').toLowerCase();
+          if (ligName.includes('falciform')) {
+            // Lifts forward (+Z) away from the anterior groove for unobstructed inspection
+            subVec.set(0.8, 1.2, 7.5);
+          } else if (ligName.includes('round')) {
+            // Lifts forward (+Z) and downward toward anterior abdominal wall/umbilicus
+            subVec.set(1.0, -2.5, 8.5);
+          } else if (ligName.includes('coronary_ligament_superior')) {
+            // Lifts upward (+Y) above the liver dome, freeing Segments VIII & II
+            subVec.set(-1.0, 8.2, 0.5);
+          } else if (ligName.includes('coronary_ligament_inferior')) {
+            // Lifts downward and backward behind the right lobe
+            subVec.set(-6.5, -4.5, -7.0);
+          } else if (ligName.includes('left_triangular')) {
+            // Expands outward to the left away from the left lobe
+            subVec.set(10.5, 4.5, 0.5);
+          } else if (ligName.includes('right_triangular')) {
+            // Expands outward to the right away from the right lobe
+            subVec.set(-11.5, 4.5, -1.0);
+          } else if (ligName.includes('venosum')) {
+            // Lifts backward into posterior plane away from caudate lobe
+            subVec.set(0.0, 3.8, -5.5);
+          } else {
+            subVec.set(0.0, 4.0, 4.0);
+          }
         } else if (low.includes('(i)')) subVec.set(0.5, 4.5, -2.5);
         else if (low.includes('(ii)')) subVec.set(6.5, 3.8, -1.0);
         else if (low.includes('(iii)')) subVec.set(6.8, -3.2, 1.8);

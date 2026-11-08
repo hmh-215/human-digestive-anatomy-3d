@@ -3,9 +3,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261103_v22';
 import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261103_v22';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261108_v25';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261108_v26';
 import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261103_v22';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261108_v25';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261108_v26';
 
 /**
  * SceneView.js
