@@ -503,8 +503,8 @@ export class ExplosionManager {
       duodenum: new THREE.Vector3(-5.2, 0.8, 8.5),
       small_intestine: new THREE.Vector3(0.0, 0.0, 10.2),
       large_intestine: new THREE.Vector3(0.0, 0.0, 12.0),
-      gallbladder_tree: new THREE.Vector3(-3.0, -3.2, 7.8),
-      bile_duct: new THREE.Vector3(-1.8, -2.0, 7.2),
+      gallbladder_tree: new THREE.Vector3(6.8, 0.0, 0.0),
+      bile_duct: new THREE.Vector3(6.8, 0.0, 0.0),
       esophagus: new THREE.Vector3(4.5, 0.0, 5.5)
     };
 
@@ -563,13 +563,13 @@ export class ExplosionManager {
         mesh.position.copy(pos);
         mesh.updateWorldMatrix(true, false);
 
-        if (isThisOrganSelected && t > 0.02 && mesh.visible) {
+        if (selectedOrganId === organId && t > 0.02 && mesh.visible) {
           tempBox.setFromObject(mesh);
           guidePoints.push(tempBox.getCenter(new THREE.Vector3()));
         }
       });
 
-      if (isThisOrganSelected && guidePoints.length >= 2) {
+      if (selectedOrganId === organId && guidePoints.length >= 2) {
         activeGuidePoints = guidePoints;
         activeGuideColor = organColors[organId] || 0xe11d48;
       }

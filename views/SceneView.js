@@ -2026,6 +2026,12 @@ export class SceneView {
         if (this.camera.position.z < 38.0) {
           this.camera.position.set(0.0, -1.0, 42.0);
         }
+      } else if (this.sceneVM.state.selectedOrganId === 'gallbladder_tree') {
+        const t = Math.max(0, Math.min(1, factor || 0));
+        const center = this._getGallbladderCombinedCenter();
+        const dist = 6.2 + t * 6.6;
+        this.controls.target.set(center.x, center.y, center.z);
+        this.camera.position.set(center.x, center.y + 0.15, center.z + dist);
       }
     });
 
@@ -2133,10 +2139,14 @@ export class SceneView {
         const layerIdx = mesh.userData.wallLayerIndex || 0;
         const isClosedUnexploded = (explodeFactor < 0.005) && !isCutaway;
 
+        const isGBTreeSelected = (selectedId === 'gallbladder_tree') &&
+          (organId === 'gallbladder_tree' || organId === 'bile_duct' || (mesh.userData.wallLayerId && mesh.userData.wallLayerId.startsWith('bile_')));
+        const isSelectedOrChild = (selectedId === organId) || isGBTreeSelected;
+
         // When a hollow organ is completely closed (0% explode, no cutaway),
         // or when viewing another organ in non-exploded mode, inner layers (idx > 0)
         // are physically enclosed inside Serosa/Adventitia (idx === 0) and should not render on the exterior.
-        if (layerIdx > 0 && (isClosedUnexploded || (selectedId && selectedId !== organId))) {
+        if (layerIdx > 0 && (isClosedUnexploded || (selectedId && !isSelectedOrChild))) {
           mesh.visible = false;
           return;
         }
@@ -2147,7 +2157,7 @@ export class SceneView {
           mesh.material.opacity = 1.0;
           mesh.material.depthWrite = true;
           if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
-        } else if (selectedId === organId) {
+        } else if (isSelectedOrChild) {
           mesh.visible = true;
           mesh.material.transparent = false;
           mesh.material.opacity = 1.0;
@@ -2354,7 +2364,8 @@ export class SceneView {
     if (this.stomachBuilder && this.stomachBuilder.organLayersMap) {
       this.stomachBuilder.organLayersMap.forEach((layers, organId) => {
         if (!layers || layers.length === 0) return;
-        const isThisSelected = (selectedId === organId);
+        const isThisSelected = (selectedId === organId) ||
+          (selectedId === 'gallbladder_tree' && organId === 'bile_duct');
 
         if (isRegions) {
           // Hide all inner concentric layers in heatmap mode
@@ -2707,14 +2718,29 @@ export class SceneView {
     );
   }
 
-  focusGallbladder() {
-    const center = this.stomachBuilder
-      ? this.stomachBuilder.getBaseCenter('gallbladder_tree')
-      : new THREE.Vector3(-0.6, 0.3, 0.2);
+  _getGallbladderCombinedCenter() {
+    const bbox = new THREE.Box3();
+    const meshes = [
+      ...(this.gallbladderWallMeshes || []),
+      ...(this.bileDuctWallMeshes || [])
+    ];
+    if (meshes.length > 0) {
+      meshes.forEach(m => {
+        m.updateWorldMatrix(true, false);
+        bbox.expandByObject(m);
+      });
+      return bbox.getCenter(new THREE.Vector3());
+    }
+    return new THREE.Vector3(-0.4, 0.1, 0.1);
+  }
 
+  focusGallbladder() {
+    const center = this._getGallbladderCombinedCenter();
+    const t = Math.max(0, Math.min(1, this.dissectionVM?.state?.explodeFactor || 0));
+    const dist = 6.2 + t * 6.6;
     this._smoothMoveCameraTarget(
-      [center.x - 0.15, center.y + 0.05, center.z],
-      [center.x - 0.15, center.y + 0.18, center.z + 4.4]
+      [center.x, center.y, center.z],
+      [center.x, center.y + 0.15, center.z + dist]
     );
   }
 
