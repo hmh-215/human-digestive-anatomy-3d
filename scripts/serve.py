@@ -1,3 +1,4 @@
+import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 class NoCacheThreadingHandler(SimpleHTTPRequestHandler):
@@ -6,7 +7,12 @@ class NoCacheThreadingHandler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         super().end_headers()
 
-if __name__ == '__main__':
-    server = ThreadingHTTPServer(('0.0.0.0', 8085), NoCacheThreadingHandler)
-    print("Server running on port 8085 (ThreadingHTTPServer)", flush=True)
+def run_port(port):
+    server = ThreadingHTTPServer(('0.0.0.0', port), NoCacheThreadingHandler)
+    print(f"Server running on http://localhost:{port} (ThreadingHTTPServer)", flush=True)
     server.serve_forever()
+
+if __name__ == '__main__':
+    t1 = threading.Thread(target=run_port, args=(8080,), daemon=True)
+    t1.start()
+    run_port(8085)

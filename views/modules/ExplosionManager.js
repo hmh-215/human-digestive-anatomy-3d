@@ -86,7 +86,18 @@ export class ExplosionManager {
       const subVec = new THREE.Vector3(0, 0, 0);
 
       if (organId === 'liver') {
-        if (low.includes('(i)')) subVec.set(0.5, 4.5, -2.5);
+        if (mesh.userData.isLigament) {
+          const anchorTag = (mesh.userData.couinaudAnchor || '').toLowerCase();
+          if (anchorTag.includes('segment_i') && !anchorTag.includes('segment_iv')) subVec.set(0.5, 4.5, -2.5);
+          else if (anchorTag.includes('segment_ii')) subVec.set(6.5, 3.8, -1.0);
+          else if (anchorTag.includes('segment_iii')) subVec.set(6.8, -3.2, 1.8);
+          else if (anchorTag.includes('segment_iv')) subVec.set(1.5, -2.8, 2.2);
+          else if (anchorTag.includes('segment_v') && !anchorTag.includes('segment_vi') && !anchorTag.includes('segment_vii') && !anchorTag.includes('segment_viii')) subVec.set(-3.2, -4.2, 2.0);
+          else if (anchorTag.includes('segment_vi') && !anchorTag.includes('segment_vii')) subVec.set(-8.2, -3.8, -1.5);
+          else if (anchorTag.includes('segment_vii')) subVec.set(-8.0, 4.2, -1.5);
+          else if (anchorTag.includes('segment_viii')) subVec.set(-3.0, 4.8, 1.5);
+          else subVec.set(0.0, 0.0, 0.0);
+        } else if (low.includes('(i)')) subVec.set(0.5, 4.5, -2.5);
         else if (low.includes('(ii)')) subVec.set(6.5, 3.8, -1.0);
         else if (low.includes('(iii)')) subVec.set(6.8, -3.2, 1.8);
         else if (low.includes('(iv)')) subVec.set(1.5, -2.8, 2.2);
@@ -274,6 +285,17 @@ export class ExplosionManager {
           if (gbMeshes[wallIdx]) {
             mesh.userData.knollingAnchor = gbMeshes[wallIdx];
           }
+        }
+      } else if (mesh.userData.isLigament) {
+        const anchorTag = (mesh.userData.couinaudAnchor || '').toLowerCase();
+        const cRoman = anchorTag.replace('segment_', '');
+        const anchorMesh = clickableMeshes.find(m => {
+          if (m.userData.organId !== 'liver' || m.userData.isLigament) return false;
+          const mName = (m.userData.rawName || m.name || '').toLowerCase();
+          return mName.includes(`(${cRoman})`) || mName.includes(`_${cRoman}`) || (m.userData.couinaudSeg && m.userData.couinaudSeg.toLowerCase().includes(cRoman));
+        });
+        if (anchorMesh) {
+          mesh.userData.knollingAnchor = anchorMesh;
         }
       }
     });

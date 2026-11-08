@@ -3,8 +3,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261103_v22';
 import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261103_v22';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261103_v22';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261108_v25';
 import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261103_v22';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261108_v25';
 
 /**
  * SceneView.js
@@ -71,6 +72,8 @@ export class SceneView {
     // Initialize specialized 3D & UI overlay modules
     this.proceduralTextures = new ProceduralTextures();
     this.stomachBuilder = new StomachLayersBuilder(this.proceduralTextures);
+    this.liverLigamentsBuilder = new LiverLigamentsBuilder();
+    this.liverLigaments = [];
     this.hoverCallout = new HoverCalloutView(this.container);
     this.explosionManager = null;
 
@@ -575,6 +578,13 @@ export class SceneView {
       }
     }
 
+    // Synthesize 7 Peritoneal Ligaments of the Human Liver
+    this.liverLigaments = this.liverLigamentsBuilder.buildLigaments(
+      rootGroup,
+      this.clickableMeshes,
+      this.allVisceralMeshes
+    );
+
     // Normalize bounding box of digestive system to target height 9.8 centered at origin
     this.masterRoot.updateMatrixWorld(true);
     const digestiveBBox = new THREE.Box3();
@@ -1044,6 +1054,20 @@ export class SceneView {
    * Formats human-readable Vietnamese/Latin metadata for any hovered 3D mesh.
    */
   _buildHoverPayload(mesh, screenX, screenY) {
+    if (mesh.userData && mesh.userData.isLigament) {
+      return {
+        organId: 'liver',
+        wallLayerId: null,
+        x: screenX,
+        y: screenY,
+        tag: 'DÂY CHẰNG GAN',
+        badge: mesh.userData.latinName || 'Dây Chằng',
+        title: mesh.userData.vietnameseName || mesh.name,
+        subtitle: `${mesh.userData.description || ''} ${mesh.userData.clinicalNotes || ''}`.trim(),
+        color: '#0284c7'
+      };
+    }
+
     const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
     const organId = mesh.userData.organId;
 
@@ -2135,6 +2159,32 @@ export class SceneView {
         return;
       }
 
+      if (mesh.userData.isLigament) {
+        if (!selectedId || selectedId === 'liver') {
+          mesh.visible = true;
+          if (mesh.name === 'falciform_ligament' || mesh.name.startsWith('coronary_') || mesh.name.includes('triangular')) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.70;
+            mesh.material.depthWrite = true;
+          } else {
+            mesh.material.transparent = false;
+            mesh.material.opacity = 1.0;
+            mesh.material.depthWrite = true;
+          }
+          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        } else {
+          if (isIsolate) {
+            mesh.visible = false;
+          } else {
+            mesh.visible = true;
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.08;
+            mesh.material.depthWrite = false;
+          }
+        }
+        return;
+      }
+
       if (isWallLayer) {
         const layerIdx = mesh.userData.wallLayerIndex || 0;
         const isClosedUnexploded = (explodeFactor < 0.005) && !isCutaway;
@@ -2603,6 +2653,7 @@ export class SceneView {
     const palLiver = this._getThermalPalette(8);
     this.clickableMeshes.forEach(mesh => {
       if (mesh.userData.organId !== 'liver') return;
+      if (mesh.userData.isLigament) return; // Ligaments retain their pristine glistening peritoneal texture
       const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
       const segMatch = low.match(/\((i|ii|iii|iv|v|vi|vii|viii)\)/i);
       const roman = segMatch ? segMatch[1].toUpperCase() : null;
@@ -2661,6 +2712,21 @@ export class SceneView {
         updateMaterialHeatmapState(mesh, false);
       }
     });
+
+    // 11. Ensure liver ligaments remain visible when Liver or Whole System is active
+    if (this.liverLigaments) {
+      this.liverLigaments.forEach(mesh => {
+        if (!selectedId || selectedId === 'liver') {
+          mesh.visible = true;
+        } else {
+          mesh.visible = !isIsolate;
+          if (mesh.visible) {
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.08;
+          }
+        }
+      });
+    }
   }
 
   _highlightActiveWallLayer(layerId) {
