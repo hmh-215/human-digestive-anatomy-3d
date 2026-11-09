@@ -163,28 +163,47 @@ export class ExplosionManager {
         else if (low.includes('left_hepatic')) subVec.set(2.0, 2.5, 1.0);
         else subVec.set(0.0, 4.0, -2.0);
       } else if (organId === 'oral_cavity') {
-        const isUpper = low.includes('maxill') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
-        const isLower = low.includes('mandib') || (!isUpper && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')));
-        if (isLower) {
-          subVec.set(0.0, -2.5, 2.5);
-        } else if (isUpper) {
-          subVec.set(0.0, 2.5, 2.5);
-        } else if (low.includes('gingiva')) {
-          subVec.set(0.0, -1.8, 2.5);
-        } else if (low.includes('tongue')) {
-          subVec.set(0.0, -0.5, 3.8);
-        } else if (low.includes('naso')) {
-          subVec.set(0.0, 3.5, -2.0);
-        } else if (low.includes('oro')) {
-          subVec.set(0.0, 1.2, -2.5);
-        } else if (low.includes('laryngo')) {
-          subVec.set(0.0, -1.8, -2.0);
+        const isRight = low.endsWith('r') || low.includes('_r') || low.includes('right');
+
+        // 1. Salivary Glands: Parsed first so submandibular is never falsely classified under 'mandib'
+        if (low.includes('gland')) {
+          const signX = isRight ? -1.0 : 1.0;
+          if (low.includes('parotid')) {
+            const isAcc = low.includes('accessory');
+            subVec.set(signX * 4.8, isAcc ? 1.0 : 0.4, isAcc ? 0.6 : -0.6);
+          } else if (low.includes('submandibular')) {
+            subVec.set(signX * 3.8, -2.6, 1.2);
+          } else if (low.includes('sublingual')) {
+            subVec.set(signX * 2.2, -1.2, 3.2);
+          } else {
+            subVec.set(signX * 4.0, 0.0, 0.0);
+          }
+        }
+        // 2. Upper Dental Apparatus: Maxilla + Upper Teeth + Upper Gingiva (Elevated superior arch)
+        else if (low.includes('maxill') || low.includes('upper_') || (low.includes('upper') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar') || low.includes('gingiva')))) {
+          subVec.set(0.0, 3.6, 0.8);
+        }
+        // 3. Lower Dental Apparatus: Mandible + Lower Teeth + Lower Gingiva (Depressed inferior arch)
+        else if (low.includes('mandib') || low.includes('lower_') || (low.includes('lower') && (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar') || low.includes('gingiva')))) {
+          subVec.set(0.0, -3.6, 0.8);
+        }
+        // 4. Tongue: Clean central forward projection with zero arch collision
+        else if (low.includes('tongue')) {
+          subVec.set(0.0, 0.0, 4.2);
+        }
+        // 5. Pharynx & Soft Palate: Posterior depth column with vertical stratification
+        else if (low.includes('naso')) {
+          subVec.set(0.0, 2.5, -3.2);
         } else if (low.includes('palate') || low.includes('uvula')) {
-          subVec.set(0.0, 1.2, -1.5);
-        } else if (low.includes('epiglottis') || low.includes('hyoid')) {
-          subVec.set(0.0, -1.5, 0.5);
-        } else if (low.includes('gland')) {
-          subVec.set(low.includes('r') ? -4.5 : 4.5, 0.5, 0.0);
+          subVec.set(0.0, 1.2, -2.6);
+        } else if (low.includes('oro')) {
+          subVec.set(0.0, 0.0, -3.6);
+        } else if (low.includes('epiglottis')) {
+          subVec.set(0.0, -1.4, -2.2);
+        } else if (low.includes('hyoid')) {
+          subVec.set(0.0, -2.6, -0.6);
+        } else if (low.includes('laryngo')) {
+          subVec.set(0.0, -3.2, -3.6);
         } else {
           subVec.set(0.0, 0.0, 2.0);
         }

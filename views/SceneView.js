@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261109_v27';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261109_v27';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261109_v27';
-import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261109_v27';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261109_v27';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261109_v28';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261109_v28';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261109_v28';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261109_v28';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261109_v28';
 
 /**
  * SceneView.js
@@ -245,6 +245,9 @@ export class SceneView {
       hyoid_bone: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.50, metalness: 0.05, side: THREE.DoubleSide }),
       tongue_cap: new THREE.MeshStandardMaterial({ color: 0xe0536c, map: tex.tongueTexture, roughness: 0.38, metalness: 0.04, side: THREE.DoubleSide }),
       mandible_cap: new THREE.MeshStandardMaterial({ color: 0xf5eedf, map: tex.boneTexture, roughness: 0.48, metalness: 0.05, side: THREE.DoubleSide }),
+      palate_cap: new THREE.MeshStandardMaterial({ color: 0xe87a90, map: tex.palateTexture, roughness: 0.40, metalness: 0.04, side: THREE.DoubleSide }),
+      epiglottis_cap: new THREE.MeshStandardMaterial({ color: 0xe5989b, map: tex.palateTexture, roughness: 0.42, metalness: 0.04, side: THREE.DoubleSide }),
+      hyoid_cap: new THREE.MeshStandardMaterial({ color: 0xf5eedf, map: tex.boneTexture, roughness: 0.48, metalness: 0.05, side: THREE.DoubleSide }),
 
       // Hepatic & Circulatory PBR Materials
       portal_system: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),
@@ -410,6 +413,96 @@ export class SceneView {
         return;
       }
 
+      // Partition Gingiva into Upper_Gingiva and Lower_Gingiva to prevent inter-dental clipping during explosion
+      if (child.name === 'Gingiva' || low === 'gingiva') {
+        const geom = child.geometry;
+        const posAttr = geom && geom.attributes && geom.attributes.position;
+        const indexAttr = geom && geom.index;
+
+        if (indexAttr && posAttr) {
+          const upperIndices = [];
+          const lowerIndices = [];
+          const count = indexAttr.count;
+
+          for (let i = 0; i < count; i += 3) {
+            const a = indexAttr.getX(i);
+            const b = indexAttr.getX(i + 1);
+            const c = indexAttr.getX(i + 2);
+            const avgY = (posAttr.getY(a) + posAttr.getY(b) + posAttr.getY(c)) / 3.0;
+            if (avgY > 153.5) {
+              upperIndices.push(a, b, c);
+            } else {
+              lowerIndices.push(a, b, c);
+            }
+          }
+
+          const baseGingivaMat = materials.gingiva || new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.gingivaTexture, roughness: 0.32, metalness: 0.04, side: THREE.DoubleSide });
+
+          const upperGeom = geom.clone();
+          upperGeom.setIndex(upperIndices);
+          const upperGingiva = new THREE.Mesh(upperGeom, baseGingivaMat.clone());
+          upperGingiva.name = 'Upper_Gingiva';
+          upperGingiva.castShadow = true;
+          upperGingiva.receiveShadow = true;
+          upperGingiva.userData = {
+            organId: 'oral_cavity',
+            oralSubPart: 'gingiva',
+            rawName: 'Upper_Gingiva',
+            initialPos: child.position.clone(),
+            initialScale: child.scale.clone()
+          };
+
+          const lowerGeom = geom.clone();
+          lowerGeom.setIndex(lowerIndices);
+          const lowerGingiva = new THREE.Mesh(lowerGeom, baseGingivaMat.clone());
+          lowerGingiva.name = 'Lower_Gingiva';
+          lowerGingiva.castShadow = true;
+          lowerGingiva.receiveShadow = true;
+          lowerGingiva.userData = {
+            organId: 'oral_cavity',
+            oralSubPart: 'gingiva',
+            rawName: 'Lower_Gingiva',
+            initialPos: child.position.clone(),
+            initialScale: child.scale.clone()
+          };
+
+          // Support 50% midsagittal cutaway shader
+          [upperGingiva, lowerGingiva].forEach((gMesh) => {
+            const mat = gMesh.material;
+            mat.side = THREE.DoubleSide;
+            mat.userData.uCutawayActive = { value: 0.0 };
+            mat.onBeforeCompile = (shader) => {
+              shader.uniforms.uCutawayActive = mat.userData.uCutawayActive;
+              shader.vertexShader = `
+                varying vec3 vLocalPos;
+              ` + shader.vertexShader.replace(
+                '#include <begin_vertex>',
+                `#include <begin_vertex>
+                 vLocalPos = position;`
+              );
+              shader.fragmentShader = `
+                uniform float uCutawayActive;
+                varying vec3 vLocalPos;
+              ` + shader.fragmentShader.replace(
+                '#include <clipping_planes_fragment>',
+                `#include <clipping_planes_fragment>
+                 if (uCutawayActive > 0.5 && vLocalPos.x > 0.001) discard;`
+              );
+            };
+          });
+
+          if (child.parent) {
+            child.parent.add(upperGingiva);
+            child.parent.add(lowerGingiva);
+          }
+          child.visible = false;
+
+          this.clickableMeshes.push(upperGingiva, lowerGingiva);
+          this.allVisceralMeshes.push(upperGingiva, lowerGingiva);
+          return;
+        }
+      }
+
       child.visible = true;
       const segMatch = child.name.match(/segment_([ivx]+)/i);
       const couinaudSeg = (child.userData && child.userData.couinaudSeg) || (segMatch ? 'segment_' + segMatch[1].toUpperCase() : null);
@@ -434,6 +527,21 @@ export class SceneView {
         child.userData.isOralCap = true;
         child.visible = false;
         baseMat = materials.mandible_cap;
+      } else if (child.name === 'Palate_Cap' || child.name === 'Soft_Palate_Cap') {
+        child.userData.oralSubPart = 'palate';
+        child.userData.isOralCap = true;
+        child.visible = false;
+        baseMat = materials.palate_cap;
+      } else if (child.name === 'Epiglottis_Cap') {
+        child.userData.oralSubPart = 'epiglottis';
+        child.userData.isOralCap = true;
+        child.visible = false;
+        baseMat = materials.epiglottis_cap;
+      } else if (child.name === 'Hyoid_Bone_Cap' || child.name === 'Hyoid_Cap') {
+        child.userData.oralSubPart = 'hyoid';
+        child.userData.isOralCap = true;
+        child.visible = false;
+        baseMat = materials.hyoid_cap;
       } else if (organId === 'oral_cavity') {
         let subPart = 'teeth';
         if (low.includes('mandib')) subPart = 'mandible';
@@ -1638,9 +1746,19 @@ export class SceneView {
       else subPartTitle = 'Cung Răng & Khung Hàm';
     } else if (organId === 'oral_cavity') {
       if (mesh.userData.isOralCap) {
-        subPartTitle = (mesh.userData.oralSubPart === 'tongue')
-          ? 'Mặt Cắt Midsagittal Lưỡi (Lingual Cross-Section)'
-          : 'Mặt Cắt Midsagittal Khớp Cằm (Mandibular Cross-Section)';
+        if (mesh.userData.oralSubPart === 'tongue') {
+          subPartTitle = 'Mặt Cắt Midsagittal Lưỡi (Lingual Cross-Section)';
+        } else if (mesh.userData.oralSubPart === 'mandible') {
+          subPartTitle = 'Mặt Cắt Midsagittal Xương Hàm Dưới (Mandibular Cross-Section)';
+        } else if (mesh.userData.oralSubPart === 'palate') {
+          subPartTitle = 'Mặt Cắt Midsagittal Khẩu Cái Mềm & Lưỡi Gà (Velum Palatinum & Uvula)';
+        } else if (mesh.userData.oralSubPart === 'epiglottis') {
+          subPartTitle = 'Mặt Cắt Midsagittal Nắp Thanh Môn (Epiglottic Cross-Section)';
+        } else if (mesh.userData.oralSubPart === 'hyoid') {
+          subPartTitle = 'Mặt Cắt Midsagittal Xương Móng (Hyoid Cross-Section)';
+        } else {
+          subPartTitle = 'Mặt Cắt Midsagittal Giải Phẫu';
+        }
       } else {
         const sub = mesh.userData.oralSubPart || '';
         if (sub === 'mandible') subPartTitle = 'Xương Hàm Dưới (Mandible)';
@@ -2080,6 +2198,10 @@ export class SceneView {
         const dist = 6.2 + t * 6.6;
         this.controls.target.set(center.x, center.y, center.z);
         this.camera.position.set(center.x, center.y + 0.15, center.z + dist);
+      } else if (this.sceneVM.state.selectedOrganId === 'oral_cavity') {
+        const t = Math.max(0, Math.min(1, factor || 0));
+        this.controls.target.set(0.0, 3.50, 0.35);
+        this.camera.position.set(0.6 + t * 0.3, 3.65, 3.8 + t * 1.3);
       }
     });
 
