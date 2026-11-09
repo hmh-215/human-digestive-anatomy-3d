@@ -243,6 +243,8 @@ export class SceneView {
       mandible: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.52, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       maxilla: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.52, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
       hyoid_bone: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.50, metalness: 0.05, side: THREE.DoubleSide }),
+      tongue_cap: new THREE.MeshStandardMaterial({ color: 0xe0536c, map: tex.tongueTexture, roughness: 0.38, metalness: 0.04, side: THREE.DoubleSide }),
+      mandible_cap: new THREE.MeshStandardMaterial({ color: 0xf5eedf, map: tex.boneTexture, roughness: 0.48, metalness: 0.05, side: THREE.DoubleSide }),
 
       // Hepatic & Circulatory PBR Materials
       portal_system: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),
@@ -421,7 +423,18 @@ export class SceneView {
         initialScale: child.scale.clone()
       };
 
-      if (organId === 'oral_cavity') {
+      let baseMat;
+      if (child.name === 'Tongue_Cap') {
+        child.userData.oralSubPart = 'tongue';
+        child.userData.isOralCap = true;
+        child.visible = false;
+        baseMat = materials.tongue_cap;
+      } else if (child.name === 'Mandible_Cap') {
+        child.userData.oralSubPart = 'mandible';
+        child.userData.isOralCap = true;
+        child.visible = false;
+        baseMat = materials.mandible_cap;
+      } else if (organId === 'oral_cavity') {
         let subPart = 'teeth';
         if (low.includes('mandib')) subPart = 'mandible';
         else if (low.includes('maxill')) subPart = 'maxilla';
@@ -438,34 +451,36 @@ export class SceneView {
         }
       }
 
-      let baseMat = materials[organId] || materials.teeth_and_jaw || materials.stomach;
-      if (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')) {
-        baseMat = materials.teeth;
-      } else if (low.includes('mandib') || low.includes('maxill')) {
-        baseMat = materials.mandible;
-      } else if (low.includes('gingiva')) {
-        baseMat = materials.gingiva;
-      } else if (low.includes('epiglottis')) {
-        baseMat = materials.epiglottis;
-      } else if (low.includes('palate') || low.includes('uvula')) {
-        baseMat = materials.palate;
-      } else if (low.includes('gland')) {
-        baseMat = materials.salivary_glands;
-      } else if (low.includes('tongue')) {
-        baseMat = materials.tongue;
-      } else if (low.includes('pharynx')) {
-        baseMat = materials.pharynx;
-      } else if (low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein') || low.includes('colic_vein') || low.includes('gastro-omental') || low.includes('gastro_omental')) {
-        baseMat = materials.portal_vein;
-      } else if (low.includes('hepatic_vein')) {
-        baseMat = materials.hepatic_veins;
-      } else if (low.includes('cava')) {
-        baseMat = materials.inferior_vena_cava;
-      } else if (low.includes('artery') || low.includes('coeliac') || low.includes('celiac')) {
-        baseMat = materials.hepatic_artery;
-      } else if (low.includes('pancreatic_duct') || low.includes('pancreatic duct') || (organId === 'pancreas' && (low.includes('wirsung') || low.includes('santorini') || low.includes('duct')))) {
-        baseMat = materials.pancreatic_duct;
-        child.userData.isPancreaticDuct = true;
+      if (!baseMat) {
+        baseMat = materials[organId] || materials.teeth_and_jaw || materials.stomach;
+        if (low.includes('tooth') || low.includes('teeth') || low.includes('incisor') || low.includes('canine') || low.includes('premolar') || low.includes('molar')) {
+          baseMat = materials.teeth;
+        } else if (low.includes('mandib') || low.includes('maxill')) {
+          baseMat = materials.mandible;
+        } else if (low.includes('gingiva')) {
+          baseMat = materials.gingiva;
+        } else if (low.includes('epiglottis')) {
+          baseMat = materials.epiglottis;
+        } else if (low.includes('palate') || low.includes('uvula')) {
+          baseMat = materials.palate;
+        } else if (low.includes('gland')) {
+          baseMat = materials.salivary_glands;
+        } else if (low.includes('tongue')) {
+          baseMat = materials.tongue;
+        } else if (low.includes('pharynx')) {
+          baseMat = materials.pharynx;
+        } else if (low.includes('portal') || low.includes('splenic_vein') || low.includes('mesenteric_vein') || low.includes('colic_vein') || low.includes('gastro-omental') || low.includes('gastro_omental')) {
+          baseMat = materials.portal_vein;
+        } else if (low.includes('hepatic_vein')) {
+          baseMat = materials.hepatic_veins;
+        } else if (low.includes('cava')) {
+          baseMat = materials.inferior_vena_cava;
+        } else if (low.includes('artery') || low.includes('coeliac') || low.includes('celiac')) {
+          baseMat = materials.hepatic_artery;
+        } else if (low.includes('pancreatic_duct') || low.includes('pancreatic duct') || (organId === 'pancreas' && (low.includes('wirsung') || low.includes('santorini') || low.includes('duct')))) {
+          baseMat = materials.pancreatic_duct;
+          child.userData.isPancreaticDuct = true;
+        }
       }
 
       // Ensure mesh has UV coordinates for diffuse textures
@@ -493,7 +508,7 @@ export class SceneView {
         const isRightStructure = rawNameLow.endsWith('r') || rawNameLow.includes('maxillar') || rawNameLow.includes('_r');
         const isMidline = ['mandib', 'gingiva', 'tongue', 'pharynx', 'palat', 'uvula', 'epiglottis', 'hyoid'].some(k => rawNameLow.includes(k));
 
-        if (isMidline || isLeftStructure) {
+        if (!child.userData.isOralCap && (isMidline || isLeftStructure)) {
           mat.side = THREE.DoubleSide;
           mat.userData.uCutawayActive = { value: 0.0 };
           mat.onBeforeCompile = (shader) => {
@@ -1622,36 +1637,42 @@ export class SceneView {
       else if (low.includes('molar')) subPartTitle = 'Răng Cối (Molar)';
       else subPartTitle = 'Cung Răng & Khung Hàm';
     } else if (organId === 'oral_cavity') {
-      const sub = mesh.userData.oralSubPart || '';
-      if (sub === 'mandible') subPartTitle = 'Xương Hàm Dưới (Mandible)';
-      else if (sub === 'maxilla') subPartTitle = 'Xương Hàm Trên (Maxilla)';
-      else if (sub === 'gingiva') subPartTitle = 'Nướu Răng (Gingiva)';
-      else if (sub === 'teeth') {
-        if (low.includes('incisor')) subPartTitle = 'Răng Cửa (Incisor Tooth)';
-        else if (low.includes('canine')) subPartTitle = 'Răng Nanh (Canine Tooth)';
-        else if (low.includes('premolar')) subPartTitle = 'Răng Tiền Cối (Premolar Tooth)';
-        else if (low.includes('molar')) subPartTitle = 'Răng Cối Lớn (Molar Tooth)';
-        else subPartTitle = 'Răng & Khung Cung Răng (Tooth & Dental Arch)';
-      } else if (sub === 'tongue') {
-        subPartTitle = 'Lưỡi & Sàn Miệng (Tongue & Floor of Mouth)';
-      } else if (sub === 'pharynx') {
-        if (low.includes('naso')) subPartTitle = 'Hầu Mũi (Nasopharynx - Tỵ hầu)';
-        else if (low.includes('oro')) subPartTitle = 'Hầu Miệng (Oropharynx - Khẩu hầu)';
-        else if (low.includes('laryngo')) subPartTitle = 'Hầu Thanh Quản (Laryngopharynx - Thanh hầu)';
-        else subPartTitle = 'Thành Hầu & Họng (Pharynx Wall)';
-      } else if (sub === 'palate') {
-        subPartTitle = 'Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)';
-      } else if (sub === 'epiglottis') {
-        subPartTitle = 'Nắp Thanh Môn (Epiglottis)';
-      } else if (sub === 'hyoid') {
-        subPartTitle = 'Xương Móng (Hyoid Bone)';
-      } else if (sub === 'salivary_glands') {
-        if (low.includes('parotid')) subPartTitle = 'Tuyến Mang Tai (Parotid Gland)';
-        else if (low.includes('submandibular')) subPartTitle = 'Tuyến Dưới Hàm (Submandibular Gland)';
-        else if (low.includes('sublingual')) subPartTitle = 'Tuyến Dưới Lưỡi (Sublingual Gland)';
-        else subPartTitle = 'Tuyến Nước Bọt (Salivary Gland)';
+      if (mesh.userData.isOralCap) {
+        subPartTitle = (mesh.userData.oralSubPart === 'tongue')
+          ? 'Mặt Cắt Midsagittal Lưỡi (Lingual Cross-Section)'
+          : 'Mặt Cắt Midsagittal Khớp Cằm (Mandibular Cross-Section)';
       } else {
-        subPartTitle = 'Vùng Miệng & Hầu (Oral Cavity & Pharynx)';
+        const sub = mesh.userData.oralSubPart || '';
+        if (sub === 'mandible') subPartTitle = 'Xương Hàm Dưới (Mandible)';
+        else if (sub === 'maxilla') subPartTitle = 'Xương Hàm Trên (Maxilla)';
+        else if (sub === 'gingiva') subPartTitle = 'Nướu Răng (Gingiva)';
+        else if (sub === 'teeth') {
+          if (low.includes('incisor')) subPartTitle = 'Răng Cửa (Incisor Tooth)';
+          else if (low.includes('canine')) subPartTitle = 'Răng Nanh (Canine Tooth)';
+          else if (low.includes('premolar')) subPartTitle = 'Răng Tiền Cối (Premolar Tooth)';
+          else if (low.includes('molar')) subPartTitle = 'Răng Cối Lớn (Molar Tooth)';
+          else subPartTitle = 'Răng & Khung Cung Răng (Tooth & Dental Arch)';
+        } else if (sub === 'tongue') {
+          subPartTitle = 'Lưỡi & Sàn Miệng (Tongue & Floor of Mouth)';
+        } else if (sub === 'pharynx') {
+          if (low.includes('naso')) subPartTitle = 'Hầu Mũi (Nasopharynx - Tỵ hầu)';
+          else if (low.includes('oro')) subPartTitle = 'Hầu Miệng (Oropharynx - Khẩu hầu)';
+          else if (low.includes('laryngo')) subPartTitle = 'Hầu Thanh Quản (Laryngopharynx - Thanh hầu)';
+          else subPartTitle = 'Thành Hầu & Họng (Pharynx Wall)';
+        } else if (sub === 'palate') {
+          subPartTitle = 'Khẩu Cái Mềm & Lưỡi Gà (Soft Palate & Uvula)';
+        } else if (sub === 'epiglottis') {
+          subPartTitle = 'Nắp Thanh Môn (Epiglottis)';
+        } else if (sub === 'hyoid') {
+          subPartTitle = 'Xương Móng (Hyoid Bone)';
+        } else if (sub === 'salivary_glands') {
+          if (low.includes('parotid')) subPartTitle = 'Tuyến Mang Tai (Parotid Gland)';
+          else if (low.includes('submandibular')) subPartTitle = 'Tuyến Dưới Hàm (Submandibular Gland)';
+          else if (low.includes('sublingual')) subPartTitle = 'Tuyến Dưới Lưỡi (Sublingual Gland)';
+          else subPartTitle = 'Tuyến Nước Bọt (Salivary Gland)';
+        } else {
+          subPartTitle = 'Vùng Miệng & Hầu (Oral Cavity & Pharynx)';
+        }
       }
     } else if (organId === 'peritoneum_omentum') {
       if (low.includes('lesser')) subPartTitle = 'Mạc Nối Nhỏ (Lesser Omentum)';
@@ -2009,6 +2030,9 @@ export class SceneView {
       if (mesh.userData.organId === 'oral_cavity' && mesh.material && mesh.material.userData && mesh.material.userData.uCutawayActive) {
         mesh.material.userData.uCutawayActive.value = shouldCutOral ? 1.0 : 0.0;
       }
+      if (mesh.userData.isOralCap) {
+        mesh.visible = shouldCutOral;
+      }
       if (['portal_system', 'hepatic_artery', 'hepatic_veins'].includes(mesh.userData.organId) && mesh.material && mesh.material.userData && mesh.material.userData.uVesselCutActive) {
         mesh.material.userData.uVesselCutActive.value = shouldCutStomachVessels ? 1.0 : 0.0;
       }
@@ -2233,6 +2257,18 @@ export class SceneView {
         return;
       }
 
+      if (mesh.userData.isOralCap) {
+        const shouldCutOral = isCutaway && (selectedId === 'oral_cavity');
+        mesh.visible = shouldCutOral;
+        if (shouldCutOral) {
+          mesh.material.transparent = false;
+          mesh.material.opacity = 1.0;
+          mesh.material.depthWrite = true;
+          if (mesh.material.emissive) mesh.material.emissive.setHex(0x000000);
+        }
+        return;
+      }
+
       const isBone = rawNameLow.includes('mandib') || rawNameLow.includes('maxill');
 
       if (!selectedId) {
@@ -2359,6 +2395,7 @@ export class SceneView {
     const isRegions = (this.dissectionVM.state.organDisplayMode === 'regions');
     const selectedId = this.sceneVM.state.selectedOrganId;
     const isIsolate = this.dissectionVM.state.isIsolateMode;
+    const isCutaway = this.dissectionVM.state.isCutawayOpen;
 
     // Neutral anatomical light gray palette (Tailwind slate-200 / clean elegant medical light gray)
     const cNeutralGray = new THREE.Color(0xe2e8f0);
@@ -2689,6 +2726,10 @@ export class SceneView {
       const orgId = mesh.userData.organId;
       if (['stomach', 'duodenum', 'pancreas', 'large_intestine', 'esophagus', 'gallbladder_tree', 'small_intestine', 'liver', 'peritoneum_omentum'].includes(orgId)) {
         return; // Already handled above
+      }
+      if (mesh.userData.isOralCap) {
+        mesh.visible = (isCutaway && selectedId === 'oral_cavity');
+        return;
       }
       if (isRegions) {
         updateMaterialHeatmapState(mesh, true);

@@ -220,7 +220,8 @@ def build_upper_glb():
                     const mesh = item.mesh;
                     mesh.updateWorldMatrix(true, false);
                     const matWorld = mesh.matrixWorld;
-                    mesh.getWorldQuaternion(worldQuat);
+                    const normalMatrix = new THREE.Matrix3().getNormalMatrix(matWorld);
+                    const isMirrored = matWorld.determinant() < 0;
 
                     const geo = mesh.geometry;
                     const posAttr = geo.attributes.position;
@@ -243,7 +244,7 @@ def build_upper_glb():
 
                         let nx = 0, ny = 0, nz = 1;
                         if (normAttr) {
-                            n.fromBufferAttribute(normAttr, i).applyQuaternion(worldQuat).normalize();
+                            n.fromBufferAttribute(normAttr, i).applyMatrix3(normalMatrix).normalize();
                             nx = n.x; ny = n.y; nz = n.z;
                         }
 
@@ -267,6 +268,14 @@ def build_upper_glb():
                             if (vz < minZ) minZ = vz; if (vz > maxZ) maxZ = vz;
                         }
                         indices[i] = idx;
+                    }
+
+                    if (isMirrored) {
+                        for (let t = 0; t < inCount; t += 3) {
+                            const tmp = indices[t + 1];
+                            indices[t + 1] = indices[t + 2];
+                            indices[t + 2] = tmp;
+                        }
                     }
 
                     weldedVertTotal += uniqueCount;
