@@ -110,13 +110,13 @@
   <div class="status-banner">
     <div class="icon">✅</div>
     <div>
-      <h3>Hoàn Tất 100% Bộ Texture 2D Độ Phân Giải Cao</h3>
-      <p>Hệ thống đã hoàn thành xuất sắc toàn bộ <strong>19 texture PBR 2D phẳng liền mạch (Seamless Tileable)</strong> cho tất cả các tầng mô học của 6 tạng rỗng (Dạ dày, Tá tràng, Ruột non, Đại tràng, Túi mật, Thực quản), cùng với Tạng đặc (Gan, Tụy) và Mạc nối lớn phúc mạc.</p>
+      <h3>Hoàn Tất 100% Bộ Texture 2D Độ Phân Giải Cao (26 Texture PBR)</h3>
+      <p>Hệ thống đã hoàn thành xuất sắc toàn bộ <strong>26 texture PBR 2D phẳng liền mạch (Seamless Tileable)</strong> cho tất cả các tầng mô học của 6 tạng rỗng (Dạ dày, Tá tràng, Ruột non, Đại tràng, Túi mật, Thực quản), Tạng đặc (Gan, Tụy), Mạc nối lớn phúc mạc, và <strong>Khoang miệng & Họng (Lưỡi, Hầu, Nướu, Khẩu cái, Men răng, Tuyến nước bọt, Xương hàm)</strong>.</p>
     </div>
   </div>
 
   <nav class="nav-tabs" id="tabNav">
-    <button class="nav-tab active" onclick="filterOrgan('all')">Tất cả tạng (19)</button>
+    <button class="nav-tab active" onclick="filterOrgan('all')">Tất cả tạng (26)</button>
     <button class="nav-tab" onclick="filterOrgan('stomach')">Dạ dày (5)</button>
     <button class="nav-tab" onclick="filterOrgan('duodenum')">Tá tràng (2)</button>
     <button class="nav-tab" onclick="filterOrgan('small_intestine')">Ruột non (1)</button>
@@ -124,6 +124,7 @@
     <button class="nav-tab" onclick="filterOrgan('gallbladder')">Túi mật (2)</button>
     <button class="nav-tab" onclick="filterOrgan('esophagus')">Thực quản (2)</button>
     <button class="nav-tab" onclick="filterOrgan('solid')">Tạng đặc & Phúc mạc (3)</button>
+    <button class="nav-tab" onclick="filterOrgan('oral')">Khoang miệng & Họng (7)</button>
   </nav>
 
   <!-- REFERENCE DIAGRAM -->
@@ -289,6 +290,53 @@
       <div class="card-img-wrap"><a href="./assets/textures/greater_omentum_diffuse.png" target="_blank"><img src="./assets/textures/greater_omentum_diffuse.png"></a></div>
       <div class="card-body">Tấm rèm mỡ dạng mắt lưới ren thủng lỗ (fenestrated lace-like adipose apron) với cụm mỡ vàng và vi mạch mạc nối.</div>
       <div class="card-footer"><span>greater_omentum_diffuse.png (1.05 MB)</span><a href="./assets/textures/greater_omentum_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+  </div>
+
+  <!-- 8. KHOANG MIỆNG & HỌNG -->
+  <div class="organ-heading" data-group="oral">8. Khoang miệng & Họng (Oral Cavity & Pharynx)</div>
+  <div class="grid" data-group="oral">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Lưỡi - Gai nhú lưng lưỡi</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/tongue_diffuse.png" target="_blank"><img src="./assets/textures/tongue_diffuse.png"></a></div>
+      <div class="card-body">Bề mặt lưng lưỡi phủ thảm nhú chỉ (filiform papillae) nhung mịn cùng các nhú nấm (fungiform papillae) tròn đỏ rải rác trên nền niêm mạc hồng san hô.</div>
+      <div class="card-footer"><span>tongue_diffuse.png (1.91 MB)</span><a href="./assets/textures/tongue_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Hầu - Niêm mạc thành họng</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/pharynx_diffuse.png" target="_blank"><img src="./assets/textures/pharynx_diffuse.png"></a></div>
+      <div class="card-body">Niêm mạc thành sau hầu họng ẩm ướt màu hồng đào đậm với nếp gấp dọc mềm và các hạt nang bạch huyết vi thể thuộc vòng Waldeyer.</div>
+      <div class="card-footer"><span>pharynx_diffuse.png (1.50 MB)</span><a href="./assets/textures/pharynx_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Nướu răng - Vân vỏ cam stippling</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/gingiva_diffuse.png" target="_blank"><img src="./assets/textures/gingiva_diffuse.png"></a></div>
+      <div class="card-body">Nướu dính (attached gingiva) màu hồng san hô nhạt khỏe mạnh với bề mặt chấm lõm li ti dạng "vỏ quả cam" đặc trưng và mao mạch vi thể.</div>
+      <div class="card-footer"><span>gingiva_diffuse.png (1.30 MB)</span><a href="./assets/textures/gingiva_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Khẩu cái & Lưỡi gà</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/palate_diffuse.png" target="_blank"><img src="./assets/textures/palate_diffuse.png"></a></div>
+      <div class="card-body">Niêm mạc vòm khẩu cái và lưỡi gà mềm mại màu hồng phấn với các nếp ngang vi thể và mạng mao mạch phân nhánh nhẹ.</div>
+      <div class="card-footer"><span>palate_diffuse.png (1.22 MB)</span><a href="./assets/textures/palate_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Răng - Men răng ngọc ngà</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/teeth_diffuse.png" target="_blank"><img src="./assets/textures/teeth_diffuse.png"></a></div>
+      <div class="card-body">Men răng tự nhiên màu trắng ngà ngọc trai sáng bóng, đường vân ngang Perikymata siêu mịn và cấu trúc tinh thể lăng trụ men.</div>
+      <div class="card-footer"><span>teeth_diffuse.png (1.31 MB)</span><a href="./assets/textures/teeth_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Tuyến nước bọt - Chùm nang tiểu thùy</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/salivary_gland_diffuse.png" target="_blank"><img src="./assets/textures/salivary_gland_diffuse.png"></a></div>
+      <div class="card-body">Nhu mô tuyến chùm nang màu hổ phách/vàng sáp nhạt với các tiểu thùy đa giác vi thể ngăn cách bởi vách liên kết mỏng.</div>
+      <div class="card-footer"><span>salivary_gland_diffuse.png (1.78 MB)</span><a href="./assets/textures/salivary_gland_diffuse.png" target="_blank">Mở ảnh</a></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Xương hàm & Xương móng</span><span class="status-badge done">HOÀN TẤT</span></div>
+      <div class="card-img-wrap"><a href="./assets/textures/bone_diffuse.png" target="_blank"><img src="./assets/textures/bone_diffuse.png"></a></div>
+      <div class="card-body">Vỏ xương đặc màu kem ngà mờ với hệ thống lá xương Haversian đồng tâm và lỗ vi mạch nuôi dưỡng xương.</div>
+      <div class="card-footer"><span>bone_diffuse.png (1.77 MB)</span><a href="./assets/textures/bone_diffuse.png" target="_blank">Mở ảnh</a></div>
     </div>
   </div>
 

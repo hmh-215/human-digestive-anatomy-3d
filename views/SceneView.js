@@ -106,12 +106,12 @@ export class SceneView {
       transition: opacity 0.3s ease;
     `;
     this.loadingOverlay.innerHTML = `
-      <div style="font-size: 36px; margin-bottom: 10px;">🩺</div>
-      <div id="loading-status-text" style="font-size: 14px; font-weight: 700; color: #0284c7; margin-bottom: 8px;">
-        Đang tải mô hình 3D Hệ Tiêu Hóa chuẩn Z-Anatomy...
+      <div style="width: 32px; height: 32px; border: 3px solid #F1F5F9; border-top-color: #C92A2A; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px;"></div>
+      <div id="loading-status-text" style="font-size: 14px; font-weight: 600; color: #1B1B24; margin-bottom: 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
+        Đang tải mô hình 3D Hệ Tiêu Hóa ĐHYHN...
       </div>
-      <div style="width: 240px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-        <div id="loading-progress-bar" style="width: 20%; height: 100%; background: #0284c7; transition: width 0.15s;"></div>
+      <div style="width: 240px; height: 4px; background: #E2E8F0; border-radius: 2px; overflow: hidden;">
+        <div id="loading-progress-bar" style="width: 20%; height: 100%; background: #C92A2A; transition: width 0.15s;"></div>
       </div>
     `;
     this.container.appendChild(this.loadingOverlay);
@@ -137,7 +137,7 @@ export class SceneView {
 
   updateBackgroundColor() {
     this.scene.background = new THREE.Color(
-      this.currentTheme === 'light' ? 0xf1f5f9 : 0x0f172a
+      this.currentTheme === 'light' ? 0xffffff : 0x0f172a
     );
   }
 
@@ -231,18 +231,18 @@ export class SceneView {
       }),
 
       // Upper GI PBR Materials
-      pharynx: new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.42, metalness: 0.08, side: THREE.DoubleSide }),
-      tongue: new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.40, metalness: 0.08, side: THREE.DoubleSide }),
-      palate: new THREE.MeshStandardMaterial({ color: 0xfb7185, roughness: 0.45, metalness: 0.05, side: THREE.DoubleSide }),
-      epiglottis: new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.50, metalness: 0.05, side: THREE.DoubleSide }),
-      salivary_gland: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.52, metalness: 0.12, side: THREE.DoubleSide }),
-      salivary_glands: new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.52, metalness: 0.12, side: THREE.DoubleSide }),
-      gingiva: new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.35, metalness: 0.05, side: THREE.DoubleSide }),
-      teeth: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.18, metalness: 0.06, side: THREE.DoubleSide }),
-      teeth_and_jaw: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25, metalness: 0.05, side: THREE.DoubleSide }),
-      mandible: new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
-      maxilla: new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
-      hyoid_bone: new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }),
+      pharynx: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.pharynxTexture, roughness: 0.38, metalness: 0.05, side: THREE.DoubleSide }),
+      tongue: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.tongueTexture, roughness: 0.36, metalness: 0.05, side: THREE.DoubleSide }),
+      palate: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.palateTexture, roughness: 0.40, metalness: 0.04, side: THREE.DoubleSide }),
+      epiglottis: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.palateTexture, roughness: 0.42, metalness: 0.04, side: THREE.DoubleSide }),
+      salivary_gland: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.salivaryGlandTexture, roughness: 0.48, metalness: 0.06, side: THREE.DoubleSide }),
+      salivary_glands: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.salivaryGlandTexture, roughness: 0.48, metalness: 0.06, side: THREE.DoubleSide }),
+      gingiva: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.gingivaTexture, roughness: 0.32, metalness: 0.04, side: THREE.DoubleSide }),
+      teeth: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.teethTexture, roughness: 0.16, metalness: 0.04, side: THREE.DoubleSide }),
+      teeth_and_jaw: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.teethTexture, roughness: 0.20, metalness: 0.04, side: THREE.DoubleSide }),
+      mandible: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.52, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      maxilla: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.52, metalness: 0.05, transparent: true, opacity: 0.85, side: THREE.DoubleSide }),
+      hyoid_bone: new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex.boneTexture, roughness: 0.50, metalness: 0.05, side: THREE.DoubleSide }),
 
       // Hepatic & Circulatory PBR Materials
       portal_system: new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.35, metalness: 0.18, side: THREE.DoubleSide }),

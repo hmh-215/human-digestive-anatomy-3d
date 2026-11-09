@@ -506,6 +506,17 @@ export class ProceduralTextures {
     result.pancreasTexture = this._loadTexture('./assets/textures/pancreas_lobular_diffuse.png', 3, 3);
     result.greaterOmentumTexture = this._loadTexture('./assets/textures/greater_omentum_diffuse.png', 2, 2);
 
+    // =========================================================================
+    // 9. VÙNG MIỆNG & HỌNG (ORAL CAVITY & PHARYNX)
+    // =========================================================================
+    result.tongueTexture = this._loadTexture('./assets/textures/tongue_diffuse.png', 3, 3);
+    result.pharynxTexture = this._loadTexture('./assets/textures/pharynx_diffuse.png', 2, 2);
+    result.gingivaTexture = this._loadTexture('./assets/textures/gingiva_diffuse.png', 3, 3);
+    result.palateTexture = this._loadTexture('./assets/textures/palate_diffuse.png', 2, 2);
+    result.teethTexture = this._loadTexture('./assets/textures/teeth_diffuse.png', 4, 4);
+    result.salivaryGlandTexture = this._loadTexture('./assets/textures/salivary_gland_diffuse.png', 3, 3);
+    result.boneTexture = this._loadTexture('./assets/textures/bone_diffuse.png', 2, 2);
+
     return result;
   }
 }

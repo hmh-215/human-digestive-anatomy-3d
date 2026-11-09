@@ -3,8 +3,8 @@
  * 2-Tab Context-Aware DOM UI Controller for Human Digestive Anatomy 3D.
  *
  * Features:
- * - Tab 1 (🌐 Toàn Hệ Thống): Whole-System 4-Row Knolling Catalog Grid
- * - Tab 2 (🔬 Cô Lập Bộ Phận): Isolated Organ Concentric Layer Telescoping (with auto-isolation)
+ * - Tab 1 (Toan He Thong): Whole-System 4-Row Knolling Catalog Grid
+ * - Tab 2 (Co Lap Bo Phan): Isolated Organ Concentric Layer Telescoping (with auto-isolation)
  * - Per-Organ 50% Longitudinal Cutaway Toggle (works on any hollow organ)
  * - Single Unified Explode Slider (0% - 100%) + One-Click Animated Explode Button
  * - Medical Info Drawer (Right side) with ĐHYHN clinical & histological cards
@@ -56,6 +56,14 @@ export class UIView {
     this.torsoOpacitySlider = document.getElementById('torso-opacity-slider');
     this.torsoOpacityValue = document.getElementById('torso-opacity-value');
 
+    this.navBtnDissection = document.getElementById('nav-btn-dissection');
+    this.navBtnLandmarks = document.getElementById('nav-btn-landmarks');
+    this.navBtnHelp = document.getElementById('nav-btn-help');
+    this.btnHelpGo3D = document.getElementById('btn-help-go-3d');
+    this.section3D = document.getElementById('section-3d-model');
+    this.sectionHelp = document.getElementById('section-help');
+    this.searchClearBtn = document.getElementById('btn-search-clear');
+
     this._bindDOMEvents();
     this._bindViewModelEvents();
     this._renderLandmarksList();
@@ -69,7 +77,64 @@ export class UIView {
     if (this.tabPaneOrgan) this.tabPaneOrgan.classList.toggle('hidden', !isOrganTab);
   }
 
+  _setNavTab(tabName) {
+    const isDissection = (tabName === 'dissection');
+    const isLandmarks = (tabName === 'pathology');
+    const isHelp = (tabName === 'help');
+
+    if (this.navBtnDissection) {
+      this.navBtnDissection.classList.toggle('active', isDissection);
+      this.navBtnDissection.classList.toggle('is-active', isDissection);
+    }
+    if (this.navBtnLandmarks) {
+      this.navBtnLandmarks.classList.toggle('active', isLandmarks);
+      this.navBtnLandmarks.classList.toggle('is-active', isLandmarks);
+    }
+    if (this.navBtnHelp) {
+      this.navBtnHelp.classList.toggle('active', isHelp);
+      this.navBtnHelp.classList.toggle('is-active', isHelp);
+    }
+
+    if (this.section3D) this.section3D.classList.toggle('hidden', isHelp);
+    if (this.sectionHelp) this.sectionHelp.classList.toggle('hidden', !isHelp);
+
+    if (isHelp) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      if (isLandmarks) {
+        if (window.__DIGESTIVE_APP__?.sceneView?.explosionManager) {
+          window.__DIGESTIVE_APP__.sceneView.explosionManager.stopAnimation();
+        }
+        this.dissectionVM.setExplodeFactor(0.0);
+        this.dissectionVM.setCutawayOpen(false);
+        this.dissectionVM.setState({
+          isIsolateMode: false,
+          visibleLayers: [1, 2, 3],
+          activeWallLayerId: null
+        });
+        this.sceneVM.selectOrgan(null);
+        this.appVM.setMode('pathology');
+      } else {
+        this.appVM.setMode('dissection');
+      }
+    }
+  }
+
   _bindDOMEvents() {
+    // Nav Tabs: Giải Phẫu - Điểm Mốc Lâm Sàng - Trợ Giúp
+    if (this.navBtnDissection) {
+      this.navBtnDissection.addEventListener('click', () => this._setNavTab('dissection'));
+    }
+    if (this.navBtnLandmarks) {
+      this.navBtnLandmarks.addEventListener('click', () => this._setNavTab('pathology'));
+    }
+    if (this.navBtnHelp) {
+      this.navBtnHelp.addEventListener('click', () => this._setNavTab('help'));
+    }
+    if (this.btnHelpGo3D) {
+      this.btnHelpGo3D.addEventListener('click', () => this._setNavTab('dissection'));
+    }
+
     // 0. Task 1: 2-Tab Switcher (Tab 1: Whole System Knolling vs. Tab 2: Isolated Organ)
     if (this.tabBtnSystem) {
       this.tabBtnSystem.addEventListener('click', () => {
@@ -164,12 +229,13 @@ export class UIView {
       });
     }
 
-    // 8. Reset Camera
+    // 8. Reset Camera (Reset view)
     if (this.resetCameraBtn) {
       this.resetCameraBtn.addEventListener('click', () => {
         this._setDockTabUI('system');
         this.dissectionVM.setState({ isIsolateMode: false, explodeFactor: 0 });
         this.sceneVM.resetCamera();
+        this.sceneVM.selectOrgan(null);
       });
     }
 
@@ -187,11 +253,27 @@ export class UIView {
       });
     }
 
-    // 11. Search Bar
+    // 11. Search Bar & Clear Button
     if (this.searchInput) {
       this.searchInput.addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
+        if (this.searchClearBtn) {
+          this.searchClearBtn.classList.toggle('hidden', !q);
+        }
         this._handleSearch(q);
+      });
+    }
+    if (this.searchClearBtn) {
+      this.searchClearBtn.addEventListener('click', () => {
+        if (this.searchInput) {
+          this.searchInput.value = '';
+          this.searchInput.focus();
+        }
+        this.searchClearBtn.classList.add('hidden');
+        if (this.searchResultsBox) {
+          this.searchResultsBox.classList.add('hidden');
+          this.searchResultsBox.innerHTML = '';
+        }
       });
     }
 
@@ -406,19 +488,28 @@ export class UIView {
       if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
     });
 
-    // 6. Theme Toggle
+    // 6. Theme Toggle (Cố định Light Theme Y Khoa)
     this.appVM.subscribe('theme', (theme) => {
-      if (theme === 'dark') {
-        document.body.classList.add('dark-theme');
-        this.themeToggleBtn.innerHTML = '☀️ Light Mode';
-      } else {
-        document.body.classList.remove('dark-theme');
-        this.themeToggleBtn.innerHTML = '🌙 Dark Mode';
+      document.body.classList.remove('dark-theme');
+      if (this.themeToggleBtn) {
+        this.themeToggleBtn.innerHTML = 'Giao Diện Sáng';
       }
     });
 
     // 7. Mode Switcher (Ensure Landmarks Panel and Dissection Dock NEVER overlap)
     this.appVM.subscribe('activeMode', (mode) => {
+      if (this.navBtnDissection) {
+        this.navBtnDissection.classList.toggle('active', mode === 'dissection');
+        this.navBtnDissection.classList.toggle('is-active', mode === 'dissection');
+      }
+      if (this.navBtnLandmarks) {
+        this.navBtnLandmarks.classList.toggle('active', mode === 'pathology');
+        this.navBtnLandmarks.classList.toggle('is-active', mode === 'pathology');
+      }
+      if (this.navBtnHelp) {
+        this.navBtnHelp.classList.remove('active', 'is-active');
+      }
+
       this.modePills.forEach(p => {
         p.classList.toggle('active', p.dataset.mode === mode);
       });
@@ -586,6 +677,7 @@ export class UIView {
         this.dissectionVM.setState({ isIsolateMode: true });
         this.sceneVM.selectOrgan(id);
         this.searchInput.value = '';
+        if (this.searchClearBtn) this.searchClearBtn.classList.add('hidden');
         this.searchResultsBox.classList.add('hidden');
       });
     });

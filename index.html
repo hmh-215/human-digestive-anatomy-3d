@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Human Digestive System Anatomy — Giải Phẫu Hệ Tiêu Hóa ĐHYHN</title>
-  <link rel="stylesheet" href="./assets/css/theme.css?v=20261103_v22">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
+  <title>3D HỆ TIÊU HÓA NGƯỜI — Giải Phẫu Bóc Tách &amp; Mô Học ĐHYHN</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Cormorant Garamond (từ Lumen Eighty), Be Vietnam Pro & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./assets/css/theme.css?v=20261109_lumen">
+  <link rel="icon" href="data:,">
 
   <!-- ES Module Import Map (Three.js 100% Offline Local Bundle) -->
   <script type="importmap">
@@ -19,195 +25,382 @@
 </head>
 <body>
   <div id="app-container">
-    <!-- 3D WEBGL VIEWPORT -->
-    <div id="canvas-container"></div>
 
-    <!-- TOP NAVBAR -->
-    <header class="top-navbar">
-      <div class="brand-badge">
-        <span style="font-size: 20px;">🫁</span>
-        <div>
-          <h1>3D HỆ TIÊU HÓA NGƯỜI</h1>
-          <div class="sub">Giải Phẫu Bóc Tách ĐHYHN</div>
+    <!-- ===================== TOP HEADER & NAVIGATION BAR (LUMEN EIGHTY STYLE) ===================== -->
+    <header class="site-header" id="top-nav-bar">
+      <div class="header-inner">
+        <!-- BRAND BADGE / LOGO -->
+        <div class="brand" id="brand-logo">
+          <span class="brand-title">3D HỆ TIÊU HÓA NGƯỜI</span>
+          <span class="brand-sub">Giải Phẫu Bóc Tách ĐHYHN</span>
         </div>
-      </div>
 
-      <!-- MODE PILLS -->
-      <nav class="mode-switcher">
-        <button class="mode-pill active" data-mode="dissection">Bóc Tách Giải Phẫu</button>
-        <button class="mode-pill" data-mode="pathology">Điểm Mốc Lâm Sàng</button>
-      </nav>
+        <!-- MAIN NAVIGATION TABS -->
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <ul class="nav-list">
+            <li class="nav-item">
+              <button type="button" class="nav-link nav-tab-btn active is-active" id="nav-btn-dissection" data-mode="dissection">
+                <span class="nav-tab-title">Giải Phẫu</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-link nav-tab-btn" id="nav-btn-landmarks" data-mode="pathology">
+                <span class="nav-tab-title">Điểm Mốc Lâm Sàng</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-link nav-tab-btn" id="nav-btn-help" data-section="section-help">
+                <span class="nav-tab-title">Trợ Giúp</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
 
-      <!-- SEARCH & CONTROLS -->
-      <div class="nav-actions">
-        <div class="search-box-wrapper">
-          <input type="text" id="organ-search" class="search-input" placeholder="Tìm kiếm bộ phận, cơ quan..." autocomplete="off">
-          <div id="search-results" class="search-results-dropdown hidden"></div>
+        <!-- RIGHT HEADER ACTIONS -->
+        <div class="header-actions">
+          <!-- Hidden theme toggle preserved for programmatic compatibility -->
+          <button type="button" id="btn-theme-toggle" class="action-btn hidden" style="display:none;" aria-hidden="true">Theme</button>
         </div>
-        <button id="btn-reset-camera" class="action-btn" title="Căn lại góc nhìn tiêu chuẩn">Căn Lại</button>
-        <button id="btn-theme-toggle" class="action-btn">Dark Mode</button>
       </div>
     </header>
 
-    <!-- CLINICAL LANDMARKS PANEL (CHỈ HIỆN Ở CHẾ ĐỘ LÂM SÀNG) -->
-    <aside id="landmarks-panel" class="landmarks-panel hidden">
-      <div class="landmarks-panel-header">
-        <h4>Điểm Mốc Ngoại Khoa & Bệnh Học</h4>
-      </div>
+    <!-- ===================== SECTION 1: MÔ HÌNH 3D HỆ TIÊU HÓA ===================== -->
+    <main class="app-layout" id="section-3d-model">
+      <!-- 3D WEBGL VIEWPORT CANVAS -->
+      <div id="canvas-container"></div>
 
-      <!-- TORSO SKIN OPACITY SLIDER FOR CLINICAL SURFACE PALPATION -->
-      <div class="torso-control-box">
-        <div class="slider-label-row" style="margin-bottom: 4px;">
-          <span style="font-size: 11px; font-weight: 700; color: #b45309;">Độ Mờ Da Thân Mình:</span>
-          <span id="torso-opacity-value" style="font-size: 11px; font-weight: 700; color: #78350f;">50%</span>
+      <!-- FLOATING VIEWPORT RESET CAMERA BUTTON (CORNER OF VIEWPORT) -->
+      <button type="button" id="btn-reset-camera" class="viewport-reset-btn" title="Đặt lại góc nhìn mô phỏng">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+        <span>Reset view</span>
+      </button>
+
+      <!-- CLINICAL LANDMARKS PANEL (CHỈ HIỆN Ở CHẾ ĐỘ LÂM SÀNG) -->
+      <aside id="landmarks-panel" class="landmarks-panel hidden">
+        <div class="landmarks-panel-header">
+          <h4>Điểm Mốc Ngoại Khoa &amp; Bệnh Học</h4>
         </div>
-        <input type="range" id="torso-opacity-slider" min="0" max="1" step="0.05" value="0.50" style="width: 100%;">
-        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 3px;">
-          <span>0% (Ẩn Da)</span>
-          <span>50% (Bán Thấu)</span>
-          <span>100% (Khám Da)</span>
+
+        <!-- TORSO SKIN OPACITY SLIDER FOR CLINICAL SURFACE PALPATION -->
+        <div class="torso-control-box">
+          <div class="slider-label-row">
+            <span class="torso-label-text">Độ Mờ Da Thân Mình:</span>
+            <span id="torso-opacity-value" class="torso-opacity-badge">50%</span>
+          </div>
+          <input type="range" id="torso-opacity-slider" min="0" max="1" step="0.05" value="0.50">
+          <div class="torso-range-hints">
+            <span>0% (Ẩn Da)</span>
+            <span>50% (Bán Thấu)</span>
+            <span>100% (Khám Da)</span>
+          </div>
+        </div>
+
+        <!-- QUICK ASPECT TOGGLE (FRONT ABDOMEN vs DORSAL BACK) -->
+        <div class="aspect-toggle-row">
+          <button type="button" id="btn-view-front" class="mini-btn aspect-btn" title="Quan sát mặt trước thành bụng">Mặt Trước</button>
+          <button type="button" id="btn-view-back" class="mini-btn aspect-btn aspect-btn-alt" title="Quan sát mặt lưng sau (Cơn đau tụy Mayo-Robson &amp; Grey Turner)">Mặt Sau</button>
+        </div>
+
+        <div id="landmarks-list" class="landmarks-list-scroll"></div>
+      </aside>
+
+      <!-- 2-TAB CONTEXT-AWARE DISSECTION DOCK (GÓC DƯỚI BÊN TRÁI) -->
+      <section id="dissection-dock" class="dissection-dock">
+        <!-- 2 SEPARATE TABS (WHOLE SYSTEM KNOLLING vs ISOLATED ORGAN LAYERS) -->
+        <div class="dock-tabs">
+          <button type="button" id="tab-btn-system" class="dock-tab active" data-tab="system">
+            Toàn Hệ Thống
+          </button>
+          <button type="button" id="tab-btn-organ" class="dock-tab" data-tab="organ">
+            Cô Lập Bộ Phận
+          </button>
+        </div>
+
+        <!-- ACTIVE CONTEXT HEADER -->
+        <div class="dock-context-header">
+          <div class="dock-context-info">
+            <span id="dock-context-sub" class="dock-context-label">CHẾ ĐỘ TOÀN HỆ THỐNG</span>
+            <h3 id="dock-context-title">Toàn Hệ Tiêu Hóa</h3>
+          </div>
+          <button type="button" id="btn-back-system" class="mini-btn hidden" title="Quay về Tab Toàn hệ thống">← Toàn hệ thống</button>
+        </div>
+
+        <!-- TAB 1 PANE: WHOLE SYSTEM KNOLLING CATALOG INFO -->
+        <div id="tab-pane-system" class="dock-tab-pane">
+          <div class="system-knolling-banner">
+            <span><strong>Bố cục Xếp Hàng (Knolling 4 Hàng):</strong> Khi tách lớp, toàn bộ các tạng, 8 hạ phân thùy gan &amp; các lớp mô học sẽ xếp thành 4 hàng ngang trực quan.</span>
+          </div>
+        </div>
+
+        <!-- TAB 2 PANE: ISOLATED ORGAN ANATOMICAL BODY MAP -->
+        <div id="tab-pane-organ" class="dock-tab-pane hidden">
+          <!-- INTERACTIVE ANATOMICAL BODY MAP (CLINICAL SURFACE ANATOMY) -->
+          <div id="organ-bodymap-container" class="anatomical-body-map-card">
+            <svg class="body-silhouette-svg" viewBox="0 0 320 370" preserveAspectRatio="xMidYMid meet">
+              <!-- Head & Chin Contour -->
+              <path d="M 136 22 C 136 10, 184 10, 184 22 C 184 32, 190 40, 190 48 C 190 56, 182 60, 174 62 C 168 65, 160 65, 152 62 C 144 60, 136 56, 136 48 C 136 40, 142 32, 136 22 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              
+              <!-- Neck & Clavicles -->
+              <path d="M 144 63 L 140 76 C 122 78, 92 86, 68 104" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M 176 63 L 180 76 C 198 78, 228 86, 252 104" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M 142 75 Q 110 74 80 88" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.6" />
+              <path d="M 178 75 Q 210 74 240 88" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.6" />
+
+              <!-- Torso & Flank Outlines (Wide Torso fitting Clinical Anatomy) -->
+              <path d="M 68 104 C 64 122, 66 160, 68 195 C 70 230, 74 255, 72 290 C 70 315, 68 335, 76 355" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M 252 104 C 256 122, 254 160, 252 195 C 250 230, 246 255, 248 290 C 250 315, 252 335, 244 355" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+
+              <!-- Diaphragmatic Dome & Costal Margin (Vòm Cơ Hoành & Bờ Sườn ĐHYHN) -->
+              <path d="M 68 152 C 96 130, 130 114, 160 110 C 190 114, 224 130, 252 152" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.6" />
+              <circle cx="160" cy="110" r="2.2" fill="currentColor" opacity="0.6" />
+
+              <!-- Transpyloric Plane (Mặt phẳng Môn Vị L1) -->
+              <line x1="88" y1="205" x2="232" y2="205" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2,2" opacity="0.35" />
+
+              <!-- Umbilicus (Rốn) -->
+              <circle cx="160" cy="254" r="2.8" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.65" />
+
+              <!-- Inguinal Fold & Pelvic Brim (Nếp Bẹn & Mào Chậu) -->
+              <path d="M 76 322 C 95 330, 130 348, 154 352" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.4" />
+              <path d="M 244 322 C 225 330, 190 348, 166 352" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.4" />
+
+              <!-- Median Sagittal Symmetry Axis (Đường Giữa Bụng / Linea Alba) -->
+              <line x1="160" y1="12" x2="160" y2="360" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
+            </svg>
+
+            <!-- Interactive Anatomical Body Pins (Minimalist Clinical Labels) -->
+            <button type="button" class="organ-chip body-pin pin-oral" data-organ="oral_cavity" title="Vùng Miệng (Hầu, Lưỡi, Khung Hàm &amp; Răng)">Vùng Miệng</button>
+            <button type="button" class="organ-chip body-pin pin-esophagus" data-organ="esophagus" title="Thực Quản">Thực Quản</button>
+            <button type="button" class="organ-chip body-pin pin-liver" data-organ="liver" title="Gan (I–VIII Couinaud)">Gan</button>
+            <button type="button" class="organ-chip body-pin pin-stomach" data-organ="stomach" title="Dạ Dày">Dạ Dày</button>
+            <button type="button" class="organ-chip body-pin pin-gallbladder" data-organ="gallbladder_tree" title="Túi Mật &amp; Đường Dẫn Mật">Túi Mật</button>
+            <button type="button" class="organ-chip body-pin pin-pancreas" data-organ="pancreas" title="Tuyến Tụy &amp; Cây Ống Tụy">Tụy</button>
+            <button type="button" class="organ-chip body-pin pin-duodenum" data-organ="duodenum" title="Tá Tràng Quai Chữ C">Tá Tràng</button>
+            <button type="button" class="organ-chip body-pin pin-portal" data-organ="portal_system" title="Hệ Thống Mạch Máu Cửa Gan">Mạch Cửa</button>
+            <button type="button" class="organ-chip body-pin pin-small-int" data-organ="small_intestine" title="Ruột Non - Hỗng Tràng &amp; Hồi Tràng">Ruột Non</button>
+            <button type="button" class="organ-chip body-pin pin-peritoneum" data-organ="peritoneum_omentum" title="Phúc Mạc &amp; Mạc Nối">Phúc Mạc</button>
+            <button type="button" class="organ-chip body-pin pin-large-int" data-organ="large_intestine" title="Đại Tràng Toàn Khung &amp; Ruột Thừa">Đại Tràng</button>
+          </div>
+        </div>
+
+        <!-- ORGAN DISPLAY MODE TOGGLE ROW (COMPACT SWITCH) -->
+        <div class="organ-display-mode-row" title="Gạt công tắc để chuyển giữa Mô Học (Trái) và Phân Vùng Chức Năng (Phải)">
+          <span id="label-mode-layers" class="mode-toggle-text active">Mô Học</span>
+          <label class="ios-switch">
+            <input type="checkbox" id="toggle-display-mode">
+            <span class="ios-slider"></span>
+          </label>
+          <span id="label-mode-regions" class="mode-toggle-text">Phân Vùng</span>
+        </div>
+
+        <!-- UNIFIED EXPLODE CONTROL (SLIDER + ONE-CLICK ANIMATE BUTTON) -->
+        <div class="explode-control-card">
+          <div class="slider-label-row">
+            <span id="explode-mode-label" class="explode-label-title">Xếp Hàng Toàn Hệ Thống:</span>
+            <span id="explode-value-badge" class="explode-value-badge">0%</span>
+          </div>
+          <div class="explode-slider-row">
+            <input type="range" id="unified-explode-slider" min="0" max="1" step="0.01" value="0">
+            <button type="button" id="btn-animate-explode" class="explode-trigger-btn" title="Tự động bung hoặc thu gọn các lớp">Tách Lớp</button>
+          </div>
+          <small id="explode-helper-text" class="explode-helper-text">
+            Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan &amp; lớp mô học theo 4 hàng ngang
+          </small>
+        </div>
+
+        <!-- CLEAN ACTION TOGGLES -->
+        <div class="dock-button-row">
+          <button type="button" id="btn-stomach-cutaway" class="action-btn" title="Mặt phẳng cắt dọc 50% chiều sâu cho từng lớp của bộ phận đang xem">Mặt Cắt Dọc 50%</button>
+          <button type="button" id="btn-isolate" class="action-btn" title="Chỉ hiển thị cơ quan đang chọn">Cô Lập</button>
+        </div>
+      </section>
+
+      <!-- ORGAN MEDICAL INFO DRAWER (BÊN PHẢI) -->
+      <aside id="organ-drawer" class="organ-drawer">
+        <div class="drawer-header">
+          <div>
+            <h2 id="drawer-title">Tên Cơ Quan</h2>
+            <div id="drawer-latin" class="drawer-latin">Latin Name</div>
+          </div>
+          <button type="button" id="drawer-close" class="drawer-close-btn" title="Đóng">✕</button>
+        </div>
+        <div id="drawer-content" class="drawer-scroll-body"></div>
+      </aside>
+
+      <!-- INTERACTION HINT -->
+      <div class="interaction-hint">
+        <strong>Thao tác:</strong> Rê chuột để xem nhãn từng lớp • Bấm <strong>Tách Lớp</strong> để bung 3D • Bấm vào cơ quan để xem giải phẫu &amp; bệnh học
+      </div>
+    </main>
+
+    <!-- ===================== SECTION 2: TRỢ GIÚP (HELP & SƯ PHẠM ĐHYHN) ===================== -->
+    <main class="help-section-layout hidden" id="section-help">
+      <div class="help-container">
+        <!-- Header Banner -->
+        <header class="help-header">
+          <span class="help-badge">HƯỚNG DẪN SỬ DỤNG &amp; ĐIỀU HƯỚNG ỨNG DỤNG</span>
+          <h1 class="help-title">Cẩm Nang Thao Tác Web App Giải Phẫu Hệ Tiêu Hóa 3D</h1>
+          <p class="help-subtitle">
+            Tổng hợp chi tiết các thao tác điều khiển 3D, bóc tách 4 hàng ngang toàn hệ thống, khảo sát mô học đồng tâm từng tạng, mặt cắt giải phẫu mượt và định vị điểm mốc ngoại khoa ĐHYHN.
+          </p>
+        </header>
+
+        <!-- Grid of Help Guides (Cards 01 to 06) -->
+        <div class="help-grid">
+          <!-- Card 1: Thao tác điều khiển Mô hình 3D -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">01</span>
+              <h2 class="help-card-title">Thao Tác Điều Khiển Mô Hình 3D</h2>
+            </div>
+            <p class="help-card-desc">Khung nhìn 3D hỗ trợ đầy đủ thao tác chuột và cảm ứng đa điểm:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">Chuột Trái (Giữ &amp; Rê)</div>
+                <div class="help-feature-text"><strong>Xoay mô hình (Orbit 360°):</strong> Khảo sát giải phẫu ở mọi góc nhìn không gian 3 chiều quanh trục cơ thể.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Lăn Chuột Giữa (Cuộn)</div>
+                <div class="help-feature-text"><strong>Thu phóng (Zoom In / Out):</strong> Phóng to quan sát lớp mô học vi thể hoặc thu nhỏ để bao quát toàn ổ bụng.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Chuột Phải (Giữ &amp; Rê)</div>
+                <div class="help-feature-text"><strong>Tịnh tiến góc nhìn (Pan):</strong> Di chuyển tâm nhìn lên, xuống hoặc sang hai bên mà không làm đổi góc xoay.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Rê Chuột (Hover)</div>
+                <div class="help-feature-text"><strong>Thẻ chú giải nổi:</strong> Hiện thẻ Hover Callout với đường chỉ dẫn SVG và chấm neo chính xác tới vị trí cấu trúc.</div>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Card 2: Bố Cục Xếp Hàng Knolling -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">02</span>
+              <h2 class="help-card-title">Bố Cục Xếp Hàng Toàn Hệ Thống (Knolling)</h2>
+            </div>
+            <p class="help-card-desc">Phương pháp hiển thị bảo tàng học thuật phân rã toàn bộ hệ tiêu hóa:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">4 Hàng Ngang Trực Quan</div>
+                <div class="help-feature-text">Khi tăng thanh trượt <strong>Tách Lớp</strong>, các tạng được dàn phẳng ra 4 hàng ngang không che khuất nhau.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Phân Rã 8 Hạ Phân Thùy Gan</div>
+                <div class="help-feature-text">Gan tách rời thành 8 khối Couinaud độc lập (I đến VIII) với hệ thống mạch cửa và tĩnh mạch gan chi phối.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Nút Bấm 1 Chạm</div>
+                <div class="help-feature-text">Nhấp nút <strong>Tách Lớp</strong> để chạy hoạt ảnh bung hoặc thu gọn mượt mà 60 FPS.</div>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Card 3: Khảo sát Mô Học Đồng Tâm Từng Tạng -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">03</span>
+              <h2 class="help-card-title">Mô Học Đồng Tâm Từng Tạng Rỗng</h2>
+            </div>
+            <p class="help-card-desc">Bóc tách sâu các lớp mô học từ ngoài vào trong hoặc ngược lại:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">Bóc Tách Chiều Sâu (Z-Explosion)</div>
+                <div class="help-feature-text">Ở chế độ <strong>Cô Lập Bộ Phận</strong>, các tầng mô học (Thanh mạc, Cơ dọc, Cơ vòng, Cơ chéo, Dưới niêm mạc, Niêm mạc) tiến về phía người xem theo trục Z với khoảng cách tính toán chuẩn xác, triệt tiêu 100% chồng đè.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Hồ Sơ Y Khoa ĐHYHN</div>
+                <div class="help-feature-text">Ngăn kéo bên phải hiển thị đầy đủ thứ tự tầng mô học, độ dày (thickness), đại thể, vi thể, sinh lý và lưu ý lâm sàng.</div>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Card 4: Mặt Cắt Dọc 50% Theo Điểm Mốc -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">04</span>
+              <h2 class="help-card-title">Mặt Cắt Giải Phẫu Dọc 50% (Smooth Cutaway)</h2>
+            </div>
+            <p class="help-card-desc">Quan sát lòng ống tiêu hóa và bề dày thành mô học:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">Mặt Cắt Mở Lòng Ống</div>
+                <div class="help-feature-text">Bấm nút <strong>Mặt Cắt Dọc 50%</strong> để cắt mở nửa trước dạ dày, thực quản, tá tràng hoặc đại tràng.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Nếp Gấp Rugae &amp; Villi</div>
+                <div class="help-feature-text">Chiêm ngưỡng nếp niêm mạc Rugae dạ dày, nhung mao Villi ruột non và các nếp bán nguyệt đại tràng sắc nét.</div>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Card 5: Bản Đồ Nhiệt Phân Vùng Chức Năng Bậc Rời Rạc -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">05</span>
+              <h2 class="help-card-title">Bản Đồ Nhiệt Phân Vùng Chức Năng (Heatmap)</h2>
+            </div>
+            <p class="help-card-desc">Phân định ranh giới sinh lý học thuật rõ ràng theo chuẩn ĐHYHN:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">Màu Bậc Rời Rạc (Solid Step Color)</div>
+                <div class="help-feature-text">Gạt công tắc sang <strong>Phân Vùng</strong>: mỗi phân đoạn giải phẫu được tô duy nhất một màu đơn sắc pastel với biên giới sắc nét, không lem màu gradient.</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Đồng Bộ Màu Thẻ Chú Giải</div>
+                <div class="help-feature-text">Màu sắc trên bề mặt 3D trùng khớp 100% với chấm màu trên thẻ Hover Callout.</div>
+              </li>
+            </ul>
+          </article>
+
+          <!-- Card 6: Điểm Mốc Lâm Sàng & Khám Bề Mặt Thành Bụng -->
+          <article class="help-card">
+            <div class="help-card-header">
+              <span class="help-step-number">06</span>
+              <h2 class="help-card-title">Điểm Mốc Ngoại Khoa &amp; Khám Bề Mặt Thân Mình</h2>
+            </div>
+            <p class="help-card-desc">Liên hệ thực tế giữa giải phẫu chiều sâu và thăm khám thành bụng:</p>
+            <ul class="help-feature-list">
+              <li>
+                <div class="help-key-badge">Chuyển Chế Độ Lâm Sàng</div>
+                <div class="help-feature-text">Chọn nút <strong>Điểm Mốc Lâm Sàng</strong> trên thanh tiêu đề: hiển thị khung da thân mình 3D và các điểm mốc chẩn đoán (Murphy, McBurney, Trung Quản, Điểm đau Tụy Mayo-Robson...).</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Thanh Trượt Độ Mờ Da Thân Mình</div>
+                <div class="help-feature-text">Kéo thanh trượt từ 0% (ẩn da), 50% (bán thấu đối chiếu tạng) tới 100% (khám da bề mặt).</div>
+              </li>
+              <li>
+                <div class="help-key-badge">Quan Sát Mặt Trước / Mặt Sau</div>
+                <div class="help-feature-text">Bấm nút <strong>Mặt Trước</strong> hoặc <strong>Mặt Sau</strong> để chuyển đổi nhanh góc nhìn khám thành bụng hoặc vùng thắt lưng mạn sườn.</div>
+              </li>
+            </ul>
+          </article>
+        </div>
+
+        <!-- Quick Action Navigation Bar at Bottom of Help -->
+        <div class="help-footer-actions">
+          <button type="button" class="btn btn-primary help-btn-action" id="btn-help-go-3d">Quay Lại Mô Hình 3D</button>
         </div>
       </div>
+    </main>
 
-      <!-- QUICK ASPECT TOGGLE (FRONT ABDOMEN vs. DORSAL BACK) -->
-      <div style="display: flex; gap: 6px; padding: 0 14px 10px 14px;">
-        <button id="btn-view-front" class="mini-btn" style="flex: 1; justify-content: center;" title="Quan sát mặt trước thành bụng">Mặt Trước</button>
-        <button id="btn-view-back" class="mini-btn" style="flex: 1; justify-content: center; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;" title="Quan sát mặt lưng sau (Cơn đau tụy Mayo-Robson & Grey Turner)">Mặt Sau</button>
-      </div>
-
-      <div id="landmarks-list" class="landmarks-list-scroll"></div>
-    </aside>
-
-    <!-- 2-TAB CONTEXT-AWARE DISSECTION DOCK (GÓC DƯỚI BÊN TRÁI) -->
-    <section id="dissection-dock" class="dissection-dock">
-      <!-- TASK 1: 2 SEPARATE TABS (WHOLE SYSTEM KNOLLING vs. ISOLATED ORGAN LAYERS) -->
-      <div class="dock-tabs">
-        <button id="tab-btn-system" class="dock-tab active" data-tab="system">
-          Toàn Hệ Thống
-        </button>
-        <button id="tab-btn-organ" class="dock-tab" data-tab="organ">
-          Cô Lập Bộ Phận
-        </button>
-      </div>
-
-      <!-- ACTIVE CONTEXT HEADER -->
-      <div class="dock-context-header">
-        <div class="dock-context-info">
-          <span id="dock-context-sub" class="dock-context-label">CHẾ ĐỘ TOÀN HỆ THỐNG</span>
-          <h3 id="dock-context-title">Toàn Hệ Tiêu Hóa</h3>
-        </div>
-        <button id="btn-back-system" class="mini-btn hidden" title="Quay về Tab Toàn hệ thống">← Toàn hệ thống</button>
-      </div>
-
-      <!-- TAB 1 PANE: WHOLE SYSTEM KNOLLING CATALOG INFO -->
-      <div id="tab-pane-system" class="dock-tab-pane">
-        <div class="system-knolling-banner">
-          <span><strong>Bố cục Xếp Hàng (Knolling 4 Hàng):</strong> Khi tách lớp, toàn bộ các tạng, 8 hạ phân thùy gan & các lớp mô học sẽ xếp thành 4 hàng ngang trực quan.</span>
+    <!-- ===================== BOTTOM MEDICAL DISCLAIMER & FOOTER BAR ===================== -->
+    <footer class="medical-disclaimer-banner" role="contentinfo" aria-label="Cảnh báo miễn trừ trách nhiệm y khoa">
+      <div class="disclaimer-inner">
+        <div class="disclaimer-text">
+          <strong class="disclaimer-title">LƯU Ý MIỄN TRỪ TRÁCH NHIỆM Y KHOA (DISCLAIMER):</strong>
+          Ứng dụng 3D phục vụ mục đích <em>giáo dục, đào tạo &amp; tham khảo trực quan</em> về giải phẫu, mô học và định vị điểm mốc lâm sàng hệ tiêu hóa người theo chuẩn ĐHYHN và TA2, không thay thế cho chẩn đoán hay chỉ định ngoại khoa chính thức. Mô hình 3D: <a href="https://z-anatomy.com" target="_blank" rel="noopener">Z-Anatomy</a> (CC BY-SA 4.0) • Dữ liệu: Giáo trình Giải phẫu ĐHYHN, Netter &amp; Terminologia Anatomica.
         </div>
       </div>
+    </footer>
 
-      <!-- TAB 2 PANE: ISOLATED ORGAN ANATOMICAL BODY MAP -->
-      <div id="tab-pane-organ" class="dock-tab-pane hidden">
-        <!-- INTERACTIVE ANATOMICAL BODY MAP (CLINICAL SURFACE ANATOMY) -->
-        <div id="organ-bodymap-container" class="anatomical-body-map-card">
-          <svg class="body-silhouette-svg" viewBox="0 0 320 370" preserveAspectRatio="xMidYMid meet">
-            <!-- Head & Chin Contour -->
-            <path d="M 136 22 C 136 10, 184 10, 184 22 C 184 32, 190 40, 190 48 C 190 56, 182 60, 174 62 C 168 65, 160 65, 152 62 C 144 60, 136 56, 136 48 C 136 40, 142 32, 136 22 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            
-            <!-- Neck & Clavicles -->
-            <path d="M 144 63 L 140 76 C 122 78, 92 86, 68 104" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M 176 63 L 180 76 C 198 78, 228 86, 252 104" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M 142 75 Q 110 74 80 88" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.6" />
-            <path d="M 178 75 Q 210 74 240 88" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.6" />
-
-            <!-- Torso & Flank Outlines (Wide Torso fitting Clinical Anatomy) -->
-            <path d="M 68 104 C 64 122, 66 160, 68 195 C 70 230, 74 255, 72 290 C 70 315, 68 335, 76 355" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            <path d="M 252 104 C 256 122, 254 160, 252 195 C 250 230, 246 255, 248 290 C 250 315, 252 335, 244 355" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-
-            <!-- Diaphragmatic Dome & Costal Margin (Vòm Cơ Hoành & Bờ Sườn ĐHYHN) -->
-            <path d="M 68 152 C 96 130, 130 114, 160 110 C 190 114, 224 130, 252 152" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="3,3" opacity="0.6" />
-            <circle cx="160" cy="110" r="2.2" fill="currentColor" opacity="0.6" />
-
-            <!-- Transpyloric Plane (Mặt phẳng Môn Vị L1) -->
-            <line x1="88" y1="205" x2="232" y2="205" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2,2" opacity="0.35" />
-
-            <!-- Umbilicus (Rốn) -->
-            <circle cx="160" cy="254" r="2.8" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.65" />
-
-            <!-- Inguinal Fold & Pelvic Brim (Nếp Bẹn & Mào Chậu) -->
-            <path d="M 76 322 C 95 330, 130 348, 154 352" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.4" />
-            <path d="M 244 322 C 225 330, 190 348, 166 352" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.4" />
-
-            <!-- Median Sagittal Symmetry Axis (Đường Giữa Bụng / Linea Alba) -->
-            <line x1="160" y1="12" x2="160" y2="360" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2" stroke-dasharray="3,3" />
-          </svg>
-
-          <!-- Interactive Anatomical Body Pins (Minimalist Clinical Labels) -->
-          <button class="organ-chip body-pin pin-oral" data-organ="oral_cavity" title="Vùng Miệng (Hầu, Lưỡi, Khung Hàm & Răng)">Vùng Miệng</button>
-          <button class="organ-chip body-pin pin-esophagus" data-organ="esophagus" title="Thực Quản">Thực Quản</button>
-          <button class="organ-chip body-pin pin-liver" data-organ="liver" title="Gan (I–VIII Couinaud)">Gan</button>
-          <button class="organ-chip body-pin pin-stomach" data-organ="stomach" title="Dạ Dày">Dạ Dày</button>
-          <button class="organ-chip body-pin pin-gallbladder" data-organ="gallbladder_tree" title="Túi Mật & Đường Dẫn Mật">Túi Mật</button>
-          <button class="organ-chip body-pin pin-pancreas" data-organ="pancreas" title="Tuyến Tụy & Cây Ống Tụy">Tụy</button>
-          <button class="organ-chip body-pin pin-duodenum" data-organ="duodenum" title="Tá Tràng Quai Chữ C">Tá Tràng</button>
-          <button class="organ-chip body-pin pin-portal" data-organ="portal_system" title="Hệ Thống Mạch Máu Cửa Gan">Mạch Cửa</button>
-          <button class="organ-chip body-pin pin-small-int" data-organ="small_intestine" title="Ruột Non - Hỗng Tràng & Hồi Tràng">Ruột Non</button>
-          <button class="organ-chip body-pin pin-peritoneum" data-organ="peritoneum_omentum" title="Phúc Mạc & Mạc Nối">Phúc Mạc</button>
-          <button class="organ-chip body-pin pin-large-int" data-organ="large_intestine" title="Đại Tràng Toàn Khung & Ruột Thừa">Đại Tràng</button>
-        </div>
-      </div>
-
-      <!-- ORGAN DISPLAY MODE TOGGLE ROW (COMPACT SWITCH) -->
-      <div class="organ-display-mode-row" title="Gạt công tắc để chuyển giữa Mô Học (Trái) và Phân Vùng Chức Năng (Phải)">
-        <span id="label-mode-layers" class="mode-toggle-text active">Mô Học</span>
-        <label class="ios-switch">
-          <input type="checkbox" id="toggle-display-mode">
-          <span class="ios-slider"></span>
-        </label>
-        <span id="label-mode-regions" class="mode-toggle-text">Phân Vùng</span>
-      </div>
-
-      <!-- UNIFIED EXPLODE CONTROL (SLIDER + ONE-CLICK ANIMATE BUTTON) -->
-      <div class="explode-control-card">
-        <div class="slider-label-row">
-          <span id="explode-mode-label" style="font-weight: 700; color: var(--text-main);">Xếp Hàng Toàn Hệ Thống:</span>
-          <span id="explode-value-badge" class="explode-value-badge">0%</span>
-        </div>
-        <div class="explode-slider-row">
-          <input type="range" id="unified-explode-slider" min="0" max="1" step="0.01" value="0">
-          <button id="btn-animate-explode" class="explode-trigger-btn" title="Tự động bung hoặc thu gọn các lớp">Tách Lớp</button>
-        </div>
-        <small id="explode-helper-text" class="explode-helper-text">
-          Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang
-        </small>
-      </div>
-
-      <!-- CLEAN ACTION TOGGLES -->
-      <div class="dock-button-row">
-        <button id="btn-stomach-cutaway" class="action-btn" title="Mặt phẳng cắt dọc 50% chiều sâu cho từng lớp của bộ phận đang xem">Mặt Cắt Dọc 50%</button>
-        <button id="btn-isolate" class="action-btn" title="Chỉ hiển thị cơ quan đang chọn">Cô Lập</button>
-      </div>
-    </section>
-
-    <!-- ORGAN MEDICAL INFO DRAWER (BÊN PHẢI) -->
-    <aside id="organ-drawer" class="organ-drawer">
-      <div class="drawer-header">
-        <div>
-          <h2 id="drawer-title">Tên Cơ Quan</h2>
-          <div id="drawer-latin" class="drawer-latin">Latin Name</div>
-        </div>
-        <button id="drawer-close" class="drawer-close-btn" title="Đóng">✕</button>
-      </div>
-      <div id="drawer-content" class="drawer-scroll-body"></div>
-    </aside>
-
-    <!-- INTERACTION HINT -->
-    <div class="interaction-hint">
-      <strong>Thao tác:</strong> Rê chuột để xem nhãn từng lớp • Bấm <strong>Tách Lớp</strong> để bung 3D • Bấm vào cơ quan để xem giải phẫu & bệnh học
-    </div>
   </div>
 
   <!-- SCRIPT BOOTSTRAP -->
-  <script type="module" src="./app.js?v=20261108_v26"></script>
+  <script type="module" src="./app.js?v=20261109_v27"></script>
 </body>
 </html>
