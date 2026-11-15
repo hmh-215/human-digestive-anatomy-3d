@@ -759,21 +759,24 @@ export class SceneView {
     this.torsoMuscleMeshes = [];
 
     gltfLoader.load(
-      './assets/models/TorsoAbdominalWall.glb?v=20261115_v30',
+      './assets/models/TorsoAbdominalWall.glb?v=20261115_v33',
       (gltf) => {
         const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.50;
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
+            const hasVCols = Boolean(child.geometry?.attributes?.color);
             const mat = new THREE.MeshStandardMaterial({
-              color: 0xdcb08a,
-              roughness: 0.52,
-              metalness: 0.02,
+              color: hasVCols ? 0xffffff : 0xdcb08a,
+              vertexColors: hasVCols,
+              roughness: 0.46,
+              metalness: 0.04,
               transparent: true,
               opacity: curOpacity,
               side: THREE.FrontSide,
               depthWrite: false
             });
             child.material = mat;
+            child.renderOrder = 10;
             child.castShadow = false;
             child.receiveShadow = false;
             child.userData = { isTorsoSkin: true };

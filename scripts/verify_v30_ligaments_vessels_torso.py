@@ -13,7 +13,7 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 
 EDGE_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 PORT = 9318
-URL = "http://localhost:8085/index.html?v=20261115_v30"
+URL = "http://localhost:8086/index.html?v=20261115_v33"
 OUT_DIR = r"C:\Users\proto\.gemini\antigravity\brain\032716ed-4938-4dcf-a8c3-035bc613e5a6\scratch"
 
 SHOT_1 = os.path.join(OUT_DIR, "v30_1_anterior_viscera_overview.png")
@@ -223,6 +223,25 @@ async def main():
             )
             await asyncio.sleep(0.9)
             await snap(SHOT_3)
+
+            # Shot 3b: Sculpted Torso at 85% opacity to verify muscle details (abs, obliques, pecs) & seam-free patching
+            await send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": """(() => {
+                        const app = window.__DIGESTIVE_APP__;
+                        app.dissectionVM.setTorsoSkinOpacity(0.85);
+                    })()"""
+                },
+            )
+            await asyncio.sleep(0.5)
+            await snap(os.path.join(OUT_DIR, "v30_7_torso_85pct_sculpted.png"))
+            await send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": "window.__DIGESTIVE_APP__.dissectionVM.setTorsoSkinOpacity(0.50);"
+                },
+            )
 
             # Shot 4: Isolated Liver Anterior-Superior view to inspect all ligaments
             await send_cmd(
