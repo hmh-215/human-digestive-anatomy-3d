@@ -2,7 +2,7 @@ import * as THREE from 'three';
 window.THREE = THREE;
 
 import { AppViewModel } from './viewmodels/AppViewModel.js?v=20261115_v29';
-import { SceneView } from './views/SceneView.js?v=20261115_v29';
+import { SceneView } from './views/SceneView.js?v=20261115_v30';
 import { UIView } from './views/UIView.js?v=20261115_v29';
 
 /**

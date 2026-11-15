@@ -82,26 +82,32 @@ export class LiverLigamentsBuilder {
     // =========================================================================
     // Measured surface coordinates along the interlobar fissure + normal offset to prevent clipping
     const visceralP = [
-      new THREE.Vector3(0.65, 115.60, 9.25),
-      new THREE.Vector3(0.72, 117.10, 9.60),
-      new THREE.Vector3(0.78, 118.60, 9.85),
-      new THREE.Vector3(0.75, 120.10, 10.00),
-      new THREE.Vector3(0.60, 121.60, 9.98),
-      new THREE.Vector3(0.45, 122.90, 9.68),
-      new THREE.Vector3(0.25, 123.90, 8.88),
-      new THREE.Vector3(0.06, 124.75, 5.68)
+      new THREE.Vector3(-0.09, 116.08, 9.13),
+      new THREE.Vector3(-0.32, 117.02, 9.42),
+      new THREE.Vector3(-0.24, 118.01, 9.60),
+      new THREE.Vector3(-0.05, 119.01, 9.77),
+      new THREE.Vector3( 0.01, 120.30, 9.92),
+      new THREE.Vector3(-0.14, 121.10, 9.93),
+      new THREE.Vector3( 0.05, 121.93, 9.82),
+      new THREE.Vector3( 0.23, 122.63, 9.58),
+      new THREE.Vector3( 0.29, 123.70, 8.60),
+      new THREE.Vector3( 0.51, 124.22, 7.61),
+      new THREE.Vector3( 0.35, 124.66, 5.57)
     ];
 
-    // Parietal reflection extending toward anterior abdominal wall and anterior diaphragm
+    // Parietal reflection extending toward anterior abdominal wall (kept safely inside torso envelope)
     const parietalA = [
-      new THREE.Vector3(0.65, 114.20, 10.60),
-      new THREE.Vector3(0.72, 116.00, 11.10),
-      new THREE.Vector3(0.78, 117.80, 11.55),
-      new THREE.Vector3(0.75, 119.50, 11.75),
-      new THREE.Vector3(0.60, 121.20, 11.65),
-      new THREE.Vector3(0.45, 122.80, 11.35),
-      new THREE.Vector3(0.25, 124.30, 10.35),
-      new THREE.Vector3(0.06, 125.65, 6.90)
+      new THREE.Vector3(-0.09, 114.60, 9.65),
+      new THREE.Vector3(-0.28, 116.20, 10.10),
+      new THREE.Vector3(-0.22, 117.50, 10.35),
+      new THREE.Vector3(-0.05, 118.80, 10.52),
+      new THREE.Vector3( 0.01, 120.20, 10.65),
+      new THREE.Vector3(-0.12, 121.15, 10.65),
+      new THREE.Vector3( 0.06, 122.05, 10.50),
+      new THREE.Vector3( 0.24, 122.85, 10.20),
+      new THREE.Vector3( 0.30, 123.95, 9.15),
+      new THREE.Vector3( 0.48, 124.55, 8.05),
+      new THREE.Vector3( 0.35, 125.00, 5.82)
     ];
 
     const curveV = new THREE.CatmullRomCurve3(visceralP);
@@ -166,15 +172,15 @@ export class LiverLigamentsBuilder {
     // connecting to the left portal vein in the fissure for ligamentum teres.
     // =========================================================================
     const roundLigPoints = [
-      new THREE.Vector3(0.35, 117.80, 3.80),   // Rốn gan / Nhánh trái Tĩnh mạch cửa
-      new THREE.Vector3(0.50, 117.10, 5.80),
-      new THREE.Vector3(0.60, 116.30, 7.80),   // Rãnh dây chằng tròn mặt tạng
-      new THREE.Vector3(0.65, 115.60, 9.25),   // Khuyết dây chằng tròn bờ dưới gan
-      new THREE.Vector3(0.68, 114.20, 10.10),  // Bờ dưới tự do của dây chằng liềm
-      new THREE.Vector3(0.72, 112.50, 10.80),
-      new THREE.Vector3(0.76, 110.50, 11.40),
-      new THREE.Vector3(0.80, 108.00, 11.90),
-      new THREE.Vector3(0.85, 105.00, 12.30)   // Hướng về rốn (Umbilicus)
+      new THREE.Vector3(-0.38, 117.37, 3.72),   // Rốn gan / Nhánh trái Tĩnh mạch cửa
+      new THREE.Vector3(-0.57, 116.87, 5.87),
+      new THREE.Vector3(-0.58, 116.69, 7.11),   // Rãnh dây chằng tròn mặt tạng
+      new THREE.Vector3(-0.49, 115.94, 8.26),
+      new THREE.Vector3(-0.56, 115.44, 8.88),   // Khuyết dây chằng tròn bờ dưới gan
+      new THREE.Vector3(-0.09, 115.85, 9.13),   // Khuyết liên thùy
+      new THREE.Vector3(-0.09, 114.60, 9.65),   // Bờ dưới tự do của dây chằng liềm
+      new THREE.Vector3(-0.05, 112.80, 9.85),
+      new THREE.Vector3( 0.00, 111.00, 9.95)    // Đoạn tự do hướng rốn (gọn trong thành bụng)
     ];
     const roundLigCurve = new THREE.CatmullRomCurve3(roundLigPoints);
     const roundLigGeom = new THREE.TubeGeometry(roundLigCurve, 48, 0.13, 12, false);
@@ -203,20 +209,20 @@ export class LiverLigamentsBuilder {
     // bounding the superior border of the Bare Area.
     // =========================================================================
     const supLeafInner = [
-      new THREE.Vector3(-10.13, 123.60, 2.14),
-      new THREE.Vector3(-9.22,  124.68, 0.67),
-      new THREE.Vector3(-8.03,  125.38, 1.47),
-      new THREE.Vector3(-6.31,  125.82, 1.72),
-      new THREE.Vector3(-4.99,  125.86, 3.04),
-      new THREE.Vector3(-2.86,  125.48, 5.08),
-      new THREE.Vector3( 0.06,  124.78, 5.57), // Điểm gặp Dây chằng liềm
-      new THREE.Vector3( 2.94,  124.78, 5.01),
-      new THREE.Vector3( 5.02,  124.56, 4.02),
-      new THREE.Vector3( 7.13,  123.68, 3.85),
-      new THREE.Vector3( 7.88,  123.18, 3.15)  // Đỉnh thùy trái gan
+      new THREE.Vector3(-10.28, 123.14, 2.60),
+      new THREE.Vector3( -9.10, 124.35, 1.50),
+      new THREE.Vector3( -7.80, 125.10, 1.80),
+      new THREE.Vector3( -6.20, 125.55, 2.20),
+      new THREE.Vector3( -4.80, 125.60, 3.20),
+      new THREE.Vector3( -2.70, 125.25, 4.90),
+      new THREE.Vector3(  0.35, 124.66, 5.57), // Điểm gặp Dây chằng liềm
+      new THREE.Vector3(  3.00, 124.60, 4.95),
+      new THREE.Vector3(  5.20, 124.30, 4.10),
+      new THREE.Vector3(  7.15, 123.45, 3.85),
+      new THREE.Vector3(  8.43, 122.63, 3.41)  // Đỉnh thùy trái gan
     ];
 
-    const supLeafOuter = supLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y + 0.50, pt.z + 0.35));
+    const supLeafOuter = supLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y + 0.34, pt.z + 0.25));
     const supCurveI = new THREE.CatmullRomCurve3(supLeafInner);
     const supCurveO = new THREE.CatmullRomCurve3(supLeafOuter);
     const supSteps = 32;
@@ -265,15 +271,17 @@ export class LiverLigamentsBuilder {
     // Sits at the posterior inferior border of the Bare Area, offset smoothly outward (-Z, -Y).
     // =========================================================================
     const infLeafInner = [
-      new THREE.Vector3(-9.60, 117.20, -3.55),
-      new THREE.Vector3(-8.80, 117.18, -4.50),
-      new THREE.Vector3(-7.92, 117.20, -5.15),
-      new THREE.Vector3(-6.35, 117.45, -5.45),
-      new THREE.Vector3(-4.77, 117.82, -4.88),
-      new THREE.Vector3(-3.61, 117.65, -3.50),
-      new THREE.Vector3(-2.00, 117.85, -1.25)
+      new THREE.Vector3(-10.34, 119.90, -2.49),
+      new THREE.Vector3( -9.36, 118.80, -3.96),
+      new THREE.Vector3( -8.37, 117.25, -4.79),
+      new THREE.Vector3( -7.43, 117.34, -5.25),
+      new THREE.Vector3( -6.40, 118.28, -5.37),
+      new THREE.Vector3( -5.85, 118.36, -5.30),
+      new THREE.Vector3( -4.43, 119.70, -4.57),
+      new THREE.Vector3( -3.41, 120.41, -3.50),
+      new THREE.Vector3( -2.44, 120.56, -1.48)
     ];
-    const infLeafOuter = infLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y - 0.45, pt.z - 0.50));
+    const infLeafOuter = infLeafInner.map(pt => new THREE.Vector3(pt.x, pt.y - 0.32, pt.z - 0.32));
     const infCurveI = new THREE.CatmullRomCurve3(infLeafInner);
     const infCurveO = new THREE.CatmullRomCurve3(infLeafOuter);
     const infSteps = 24;
@@ -323,9 +331,9 @@ export class LiverLigamentsBuilder {
     // =========================================================================
     const leftTriGeom = new THREE.BufferGeometry();
     const lPos = [
-      7.88, 123.18, 3.15,  // Đỉnh bám đầu trái gan (khớp lá trên)
-      8.90, 123.90, 2.50,  // Đỉnh vươn ra cơ hoành
-      6.80, 123.68, 3.85   // Gốc liên tiếp lá trên
+      8.43, 122.63, 3.41,  // Đỉnh bám đầu trái gan (khớp lá trên)
+      9.28, 122.55, 3.85,  // Đỉnh nhọn ngoài vươn ra cơ hoành
+      7.15, 123.45, 3.85   // Gốc liên tiếp lá trên
     ];
     leftTriGeom.setAttribute('position', new THREE.Float32BufferAttribute(lPos, 3));
     leftTriGeom.setIndex([0, 1, 2]);
@@ -354,9 +362,9 @@ export class LiverLigamentsBuilder {
     // =========================================================================
     const rightTriGeom = new THREE.BufferGeometry();
     const rPos = [
-      -10.13, 123.60,  2.14,  // Gặp lá trên
-      -11.20, 120.50, -0.80,  // Đỉnh nhọn bám cơ hoành
-      -9.60,  117.20, -3.55   // Gặp lá dưới
+      -10.28, 123.14,  2.60,  // Gặp lá trên
+      -11.20, 120.90,  0.25,  // Đỉnh nhọn bám cơ hoành (cùng rìa phải gan)
+      -10.34, 119.90, -2.49   // Gặp lá dưới
     ];
     rightTriGeom.setAttribute('position', new THREE.Float32BufferAttribute(rPos, 3));
     rightTriGeom.setIndex([0, 1, 2]);

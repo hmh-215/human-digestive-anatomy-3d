@@ -5,7 +5,7 @@ import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261115_v
 import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261115_v29';
 import { ExplosionManager } from './modules/ExplosionManager.js?v=20261115_v29';
 import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261115_v29';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261115_v29';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261115_v30';
 import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261115_v29';
 
 /**
@@ -168,9 +168,9 @@ export class SceneView {
     });
 
     Promise.all([
-      loadModel('./assets/models/DigestiveSystem.glb'),
+      loadModel('./assets/models/DigestiveSystem.glb?v=20261115_v30'),
       loadModel('./assets/models/UpperDigestiveTract.glb'),
-      loadModel('./assets/models/HepaticVessels.glb'),
+      loadModel('./assets/models/HepaticVessels.glb?v=20261115_v30'),
       fetch('./data/si_tube_progress.bin?v=20261103_v22').then(r => r.arrayBuffer()).catch(() => null)
     ]).then(([digestiveGltf, upperGltf, hepaticGltf, siBuffer]) => {
       if (siBuffer) {
@@ -759,23 +759,23 @@ export class SceneView {
     this.torsoMuscleMeshes = [];
 
     gltfLoader.load(
-      './assets/models/TorsoAbdominalWall.glb',
+      './assets/models/TorsoAbdominalWall.glb?v=20261115_v30',
       (gltf) => {
         const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.50;
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
             const mat = new THREE.MeshStandardMaterial({
-              color: this._getTorsoSkinColor(child.name),
-              roughness: 0.44,
-              metalness: 0.05,
+              color: 0xdcb08a,
+              roughness: 0.52,
+              metalness: 0.02,
               transparent: true,
               opacity: curOpacity,
-              side: THREE.DoubleSide,
+              side: THREE.FrontSide,
               depthWrite: false
             });
             child.material = mat;
-            child.castShadow = true;
-            child.receiveShadow = true;
+            child.castShadow = false;
+            child.receiveShadow = false;
             child.userData = { isTorsoSkin: true };
             this.torsoMuscleMeshes.push(child);
           }
