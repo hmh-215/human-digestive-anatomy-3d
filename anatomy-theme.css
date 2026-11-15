@@ -1,0 +1,356 @@
+/* ==========================================================
+   3D Hệ Tiêu Hóa Người — medical white & red theme
+   Drop-in stylesheet. Map the class names below to your markup
+   (see the mapping comments), or rename them here.
+   ========================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,500&display=swap");
+
+:root {
+  /* palette */
+  --white: #ffffff;
+  --paper: #fbf8f7;          /* page / canvas surround */
+  --blush: #fdecee;          /* hover + selected fills */
+  --line: #eadcde;           /* hairlines */
+  --ink: #2b1b1e;            /* body text */
+  --ink-soft: #7a6568;       /* secondary text */
+  --red: #c8102e;            /* primary */
+  --red-deep: #9d0b22;       /* pressed */
+  --red-glow: rgba(200, 16, 46, 0.28);
+
+  /* shape + depth */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --shadow-1: 0 1px 2px rgba(120, 20, 35, 0.06), 0 4px 14px rgba(120, 20, 35, 0.06);
+  --shadow-2: 0 2px 4px rgba(120, 20, 35, 0.08), 0 16px 40px rgba(120, 20, 35, 0.14);
+
+  /* motion */
+  --ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --fast: 140ms;
+  --med: 280ms;
+
+  --font-ui: "Be Vietnam Pro", system-ui, sans-serif;
+  --font-latin: "Newsreader", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  background:
+    radial-gradient(60% 55% at 50% 48%, #ffffff 0%, var(--paper) 70%, #f4ecea 100%);
+}
+
+/* ---------- keyboard focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ==========================================================
+   HEADER  (.app-header, .brand, .brand-sub, .nav-tab)
+   ========================================================== */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 10px 24px;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; font-size: 17px; letter-spacing: 0.01em; color: var(--ink); }
+.brand-sub { font-size: 11.5px; color: var(--ink-soft); }
+
+.nav-tab {
+  position: relative;
+  padding: 10px 6px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--fast);
+}
+.nav-tab:hover { color: var(--ink); }
+.nav-tab[aria-selected="true"],
+.nav-tab.is-active { color: var(--red); }
+.nav-tab::after {            /* underline grows from the centre */
+  content: "";
+  position: absolute;
+  left: 50%; right: 50%; bottom: 0;
+  height: 2px;
+  background: var(--red);
+  transition: left var(--med) var(--ease), right var(--med) var(--ease);
+}
+.nav-tab[aria-selected="true"]::after,
+.nav-tab.is-active::after { left: 0; right: 0; }
+
+/* ==========================================================
+   BUTTONS  (.btn, .btn-primary, .btn-ghost, .btn-segment)
+   ========================================================== */
+.btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), box-shadow var(--med) var(--ease),
+              background var(--fast), border-color var(--fast), color var(--fast);
+}
+.btn:hover { border-color: var(--red); color: var(--red); background: var(--blush); }
+.btn:active { transform: translateY(1px) scale(0.98); }
+.btn:disabled { opacity: 0.45; pointer-events: none; }
+
+.btn-primary {
+  color: var(--white);
+  background: linear-gradient(180deg, #d4163a 0%, var(--red) 100%);
+  border-color: var(--red-deep);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 4px 12px var(--red-glow);
+}
+.btn-primary:hover {
+  color: var(--white);
+  background: linear-gradient(180deg, #dc1a40 0%, #cf1230 100%);
+  border-color: var(--red-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 8px 20px var(--red-glow);
+}
+.btn-primary::after {        /* light sweep on hover */
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-18deg);
+  transition: left 600ms var(--ease);
+}
+.btn-primary:hover::after { left: 130%; }
+
+.btn-ghost { background: transparent; border-color: transparent; color: var(--ink-soft); }
+.btn-ghost:hover { background: var(--blush); border-color: transparent; }
+
+/* segmented switch: "Bóc tách giải phẫu | Điểm mốc lâm sàng" */
+.btn-segment-group {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.btn-segment {
+  padding: 8px 14px;
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--med) var(--ease), color var(--fast), box-shadow var(--med);
+}
+.btn-segment:hover { color: var(--red); }
+.btn-segment.is-active {
+  color: var(--white);
+  background: var(--red);
+  box-shadow: 0 4px 12px var(--red-glow);
+}
+
+/* search + inputs */
+.input {
+  padding: 9px 12px;
+  font: 400 13px var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  transition: border-color var(--fast), box-shadow var(--fast);
+}
+.input::placeholder { color: #b3a2a5; }
+.input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+
+/* ==========================================================
+   PANELS  (.panel-left, .panel-right, .tabs, .tab)
+   ========================================================== */
+.panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+.panel-left, .panel-right { background: var(--white); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-1); }
+.panel-right { box-shadow: var(--shadow-2); animation: panel-in var(--med) var(--ease) both; }
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tab {
+  flex: 1;
+  padding: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--fast), border-color var(--fast), background var(--fast);
+}
+.tab:hover { background: var(--blush); color: var(--red); }
+.tab.is-active { color: var(--red); border-bottom-color: var(--red); }
+
+.section-label { font-size: 11.5px; font-weight: 600; color: var(--red); }
+.organ-title { font-size: 20px; font-weight: 700; margin: 2px 0 10px; }
+
+/* Latin / English names under a title */
+.latin { font-family: var(--font-latin); font-style: italic; color: var(--ink-soft); }
+
+/* organ chips on the body diagram */
+.organ-chip {
+  padding: 3px 9px;
+  font: 500 11px var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), background var(--fast), border-color var(--fast), color var(--fast);
+}
+.organ-chip:hover { background: var(--blush); border-color: var(--red); transform: translateY(-1px); }
+.organ-chip.is-active {
+  color: var(--white);
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px var(--red-glow);
+}
+
+/* ==========================================================
+   LAYER SLIDER — the signature control ("Tách lớp")
+   ========================================================== */
+.layer-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; cursor: pointer; }
+.layer-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 99px;
+  /* --progress is set from JS: slider.style.setProperty('--progress', pct + '%') */
+  background: linear-gradient(90deg, var(--red) var(--progress, 0%), var(--line) var(--progress, 0%));
+}
+.layer-slider::-moz-range-track { height: 6px; border-radius: 99px; background: var(--line); }
+.layer-slider::-moz-range-progress { height: 6px; border-radius: 99px; background: var(--red); }
+.layer-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  margin-top: -7px;
+  background: var(--white);
+  border: 3px solid var(--red);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px var(--red-glow);
+  transition: transform var(--fast) var(--ease), box-shadow var(--med);
+}
+.layer-slider::-moz-range-thumb {
+  width: 14px; height: 14px;
+  background: var(--white);
+  border: 3px solid var(--red);
+  border-radius: 50%;
+}
+.layer-slider:hover::-webkit-slider-thumb { transform: scale(1.12); }
+.layer-slider:active::-webkit-slider-thumb { transform: scale(1.2); box-shadow: 0 0 0 8px var(--red-glow); }
+
+.percent-badge {
+  padding: 2px 8px;
+  font: 600 11px var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--red);
+  background: var(--blush);
+  border-radius: 99px;
+}
+
+/* ==========================================================
+   LAYER CARDS & CALLOUT  (.layer-card, .callout, .tag)
+   ========================================================== */
+.layer-card {
+  position: relative;
+  padding: 12px 14px 12px 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition: border-color var(--fast), box-shadow var(--med) var(--ease), transform var(--med) var(--ease);
+}
+.layer-card::before {        /* red bar = which layer is currently peeled */
+  content: "";
+  position: absolute;
+  left: 0; top: 10px; bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--line);
+  transition: background var(--fast), top var(--med) var(--ease), bottom var(--med) var(--ease);
+}
+.layer-card:hover { box-shadow: var(--shadow-1); transform: translateX(2px); }
+.layer-card.is-active { border-color: var(--red); }
+.layer-card.is-active::before { background: var(--red); top: 0; bottom: 0; }
+
+.callout {                   /* floating label next to the 3D model */
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  animation: panel-in var(--med) var(--ease) both;
+}
+
+.tag {                       /* "TẦNG GIẢI PHẪU: 2" */
+  display: inline-block;
+  padding: 3px 9px;
+  font: 600 11px var(--font-ui);
+  color: var(--red);
+  background: var(--blush);
+  border-radius: 6px;
+}
+.measure {                   /* "0.5 – 0.8 mm" */
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+/* ==========================================================
+   FOOTER DISCLAIMER  (.disclaimer)
+   ========================================================== */
+.disclaimer {
+  padding: 10px 24px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #ffeef0;
+  background: linear-gradient(90deg, var(--red-deep), var(--red));
+}
+.disclaimer strong { color: var(--white); }
+
+/* scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #e3c6ca transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #e3c6ca; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--red); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .app-header { flex-wrap: wrap; gap: 12px; padding: 10px 14px; }
+  .panel-right { border-radius: var(--r-lg) var(--r-lg) 0 0; }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+}

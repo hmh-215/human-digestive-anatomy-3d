@@ -1,89 +1,66 @@
-/* ================================================================
-   THEME.CSS — Design System Trắng & Đỏ (White & Crimson Red)
-   Tham chiếu kiến trúc màu Hex & Typography từ:
-   Lumen Eighty Template (templatemo_628_lumen_eighty)
-   Dành cho Ứng Dụng Mô Phỏng & Bóc Tách Giải Phẫu Hệ Tiêu Hóa 3D (ĐHYHN)
-   ================================================================ */
+/* ==========================================================
+   3D Hệ Tiêu Hóa Người — Medical White & Red Theme
+   Phát triển dựa trên template chuẩn: anatomy-theme.css
+   Tương thích hoàn toàn với kiến trúc Reactive MVVM & Three.js View
+   ========================================================== */
 
-/* === 1. DESIGN TOKENS (Kế thừa từ Lumen Eighty & Chuẩn Y Khoa) === */
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,500&family=JetBrains+Mono:wght@400;600&display=swap");
+
 :root {
-  /* Lumen Eighty Core Palette */
-  --bg-pure-white: #FFFFFF;        /* Nền trắng tinh khiết chủ đạo */
-  --surface-diagonal: #FFF5F5;     /* Nền nhấn hồng thắm nhạt cho các khối phụ */
-  --surface-ice: #E0F2FE;          /* Điểm xuyết xanh băng thanh lịch */
-  --text-ink: #1B1B24;             /* Mực đen than sâu thẳm, không dùng đen thuần */
-  --text-secondary: #334155;       /* Xám than đậm cho nội dung giải phẫu */
-  --text-muted: #68717C;           /* Xám lạnh cho phụ đề, nhãn phụ */
-  
-  /* Crimson Red Accent (Màu đỏ chủ đạo theo yêu cầu người dùng) */
-  --accent-crimson: #C92A2A;       /* Đỏ Crimson chủ đạo (nút, tab, badge, viền nhấn) */
-  --accent-crimson-hover: #A61E1E; /* Đỏ thẫm khi rê chuột */
-  --accent-crimson-light: #E03131; /* Đỏ tươi viền nét */
-  --hover-crimson: #FFF0F0;        /* Nền blush nhẹ khi hover thẻ card */
-  --crimson-tint: rgba(201, 42, 42, 0.08);
-  --crimson-border: rgba(201, 42, 42, 0.25);
+  /* Palette (từ anatomy-theme.css) */
+  --white: #ffffff;
+  --paper: #fbf8f7;          /* page / canvas surround */
+  --blush: #fdecee;          /* hover + selected fills */
+  --line: #eadcde;           /* hairlines */
+  --ink: #2b1b1e;            /* body text */
+  --ink-soft: #7a6568;       /* secondary text */
+  --red: #c8102e;            /* primary */
+  --red-deep: #9d0b22;       /* pressed */
+  --red-glow: rgba(200, 16, 46, 0.28);
 
-  /* Delicate Architectural Borders */
-  --border-delicate: #D6E4EF;      /* Viền kiến trúc thanh lịch */
-  --border-subtle: #E2E8F0;        /* Viền phân cách nhẹ */
-  --border-ink: #1B1B24;           /* Đường chia cắt cấu trúc tương phản */
+  /* Shape + Depth */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --shadow-1: 0 1px 2px rgba(120, 20, 35, 0.06), 0 4px 14px rgba(120, 20, 35, 0.06);
+  --shadow-2: 0 2px 4px rgba(120, 20, 35, 0.08), 0 16px 40px rgba(120, 20, 35, 0.14);
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(27, 27, 36, 0.05);
-  --shadow-md: 0 4px 16px rgba(27, 27, 36, 0.08);
-  --shadow-lg: 0 10px 30px rgba(27, 27, 36, 0.12);
-  --shadow-crimson: 0 4px 14px rgba(201, 42, 42, 0.25);
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --fast: 140ms;
+  --med: 280ms;
 
-  /* Typography (Lumen Eighty + Vietnamese Medical Support) */
-  --font-ui: 'Plus Jakarta Sans', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-editorial: 'Cormorant Garamond', Georgia, serif;
-  --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
-  --header-h: 68px;
+  --font-ui: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+  --font-latin: "Newsreader", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
 
-  /* Spacing & Radii (Kiến trúc sắc nét Lumen Eighty) */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-
-  /* Animation Easings */
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-soft: cubic-bezier(0.4, 0.14, 0.3, 1);
+  /* Aliases for cross-template compatibility */
+  --header-h: 64px;
 }
 
-/* === 2. GLOBAL RESET & BASE STYLES === */
-*, *::before, *::after {
+* {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 15px;
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 body {
+  margin: 0;
   font-family: var(--font-ui);
-  background-color: var(--bg-pure-white);
-  color: var(--text-ink);
-  overflow-x: hidden;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  background:
+    radial-gradient(60% 55% at 50% 48%, #ffffff 0%, var(--paper) 70%, #f4ecea 100%);
+  overflow: hidden;
   height: 100vh;
   width: 100vw;
   user-select: none;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
+/* ---------- keyboard focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
 }
 
 .hidden {
@@ -96,58 +73,57 @@ button {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background: var(--bg-pure-white);
+  background: var(--white);
 }
 
-/* === 3. TOP HEADER & SITE NAVIGATION (LUMEN EIGHTY STYLE) === */
+/* ==========================================================
+   HEADER  (.app-header, .site-header, .brand, .brand-sub, .nav-tab)
+   ========================================================== */
+.app-header,
 .site-header {
-  position: relative;
-  z-index: 200;
-  background: var(--bg-pure-white);
-  border-bottom: 2px solid var(--border-ink);
-  height: var(--header-h);
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.header-inner {
-  height: 100%;
-  width: 100%;
-  padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 28px;
+  padding: 10px 24px;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
+  height: var(--header-h);
+  flex-shrink: 0;
+  z-index: 200;
+  box-shadow: 0 1px 3px rgba(120, 20, 35, 0.04);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 20px;
 }
 
-/* Brand Logo / Badge */
 .brand {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2px;
+  line-height: 1.15;
 }
-
 .brand-title {
-  font-family: var(--font-ui);
   font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.01em;
-  color: var(--text-ink);
-  white-space: nowrap;
-  line-height: 1.1;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
 }
-
 .brand-sub {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent-crimson);
-  white-space: nowrap;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  margin-top: 2px;
 }
 
-/* Main Navigation Tabs */
 .main-nav {
   display: flex;
   align-items: center;
@@ -157,8 +133,10 @@ button {
 .nav-list {
   display: flex;
   list-style: none;
-  gap: 32px;
+  gap: 24px;
   align-items: center;
+  margin: 0;
+  padding: 0;
   height: 100%;
 }
 
@@ -169,92 +147,222 @@ button {
   align-items: center;
 }
 
+.nav-tab,
 .nav-link.nav-tab-btn {
   position: relative;
+  padding: 10px 10px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--fast);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px 6px;
-  font-size: 0.98rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--text-muted);
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  transition: color 0.25s var(--ease-out-expo);
 }
 
+.nav-tab:hover,
 .nav-link.nav-tab-btn:hover {
-  color: var(--accent-crimson);
-  background: transparent;
+  color: var(--ink);
 }
 
-.nav-link.nav-tab-btn.active,
-.nav-link.nav-tab-btn.is-active {
-  color: var(--text-ink);
+.nav-tab[aria-selected="true"],
+.nav-tab.is-active,
+.nav-tab.active,
+.nav-link.nav-tab-btn.is-active,
+.nav-link.nav-tab-btn.active {
+  color: var(--red);
   font-weight: 700;
 }
 
+.nav-tab::after,
 .nav-link.nav-tab-btn::after {
-  content: '';
+  content: "";
   position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: 0;
+  height: 2px;
+  background: var(--red);
+  transition: left var(--med) var(--ease), right var(--med) var(--ease);
+}
+
+.nav-tab[aria-selected="true"]::after,
+.nav-tab.is-active::after,
+.nav-tab.active::after,
+.nav-link.nav-tab-btn.is-active::after,
+.nav-link.nav-tab-btn.active::after {
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 3px;
-  background: var(--accent-crimson);
-  opacity: 0;
-  transform: translateY(2px);
-  transition: all 0.25s var(--ease-out-expo);
 }
 
-.nav-link.nav-tab-btn.active::after,
-.nav-link.nav-tab-btn.is-active::after {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Right Header Actions */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Mode Switcher Pills */
-.mode-switcher {
-  display: flex;
-  background: #F1F5F9;
-  padding: 3px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-delicate);
-}
-
-.mode-pill {
-  padding: 6px 14px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  border-radius: var(--radius-xs);
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  transition: all 0.2s ease;
+/* ==========================================================
+   BUTTONS  (.btn, .btn-primary, .btn-ghost, .btn-segment)
+   ========================================================== */
+.btn,
+.action-btn,
+.mini-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), box-shadow var(--med) var(--ease),
+              background var(--fast), border-color var(--fast), color var(--fast);
   white-space: nowrap;
 }
 
+.mini-btn {
+  padding: 6px 11px;
+  font-size: 11.5px;
+}
+
+.btn:hover,
+.action-btn:hover,
+.mini-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+  background: var(--blush);
+}
+
+.btn:active,
+.action-btn:active,
+.mini-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.btn:disabled,
+.action-btn:disabled,
+.mini-btn:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.btn-primary,
+.explode-trigger-btn,
+.help-btn-action {
+  color: var(--white);
+  background: linear-gradient(180deg, #d4163a 0%, var(--red) 100%);
+  border-color: var(--red-deep);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 4px 12px var(--red-glow);
+}
+
+.btn-primary:hover,
+.explode-trigger-btn:hover,
+.help-btn-action:hover {
+  color: var(--white);
+  background: linear-gradient(180deg, #dc1a40 0%, #cf1230 100%);
+  border-color: var(--red-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 8px 20px var(--red-glow);
+}
+
+.btn-primary::after,
+.explode-trigger-btn::after,
+.help-btn-action::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-18deg);
+  transition: left 600ms var(--ease);
+}
+
+.btn-primary:hover::after,
+.explode-trigger-btn:hover::after,
+.help-btn-action:hover::after {
+  left: 130%;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-soft);
+}
+.btn-ghost:hover {
+  background: var(--blush);
+  border-color: transparent;
+}
+
+/* Segmented switch: "Bóc tách giải phẫu | Điểm mốc lâm sàng" */
+.btn-segment-group,
+.mode-switcher {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.btn-segment,
+.mode-pill {
+  padding: 8px 14px;
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--med) var(--ease), color var(--fast), box-shadow var(--med);
+  white-space: nowrap;
+}
+
+.btn-segment:hover,
 .mode-pill:hover {
-  color: var(--text-ink);
+  color: var(--red);
 }
 
+.btn-segment.is-active,
+.btn-segment.active,
+.mode-pill.is-active,
 .mode-pill.active {
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(201, 42, 42, 0.25);
+  color: var(--white);
+  background: var(--red);
+  box-shadow: 0 4px 12px var(--red-glow);
 }
 
-/* Realtime Expandable Search Bar */
+/* Search + inputs */
+.input,
+.search-input {
+  padding: 9px 14px;
+  font: 400 13px var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  transition: border-color var(--fast), box-shadow var(--fast), width 0.3s var(--ease);
+  width: 200px;
+}
+
+.input::placeholder,
+.search-input::placeholder {
+  color: #b3a2a5;
+}
+
+.input:focus,
+.search-input:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+  width: 270px;
+}
+
 .expandable-search {
   position: relative;
 }
@@ -263,26 +371,6 @@ button {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.expandable-search .search-input {
-  width: 190px;
-  padding: 8px 28px 8px 12px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-delicate);
-  background: var(--bg-pure-white);
-  color: var(--text-ink);
-  font-size: 0.82rem;
-  font-family: var(--font-ui);
-  outline: none;
-  transition: width 0.3s var(--ease-out-expo), border-color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.expandable-search .search-input:focus {
-  width: 270px;
-  border-color: var(--accent-crimson);
-  box-shadow: 0 2px 10px rgba(201, 42, 42, 0.12);
-  background: #FFFDFD;
 }
 
 .search-clear-btn {
@@ -296,15 +384,15 @@ button {
   background: transparent;
   border: none;
   border-radius: 50%;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   font-size: 11px;
-  line-height: 1;
-  transition: all 0.15s ease;
+  cursor: pointer;
+  transition: background var(--fast), color var(--fast);
 }
 
 .search-clear-btn:hover {
-  background: #FFEAEA;
-  color: var(--accent-crimson);
+  background: var(--blush);
+  color: var(--red);
 }
 
 .search-results-dropdown {
@@ -314,19 +402,19 @@ button {
   right: 0;
   min-width: 270px;
   z-index: 300;
-  background: var(--bg-pure-white);
-  border: 1px solid var(--accent-crimson);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lg);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
   max-height: 320px;
   overflow-y: auto;
 }
 
 .search-item {
   padding: 10px 14px;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--paper);
   cursor: pointer;
-  transition: background 0.15s ease, padding-left 0.15s ease;
+  transition: background var(--fast), padding-left var(--fast);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -337,82 +425,396 @@ button {
 }
 
 .search-item:hover {
-  background: var(--hover-crimson);
+  background: var(--blush);
   padding-left: 17px;
 }
 
 .search-item strong {
-  font-size: 0.84rem;
-  color: var(--text-ink);
+  font-size: 13px;
+  color: var(--ink);
 }
 
 .search-item small {
-  font-size: 0.72rem;
-  color: var(--accent-crimson);
+  font-size: 11px;
+  font-family: var(--font-latin);
   font-style: italic;
+  color: var(--red);
 }
 
 .no-result {
   padding: 16px 14px;
   text-align: center;
-  font-size: 0.80rem;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
-/* Action Button (Căn Lại) */
-.action-btn {
-  padding: 8px 16px;
-  font-size: 0.82rem;
+/* ==========================================================
+   PANELS  (.panel, .panel-left, .panel-right, .tabs, .tab)
+   ========================================================== */
+.panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.panel-left,
+.dissection-dock,
+.landmarks-panel {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.panel-right,
+.organ-drawer {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+  animation: panel-in var(--med) var(--ease) both;
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.tabs,
+.dock-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+
+.tab,
+.dock-tab {
+  flex: 1;
+  padding: 12px 10px;
+  font: 600 13px var(--font-ui);
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  transition: color var(--fast), border-color var(--fast), background var(--fast);
+}
+
+.tab:hover,
+.dock-tab:hover {
+  background: var(--blush);
+  color: var(--red);
+}
+
+.tab.is-active,
+.tab.active,
+.dock-tab.is-active,
+.dock-tab.active {
+  color: var(--red);
+  background: var(--white);
+  border-bottom-color: var(--red);
+}
+
+.section-label,
+.dock-context-label {
+  font-size: 11.5px;
   font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-delicate);
-  background: var(--bg-pure-white);
-  color: var(--text-ink);
-  transition: all 0.2s var(--ease-out-expo);
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+}
+
+.organ-title,
+#dock-context-title,
+#drawer-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 2px 0 6px;
+  line-height: 1.25;
+}
+
+/* Latin / English names under a title */
+.latin,
+.drawer-latin {
+  font-family: var(--font-latin);
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+}
+
+/* ==========================================================
+   ORGAN CHIPS ON THE BODY DIAGRAM (.organ-chip, .body-pin)
+   ========================================================== */
+.organ-chip,
+.body-pin {
+  padding: 4px 10px;
+  font: 500 11px var(--font-ui);
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform var(--fast) var(--ease), background var(--fast), border-color var(--fast), color var(--fast), box-shadow var(--fast);
   white-space: nowrap;
 }
 
-.action-btn:hover {
-  border-color: var(--accent-crimson);
-  color: var(--accent-crimson);
-  background: var(--hover-crimson);
+.organ-chip:hover,
+.body-pin:hover {
+  background: var(--blush);
+  border-color: var(--red);
+  color: var(--red);
+  transform: translateY(-1px);
 }
 
-.action-btn.active {
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  border-color: var(--accent-crimson);
-  box-shadow: 0 2px 6px rgba(201, 42, 42, 0.25);
+.organ-chip.is-active,
+.organ-chip.active,
+.body-pin.is-active,
+.body-pin.active {
+  color: var(--white);
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 0 4px var(--red-glow);
 }
 
-/* Mini Buttons */
-.mini-btn {
-  padding: 5px 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border-delicate);
-  background: var(--bg-pure-white);
-  color: var(--text-ink);
-  transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
+/* Precise Anatomical Pin Coordinates */
+.body-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+.body-pin:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  z-index: 10;
+}
+.body-pin.is-active,
+.body-pin.active {
+  transform: translate(-50%, -50%) scale(1.08);
+  z-index: 10;
+}
+
+.pin-oral        { top: 12%; left: 50%; }
+.pin-esophagus   { top: 25%; left: 50%; }
+.pin-liver       { top: 41%; left: 33%; }
+.pin-stomach     { top: 42%; left: 66%; }
+.pin-gallbladder { top: 49%; left: 34%; font-size: 10px; }
+.pin-pancreas    { top: 49%; left: 66%; }
+.pin-duodenum    { top: 56%; left: 50%; }
+.pin-portal      { top: 35%; left: 50%; font-size: 10px; }
+.pin-small-int   { top: 67%; left: 50%; }
+.pin-peritoneum  { top: 76%; left: 30%; font-size: 10px; }
+.pin-large-int   { top: 82%; left: 62%; }
+
+/* ==========================================================
+   LAYER SLIDER — THE SIGNATURE CONTROL ("Tách lớp")
+   ========================================================== */
+.layer-slider,
+#unified-explode-slider,
+#torso-opacity-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.layer-slider::-webkit-slider-runnable-track,
+#unified-explode-slider::-webkit-slider-runnable-track,
+#torso-opacity-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 99px;
+  /* --progress is set from JS: slider.style.setProperty('--progress', pct + '%') */
+  background: linear-gradient(90deg, var(--red) var(--progress, 0%), var(--line) var(--progress, 0%));
+}
+
+.layer-slider::-moz-range-track,
+#unified-explode-slider::-moz-range-track,
+#torso-opacity-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.layer-slider::-moz-range-progress,
+#unified-explode-slider::-moz-range-progress,
+#torso-opacity-slider::-moz-range-progress {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--red);
+}
+
+.layer-slider::-webkit-slider-thumb,
+#unified-explode-slider::-webkit-slider-thumb,
+#torso-opacity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  background: var(--white);
+  border: 3px solid var(--red);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px var(--red-glow);
+  transition: transform var(--fast) var(--ease), box-shadow var(--med);
+}
+
+.layer-slider::-moz-range-thumb,
+#unified-explode-slider::-moz-range-thumb,
+#torso-opacity-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--white);
+  border: 3px solid var(--red);
+  border-radius: 50%;
+}
+
+.layer-slider:hover::-webkit-slider-thumb,
+#unified-explode-slider:hover::-webkit-slider-thumb,
+#torso-opacity-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+.layer-slider:active::-webkit-slider-thumb,
+#unified-explode-slider:active::-webkit-slider-thumb,
+#torso-opacity-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 8px var(--red-glow);
+}
+
+.percent-badge,
+.explode-value-badge,
+.torso-opacity-badge {
+  padding: 2px 8px;
+  font: 600 11px var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--red);
+  background: var(--blush);
+  border-radius: 99px;
+  display: inline-block;
+}
+
+/* ==========================================================
+   LAYER CARDS & CALLOUT  (.layer-card, .callout, .tag)
+   ========================================================== */
+.layer-card,
+.wall-layer-card,
+.landmark-card {
+  position: relative;
+  padding: 12px 14px 12px 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  transition: border-color var(--fast), box-shadow var(--med) var(--ease), transform var(--med) var(--ease);
+  cursor: pointer;
+}
+
+.layer-card::before,
+.wall-layer-card::before,
+.landmark-card::before {
+  /* red bar = which layer is currently peeled */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--line);
+  transition: background var(--fast), top var(--med) var(--ease), bottom var(--med) var(--ease);
+}
+
+.layer-card:hover,
+.wall-layer-card:hover,
+.landmark-card:hover {
+  box-shadow: var(--shadow-1);
+  transform: translateX(2px);
+  background: var(--blush);
+}
+
+.layer-card.is-active,
+.layer-card.active,
+.layer-card.highlight,
+.wall-layer-card.is-active,
+.wall-layer-card.active,
+.wall-layer-card.highlight,
+.landmark-card.is-active,
+.landmark-card.active {
+  border-color: var(--red);
+  background: #FFFBFB;
+}
+
+.layer-card.is-active::before,
+.layer-card.active::before,
+.layer-card.highlight::before,
+.wall-layer-card.is-active::before,
+.wall-layer-card.active::before,
+.wall-layer-card.highlight::before,
+.landmark-card.is-active::before,
+.landmark-card.active::before {
+  background: var(--red);
+  top: 0;
+  bottom: 0;
+}
+
+.callout,
+.hover-callout-card {
+  /* floating label next to the 3D model */
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-2);
+  animation: panel-in var(--med) var(--ease) both;
+  min-width: 220px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
+  pointer-events: auto;
 }
 
-.mini-btn:hover {
-  border-color: var(--accent-crimson);
-  color: var(--accent-crimson);
-  background: var(--hover-crimson);
+.tag,
+.drawer-badge,
+.landmark-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  font: 600 11px var(--font-ui);
+  color: var(--red);
+  background: var(--blush);
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-/* === 4. MAIN APP LAYOUT (SECTION 1: 3D VIEWPORT & SURROUNDING DOCKS) === */
+.measure,
+.wall-layer-thickness-badge {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  font-size: 11.5px;
+  background: var(--paper);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ==========================================================
+   LAYOUT STRUCTURES (3D VIEWPORT, DOCKS, DRAWER)
+   ========================================================== */
 .app-layout {
   position: relative;
   flex: 1;
   width: 100%;
   overflow: hidden;
-  background: var(--bg-pure-white);
+  background: radial-gradient(60% 55% at 50% 48%, #ffffff 0%, var(--paper) 70%, #f4ecea 100%);
 }
 
 #canvas-container {
@@ -424,161 +826,50 @@ button {
   z-index: 1;
 }
 
-/* Floating Viewport Reset View Button (Corner of 3D Canvas) */
-.viewport-reset-btn {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  font-size: 0.80rem;
-  font-weight: 600;
-  font-family: var(--font-ui);
-  color: var(--text-ink);
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all 0.3s var(--ease-out-expo);
-  user-select: none;
-}
-
-.viewport-reset-btn:hover {
-  background: #FFFFFF;
-  border-color: var(--accent-crimson);
-  color: var(--accent-crimson);
-  box-shadow: 0 4px 14px rgba(201, 42, 42, 0.16);
-  transform: translateY(-1px);
-}
-
-.viewport-reset-btn svg {
-  transition: transform 0.3s ease;
-  color: var(--accent-crimson);
-}
-
-.viewport-reset-btn:hover svg {
-  transform: rotate(-45deg);
-}
-
-/* When the organ info drawer opens, smoothly slide the reset button left to avoid overlap */
-#section-3d-model:has(#organ-drawer.open) .viewport-reset-btn {
-  right: 480px;
-}
-
-/* === 5. 2-TAB CONTEXT-AWARE DISSECTION DOCK (GÓC DƯỚI BÊN TRÁI) === */
+/* Dissection Dock (Góc dưới bên trái) */
 .dissection-dock {
   position: absolute;
   bottom: 20px;
   left: 20px;
-  width: 330px;
+  width: 335px;
   max-height: calc(100vh - var(--header-h) - 80px);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
   z-index: 20;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-/* 2 Separate Tabs Header */
-.dock-tabs {
-  display: flex;
-  background: #F8FAFC;
-  border-bottom: 1px solid var(--border-delicate);
-}
-
-.dock-tab {
-  flex: 1;
-  padding: 10px 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-align: center;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.dock-tab:hover {
-  color: var(--accent-crimson);
-}
-
-.dock-tab.active {
-  color: var(--accent-crimson);
-  background: var(--bg-pure-white);
-  font-weight: 700;
-}
-
-.dock-tab.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2.5px;
-  background: var(--accent-crimson);
-}
-
-/* Context Header */
 .dock-context-header {
-  padding: 12px 16px 8px;
+  padding: 14px 16px 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid var(--line);
 }
 
-.dock-context-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--accent-crimson);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 2px;
-}
-
-#dock-context-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-ink);
-  line-height: 1.2;
-}
-
-/* Tab Panes */
 .dock-tab-pane {
-  padding: 10px 16px;
+  padding: 12px 16px;
   overflow-y: auto;
   max-height: 260px;
 }
 
 .system-knolling-banner {
   padding: 10px 12px;
-  background: var(--surface-diagonal);
-  border-left: 3.5px solid var(--accent-crimson);
-  border-radius: var(--radius-xs);
-  font-size: 0.78rem;
+  background: var(--blush);
+  border-left: 3px solid var(--red);
+  border-radius: var(--r-sm);
+  font-size: 12px;
   line-height: 1.5;
-  color: var(--text-ink);
+  color: var(--ink);
 }
 
-/* Anatomical Body Map SVG (Minimalist Clinical Silhouette) */
 .anatomical-body-map-card {
   position: relative;
   width: 100%;
   height: 240px;
-  background: #FCFDFE;
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-sm);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
   overflow: hidden;
   margin-bottom: 4px;
 }
@@ -586,85 +877,38 @@ button {
 .body-silhouette-svg {
   width: 100%;
   height: 100%;
-  color: #64748B;
+  color: #7a6568;
 }
 
-/* Interactive Anatomical Body Pins */
-.body-pin {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  padding: 4px 8px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  background: var(--bg-pure-white);
-  color: var(--text-ink);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
-  box-shadow: var(--shadow-sm);
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  z-index: 5;
-}
-
-.body-pin:hover {
-  background: var(--hover-crimson);
-  border-color: var(--accent-crimson);
-  color: var(--accent-crimson);
-  transform: translate(-50%, -50%) scale(1.06);
-  z-index: 10;
-}
-
-.body-pin.active {
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  border-color: var(--accent-crimson);
-  box-shadow: var(--shadow-crimson);
-  z-index: 10;
-}
-
-/* Precise Anatomical Pin Positions */
-.pin-oral        { top: 12%; left: 50%; }
-.pin-esophagus   { top: 25%; left: 50%; }
-.pin-liver       { top: 41%; left: 33%; }
-.pin-stomach     { top: 42%; left: 66%; }
-.pin-gallbladder { top: 49%; left: 34%; font-size: 0.62rem; }
-.pin-pancreas    { top: 49%; left: 66%; }
-.pin-duodenum    { top: 56%; left: 50%; }
-.pin-portal      { top: 35%; left: 50%; font-size: 0.62rem; }
-.pin-small-int   { top: 67%; left: 50%; }
-.pin-peritoneum  { top: 76%; left: 30%; font-size: 0.62rem; }
-.pin-large-int   { top: 82%; left: 62%; }
-
-/* Compact Display Mode Switch (Mô Học <-> Phân Vùng) */
+/* Mode Switch (Mô Học <-> Phân Vùng) */
 .organ-display-mode-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 8px 16px;
-  background: #F8FAFC;
-  border-top: 1px solid #F1F5F9;
-  border-bottom: 1px solid #F1F5F9;
+  padding: 9px 16px;
+  background: var(--paper);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .mode-toggle-text {
-  font-size: 0.78rem;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color var(--fast);
 }
 
 .mode-toggle-text.active {
-  color: var(--accent-crimson);
+  color: var(--red);
   font-weight: 700;
 }
 
-/* iOS Style Switch */
 .ios-switch {
   position: relative;
   display: inline-block;
-  width: 38px;
+  width: 36px;
   height: 20px;
 }
 
@@ -678,8 +922,8 @@ button {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #CBD5E1;
-  transition: 0.25s ease;
+  background-color: var(--line);
+  transition: 0.25s var(--ease);
   border-radius: 20px;
 }
 
@@ -690,25 +934,25 @@ button {
   width: 16px;
   left: 2px;
   bottom: 2px;
-  background-color: #FFFFFF;
-  transition: 0.25s ease;
+  background-color: var(--white);
+  transition: 0.25s var(--ease);
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .ios-switch input:checked + .ios-slider {
-  background-color: var(--accent-crimson);
+  background-color: var(--red);
 }
 
 .ios-switch input:checked + .ios-slider::before {
-  transform: translateX(18px);
+  transform: translateX(16px);
 }
 
-/* Unified Explode Control Card */
+/* Explode Control */
 .explode-control-card {
   padding: 12px 16px;
-  background: var(--bg-pure-white);
-  border-bottom: 1px solid #F1F5F9;
+  background: var(--white);
+  border-bottom: 1px solid var(--line);
 }
 
 .slider-label-row {
@@ -719,20 +963,9 @@ button {
 }
 
 .explode-label-title {
-  font-size: 0.78rem;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-ink);
-}
-
-.explode-value-badge {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent-crimson);
-  background: var(--hover-crimson);
-  padding: 2px 7px;
-  border-radius: var(--radius-xs);
-  border: 1px solid rgba(201, 42, 42, 0.2);
+  color: var(--ink);
 }
 
 .explode-slider-row {
@@ -742,69 +975,32 @@ button {
   margin-bottom: 6px;
 }
 
-.explode-slider-row input[type="range"] {
-  flex: 1;
-  height: 5px;
-  accent-color: var(--accent-crimson);
-  cursor: pointer;
-}
-
-.explode-trigger-btn {
-  padding: 6px 14px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  border: 1px solid var(--accent-crimson);
-  border-radius: var(--radius-xs);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-}
-
-.explode-trigger-btn:hover {
-  background: var(--accent-crimson-hover);
-  box-shadow: var(--shadow-crimson);
-}
-
-.explode-trigger-btn.active {
-  background: #1B1B24;
-  border-color: #1B1B24;
-}
-
 .explode-helper-text {
   display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--ink-soft);
   line-height: 1.4;
 }
 
-/* Clean Action Button Row */
 .dock-button-row {
   display: flex;
   gap: 8px;
   padding: 10px 16px 14px;
-  background: #F8FAFC;
+  background: var(--paper);
 }
 
+.dock-button-row .btn,
 .dock-button-row .action-btn {
   flex: 1;
-  text-align: center;
-  padding: 7px 10px;
-  font-size: 0.78rem;
 }
 
-/* === 6. CLINICAL LANDMARKS PANEL (CHẾ ĐỘ LÂM SÀNG) === */
+/* Clinical Landmarks Panel */
 .landmarks-panel {
   position: absolute;
   top: 20px;
   left: 20px;
   width: 340px;
   max-height: calc(100vh - var(--header-h) - 80px);
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -813,77 +1009,59 @@ button {
 
 .landmarks-panel-header {
   padding: 14px 16px 10px;
-  border-bottom: 2px solid var(--accent-crimson);
+  border-bottom: 2px solid var(--red);
 }
 
 .landmarks-panel-header h4 {
-  font-size: 0.95rem;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--text-ink);
+  color: var(--ink);
+  margin: 0;
 }
 
-/* Torso Control Box */
 .torso-control-box {
   padding: 12px 16px;
-  background: var(--surface-diagonal);
-  border-bottom: 1px solid var(--border-delicate);
+  background: var(--blush);
+  border-bottom: 1px solid var(--line);
 }
 
 .torso-label-text {
-  font-size: 0.78rem;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--accent-crimson);
-}
-
-.torso-opacity-badge {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--accent-crimson);
-}
-
-.torso-control-box input[type="range"] {
-  width: 100%;
-  margin-top: 4px;
-  accent-color: var(--accent-crimson);
+  color: var(--red);
 }
 
 .torso-range-hints {
   display: flex;
   justify-content: space-between;
-  font-size: 0.68rem;
-  color: var(--text-muted);
+  font-size: 10px;
+  color: var(--ink-soft);
   margin-top: 4px;
 }
 
-/* Aspect Toggle Row */
 .aspect-toggle-row {
   display: flex;
   gap: 8px;
   padding: 10px 16px;
-  background: #F8FAFC;
-  border-bottom: 1px solid #F1F5F9;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
 }
 
 .aspect-btn {
   flex: 1;
-  justify-content: center;
-  padding: 6px 10px;
-  font-size: 0.78rem;
 }
 
 .aspect-btn-alt {
-  background: #FFFBEB;
-  color: #B45309;
-  border-color: #FDE68A;
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
 }
 .aspect-btn-alt:hover {
-  background: #FEF3C7;
-  color: #92400E;
-  border-color: #F59E0B;
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #f59e0b;
 }
 
-/* Landmarks List Scrollable */
 .landmarks-list-scroll {
   padding: 12px 16px;
   overflow-y: auto;
@@ -892,53 +1070,7 @@ button {
   gap: 10px;
 }
 
-.landmark-card {
-  padding: 12px;
-  background: var(--bg-pure-white);
-  border: 1px solid var(--border-delicate);
-  border-left: 3.5px solid var(--accent-crimson);
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  transition: all 0.2s var(--ease-out-expo);
-}
-
-.landmark-card:hover {
-  background: var(--hover-crimson);
-  border-color: var(--accent-crimson);
-  transform: translateX(2px);
-}
-
-.landmark-card.active {
-  background: #FFF0F0;
-  border-color: var(--accent-crimson);
-  box-shadow: 0 2px 10px rgba(201, 42, 42, 0.15);
-}
-
-.landmark-card p {
-  text-align: justify;
-  text-justify: inter-word;
-}
-
-.landmark-card div {
-  text-align: justify;
-  text-justify: inter-word;
-}
-
-.landmark-badge {
-  display: inline-block;
-  padding: 2px 6px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  background: #FFF0F0;
-  color: var(--accent-crimson);
-  border: 1px solid rgba(201, 42, 42, 0.2);
-  border-radius: var(--radius-xs);
-  margin-bottom: 4px;
-}
-
-/* === 7. ORGAN MEDICAL INFO DRAWER (BÊN PHẢI) === */
+/* Organ Info Drawer (Right Panel) */
 .organ-drawer {
   position: absolute;
   top: 20px;
@@ -946,16 +1078,11 @@ button {
   bottom: 20px;
   width: 440px;
   max-width: calc(100vw - 40px);
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
   z-index: 25;
   display: flex;
   flex-direction: column;
   transform: translateX(calc(100% + 40px));
-  transition: transform 0.35s var(--ease-out-expo);
+  transition: transform 0.35s var(--ease);
   overflow: hidden;
 }
 
@@ -965,47 +1092,33 @@ button {
 
 .drawer-header {
   padding: 16px 20px;
-  background: var(--bg-pure-white);
-  border-bottom: 2px solid var(--accent-crimson);
+  background: var(--white);
+  border-bottom: 2px solid var(--red);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-#drawer-title {
-  font-family: var(--font-ui);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-ink);
-  line-height: 1.2;
-}
-
-.drawer-latin {
-  font-size: 0.78rem;
-  font-style: italic;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
 .drawer-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
-  color: var(--text-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--ink-soft);
   font-size: 14px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  transition: all var(--fast);
 }
 
 .drawer-close-btn:hover {
-  background: var(--hover-crimson);
-  color: var(--accent-crimson);
-  border-color: var(--accent-crimson);
+  background: var(--blush);
+  color: var(--red);
+  border-color: var(--red);
 }
 
 .drawer-scroll-body {
@@ -1016,19 +1129,6 @@ button {
   gap: 16px;
 }
 
-.drawer-badge {
-  display: inline-block;
-  align-self: flex-start;
-  padding: 3px 8px;
-  font-size: 0.70rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: #F1F5F9;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
-}
-
 .drawer-section {
   display: flex;
   flex-direction: column;
@@ -1036,54 +1136,28 @@ button {
 }
 
 .drawer-section h4 {
-  font-size: 0.88rem;
+  font-size: 13.5px;
   font-weight: 700;
-  color: var(--text-ink);
-  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
 }
 
 .drawer-section p {
-  font-size: 0.82rem;
+  font-size: 13px;
   line-height: 1.6;
-  color: var(--text-secondary);
-  text-align: justify;
-  text-justify: inter-word;
+  color: var(--ink-soft);
+  margin: 0;
 }
 
 .drawer-section.highlight-box {
   padding: 12px 14px;
-  background: var(--surface-diagonal);
-  border-left: 3.5px solid var(--accent-crimson);
-  border-radius: var(--radius-xs);
+  background: var(--blush);
+  border-left: 3.5px solid var(--red);
+  border-radius: var(--r-sm);
 }
 
 .drawer-section.highlight-box h4 {
-  color: var(--accent-crimson);
-}
-
-/* Wall Layer Cards inside Drawer */
-.wall-layer-card {
-  padding: 12px;
-  background: var(--bg-pure-white);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.wall-layer-card:hover {
-  background: var(--hover-crimson);
-  border-color: var(--accent-crimson);
-  transform: translateX(2px);
-}
-
-.wall-layer-card.highlight {
-  background: #FFF0F0;
-  border-color: var(--accent-crimson);
-  box-shadow: 0 2px 10px rgba(201, 42, 42, 0.15);
+  color: var(--red);
 }
 
 .wall-layer-card-header {
@@ -1091,12 +1165,13 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  margin-bottom: 4px;
 }
 
 .wall-layer-card-title {
-  font-size: 0.84rem;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text-ink);
+  color: var(--ink);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1109,42 +1184,27 @@ button {
   flex-shrink: 0;
 }
 
-.wall-layer-thickness-badge {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background: #F1F5F9;
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
-}
-
 .wall-sub-block {
-  font-size: 0.78rem;
+  font-size: 12px;
   line-height: 1.45;
-  color: var(--text-secondary);
-  text-align: justify;
-  text-justify: inter-word;
+  color: var(--ink-soft);
 }
-
 .wall-sub-block strong {
-  color: var(--text-ink);
+  color: var(--ink);
 }
 
 .wall-clinical-sub {
-  font-size: 0.76rem;
+  font-size: 12px;
   line-height: 1.45;
-  color: var(--text-ink);
+  color: var(--ink);
   padding: 6px 8px;
-  background: #FFF5F5;
-  border-left: 2.5px solid var(--accent-crimson);
-  border-radius: var(--radius-xs);
-  text-align: justify;
-  text-justify: inter-word;
+  background: var(--blush);
+  border-left: 2.5px solid var(--red);
+  border-radius: 4px;
+  margin-top: 4px;
 }
-
 .wall-clinical-sub strong {
-  color: var(--accent-crimson);
+  color: var(--red);
 }
 
 .sub-tags {
@@ -1155,15 +1215,15 @@ button {
 
 .tag-chip {
   padding: 4px 8px;
-  font-size: 0.72rem;
+  font-size: 11px;
   font-weight: 600;
-  background: #F8FAFC;
-  color: var(--text-ink);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
 }
 
-/* === 8. FLOATING HOVER CALLOUT OVERLAY (MODULE 4) === */
+/* Floating Hover Callout Overlay */
 .hover-callout-overlay {
   position: absolute;
   top: 0;
@@ -1184,24 +1244,18 @@ button {
 
 .hover-leader-line {
   fill: none;
-  stroke: var(--accent-crimson);
+  stroke: var(--red);
   stroke-width: 1.6;
   stroke-dasharray: 4, 3;
 }
 
 .hover-anchor-dot {
-  fill: var(--accent-crimson);
-}
-
-.hover-card-pin {
-  fill: var(--accent-crimson);
-  stroke: #ffffff;
-  stroke-width: 1.5;
+  fill: var(--red);
 }
 
 .hover-anchor-pulse {
   fill: none;
-  stroke: var(--accent-crimson);
+  stroke: var(--red);
   stroke-width: 1.2;
   opacity: 0.7;
   animation: pulse-ring 1.8s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
@@ -1210,25 +1264,6 @@ button {
 @keyframes pulse-ring {
   0% { r: 5; opacity: 0.8; }
   80%, 100% { r: 16; opacity: 0; }
-}
-
-.hover-callout-card {
-  position: absolute;
-  transform: none;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-delicate);
-  border-top: 3px solid var(--accent-crimson);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  box-shadow: var(--shadow-lg);
-  width: 290px;
-  min-width: 240px;
-  max-width: 330px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  pointer-events: auto;
 }
 
 .hover-callout-top {
@@ -1241,76 +1276,75 @@ button {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent-crimson);
+  background: var(--red);
   flex-shrink: 0;
 }
 
 .hover-callout-tag {
-  font-size: 0.65rem;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--accent-crimson);
+  color: var(--red);
 }
 
 .hover-callout-badge {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 10.5px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--ink-soft);
   margin-left: auto;
 }
 
 .hover-callout-title {
-  font-size: 0.92rem;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--text-ink);
+  color: var(--ink);
   line-height: 1.25;
 }
 
 .hover-callout-desc {
-  font-size: 0.75rem;
+  font-size: 12px;
   line-height: 1.45;
-  color: var(--text-muted);
-  text-align: justify;
-  text-justify: inter-word;
+  color: var(--ink-soft);
 }
 
 .hover-callout-hint {
-  font-size: 0.68rem;
-  color: var(--accent-crimson);
+  font-size: 11px;
+  color: var(--red);
   font-weight: 600;
-  border-top: 1px dashed var(--border-delicate);
+  border-top: 1px dashed var(--line);
   padding-top: 5px;
   margin-top: 3px;
 }
 
-/* Interaction Hint Docked at Viewport Bottom-Right */
 .interaction-hint {
   position: absolute;
   bottom: 20px;
   right: 20px;
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   padding: 8px 14px;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  box-shadow: var(--shadow-sm);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-1);
   z-index: 10;
   pointer-events: none;
 }
 
 .interaction-hint strong {
-  color: var(--accent-crimson);
+  color: var(--red);
 }
 
-/* === 9. SECTION 2: TRỢ GIÚP & SƯ PHẠM (HELP SECTION) === */
+/* ==========================================================
+   HELP SECTION  (.help-section-layout, .help-grid, .help-card)
+   ========================================================== */
 .help-section-layout {
   flex: 1;
   width: 100%;
-  background: var(--bg-pure-white);
+  background: var(--white);
   padding: 40px 24px 60px;
   overflow-y: auto;
 }
@@ -1329,11 +1363,11 @@ button {
 .help-badge {
   display: inline-block;
   padding: 4px 12px;
-  background: #FFF0F0;
-  color: var(--accent-crimson);
-  border: 1px solid #FFE3E3;
-  border-radius: var(--radius-xs);
-  font-size: 0.72rem;
+  background: var(--blush);
+  color: var(--red);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1341,41 +1375,41 @@ button {
 }
 
 .help-title {
-  font-family: var(--font-editorial);
-  font-size: 2.35rem;
+  font-family: var(--font-latin);
+  font-size: 2.3rem;
   font-weight: 600;
-  color: var(--text-ink);
+  color: var(--ink);
   line-height: 1.25;
   margin-bottom: 12px;
 }
 
 .help-subtitle {
-  font-size: 0.95rem;
-  color: var(--text-muted);
+  font-size: 14px;
+  color: var(--ink-soft);
   line-height: 1.6;
 }
 
 .help-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 24px;
   margin-bottom: 48px;
 }
 
 .help-card {
-  background: var(--bg-pure-white);
-  border: 1px solid var(--border-delicate);
-  border-top: 3.5px solid var(--accent-crimson);
-  border-radius: var(--radius-sm);
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-top: 3.5px solid var(--red);
+  border-radius: var(--r-md);
   padding: 24px 22px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s var(--ease-out-expo);
+  transition: transform var(--fast) var(--ease), box-shadow var(--med) var(--ease);
 }
 
 .help-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-1);
 }
 
 .help-card-header {
@@ -1389,23 +1423,23 @@ button {
   font-family: var(--font-mono);
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--accent-crimson);
+  color: var(--red);
   line-height: 1;
 }
 
 .help-card-title {
-  font-size: 1.05rem;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--text-ink);
+  color: var(--ink);
   line-height: 1.35;
 }
 
 .help-card-desc {
-  font-size: 0.84rem;
-  color: var(--text-muted);
+  font-size: 12.5px;
+  color: var(--ink-soft);
   line-height: 1.55;
   margin-bottom: 16px;
-  border-bottom: 1px dashed var(--border-delicate);
+  border-bottom: 1px dashed var(--line);
   padding-bottom: 12px;
 }
 
@@ -1427,18 +1461,18 @@ button {
 .help-key-badge {
   display: inline-block;
   align-self: flex-start;
-  font-size: 0.72rem;
+  font-size: 11px;
   font-weight: 700;
-  background: #F1F5F9;
-  color: var(--text-ink);
-  border: 1px solid var(--border-delicate);
-  border-radius: var(--radius-xs);
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   padding: 2px 7px;
 }
 
 .help-feature-text {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
+  font-size: 12.5px;
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 
@@ -1446,34 +1480,18 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 16px;
 }
 
-.help-btn-action {
-  padding: 12px 32px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  border: 1px solid var(--accent-crimson);
-  border-radius: var(--radius-sm);
-  transition: all 0.25s var(--ease-out-expo);
-}
-
-.help-btn-action:hover {
-  background: var(--accent-crimson-hover);
-  box-shadow: var(--shadow-crimson);
-  transform: translateY(-2px);
-}
-
-/* === 10. BOTTOM MEDICAL DISCLAIMER BANNER (MATCHING MOCKUP & ĐHYHN) === */
+/* ==========================================================
+   FOOTER DISCLAIMER  (.disclaimer, .medical-disclaimer-banner)
+   ========================================================== */
+.disclaimer,
 .medical-disclaimer-banner {
-  background: var(--accent-crimson);
-  color: #FFFFFF;
-  border-top: 2px solid var(--border-ink);
-  padding: 12px 28px;
-  font-size: 0.82rem;
+  padding: 10px 24px;
+  font-size: 11.5px;
   line-height: 1.5;
+  color: #ffeef0;
+  background: linear-gradient(90deg, var(--red-deep), var(--red));
   flex-shrink: 0;
   z-index: 100;
 }
@@ -1492,80 +1510,75 @@ button {
   color: rgba(255, 255, 255, 0.95);
 }
 
+.disclaimer strong,
 .disclaimer-title {
-  color: #FFFFFF;
+  color: var(--white);
   font-weight: 700;
   letter-spacing: 0.02em;
   margin-right: 6px;
 }
 
+.disclaimer a,
 .medical-disclaimer-banner a {
-  color: #FFFFFF;
+  color: var(--white);
   font-weight: 600;
   text-decoration: underline;
 }
 
+.disclaimer a:hover,
 .medical-disclaimer-banner a:hover {
-  color: #FFE3E3;
+  color: #ffeef0;
 }
 
-/* === 11. SPINNER ANIMATION === */
+/* ==========================================================
+   SCROLLBARS & UTILITIES
+   ========================================================== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e3c6ca transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e3c6ca;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--red);
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* === 12. RESPONSIVE BREAKPOINTS === */
+/* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
-  :root {
-    --header-h: 62px;
-  }
-  .header-inner {
-    padding: 0 16px;
-    gap: 12px;
-  }
-  .brand-title {
-    font-size: 1rem;
-  }
-  .nav-list {
-    gap: 18px;
-  }
-  .expandable-search .search-input {
-    width: 150px;
-  }
-  .expandable-search .search-input:focus {
-    width: 200px;
-  }
-  .dissection-dock {
-    width: 300px;
-  }
-  .organ-drawer {
-    width: 360px;
-  }
+  :root { --header-h: 60px; }
+  .app-header, .site-header { padding: 10px 16px; gap: 14px; }
+  .brand-title { font-size: 14px; }
+  .nav-list { gap: 16px; }
+  .input, .search-input { width: 150px; }
+  .input:focus, .search-input:focus { width: 200px; }
+  .dissection-dock { width: 300px; }
+  .organ-drawer { width: 380px; }
 }
 
 @media (max-width: 768px) {
-  .site-header {
+  .app-header, .site-header {
     height: auto;
-    padding: 10px 0;
-  }
-  .header-inner {
     flex-wrap: wrap;
+    padding: 10px 14px;
     gap: 10px;
   }
-  .brand {
-    order: 1;
-  }
-  .main-nav {
-    order: 2;
-  }
   .header-actions {
-    order: 3;
     width: 100%;
     justify-content: space-between;
   }
-  .expandable-search .search-input,
-  .expandable-search .search-input:focus {
+  .input, .search-input,
+  .input:focus, .search-input:focus {
     width: 100%;
   }
   .dissection-dock {
@@ -1575,13 +1588,14 @@ button {
     width: auto;
     max-height: 48vh;
   }
-  .organ-drawer {
+  .panel-right, .organ-drawer {
     top: 10px;
     right: 10px;
     left: 10px;
     bottom: 10px;
     width: auto;
     max-width: none;
+    border-radius: var(--r-lg);
   }
   .landmarks-panel {
     top: 10px;
@@ -1590,13 +1604,15 @@ button {
     width: auto;
     max-height: 50vh;
   }
-  .interaction-hint {
-    display: none;
-  }
-  .help-title {
-    font-size: 1.8rem;
-  }
-  .help-grid {
-    grid-template-columns: 1fr;
+  .interaction-hint { display: none; }
+  .help-title { font-size: 1.8rem; }
+  .help-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
   }
 }

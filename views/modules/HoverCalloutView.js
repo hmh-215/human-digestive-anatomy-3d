@@ -23,7 +23,7 @@ export class HoverCalloutView {
         <circle id="hover-anchor-dot" class="hover-anchor-dot" cx="0" cy="0" r="4.5" />
         <circle id="hover-card-pin" class="hover-card-pin" cx="0" cy="0" r="3.5" />
       </svg>
-      <div id="hover-callout-card" class="hover-callout-card">
+      <div id="hover-callout-card" class="hover-callout-card callout">
         <div class="hover-callout-top">
           <span id="hover-callout-dot" class="hover-callout-dot"></span>
           <span id="hover-callout-tag" class="hover-callout-tag">MÔ HỌC DẠ DÀY</span>
@@ -63,7 +63,7 @@ export class HoverCalloutView {
     const vw = this.container.clientWidth || window.innerWidth;
     const vh = this.container.clientHeight || window.innerHeight;
 
-    const accentColor = color || '#0284c7';
+    const accentColor = color || '#c8102e';
     this.colorDotEl.style.background = accentColor;
     this.dotEl.setAttribute('fill', accentColor);
     this.pulseEl.setAttribute('stroke', accentColor);

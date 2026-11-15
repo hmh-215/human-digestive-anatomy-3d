@@ -1016,19 +1016,26 @@ export class SceneView {
     this.landmarksRoot.name = 'Clinical_Landmarks_Root';
     this.scene.add(this.landmarksRoot);
 
-    const pinGeo = new THREE.SphereGeometry(0.12, 24, 24);
+    const pinGeo = new THREE.SphereGeometry(0.11, 20, 20);
+    const ringGeo = new THREE.RingGeometry(0.15, 0.21, 24);
+
     this.appVM.landmarksData.forEach(lm => {
       const isBackLandmark = (lm.coordinates && lm.coordinates[2] < 0);
-      const pinMat = new THREE.MeshStandardMaterial({
-        color: isBackLandmark ? 0xf59e0b : 0x38bdf8,
-        emissive: isBackLandmark ? 0xd97706 : 0x0284c7,
-        emissiveIntensity: 0.6,
-        roughness: 0.25,
+
+      // 1. Hình tròn / cầu đỏ rực (tương tự huyệt vị chuẩn Châm Cứu 3D)
+      const pinMat = new THREE.MeshBasicMaterial({
+        color: 0xef4444,
         depthTest: true,
-        depthWrite: true
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -4,
+        transparent: true,
+        opacity: 0.95
       });
       const pinMesh = new THREE.Mesh(pinGeo, pinMat);
       pinMesh.position.set(...lm.coordinates);
+      pinMesh.renderOrder = 15;
       pinMesh.userData = {
         isLandmarkPin: true,
         landmarkId: lm.id,
@@ -1037,6 +1044,24 @@ export class SceneView {
         description: lm.description,
         isBack: isBackLandmark
       };
+
+      // 2. Vòng hào quang màu vàng xung quanh (Pulsing Yellow Halo Ring)
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: 0xfacc15,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.85,
+        depthTest: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -4
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.renderOrder = 15;
+      ringMesh.userData = pinMesh.userData;
+      ringMesh.lookAt(this.camera.position);
+      pinMesh.add(ringMesh);
 
       this.landmarksRoot.add(pinMesh);
       this.landmarkMarkers.set(lm.id, pinMesh);
@@ -3074,19 +3099,29 @@ export class SceneView {
     this.controls.update();
 
     if (this.landmarksRoot && this.landmarksRoot.visible) {
-      const time = Date.now() * 0.003;
+      const time = Date.now() * 0.005;
+      const pulse = 1.0 + Math.sin(time) * 0.18;
       const activeId = this.appVM.landmarksVM ? this.appVM.landmarksVM.state.activeLandmarkId : null;
+
       this.landmarkMarkers.forEach((mesh, id) => {
+        if (!mesh.visible) return;
         const isActive = (id === activeId);
-        const pulseScale = isActive ? (1.35 + 0.25 * Math.sin(time * 2.0)) : (1.0 + 0.12 * Math.sin(time));
-        mesh.scale.set(pulseScale, pulseScale, pulseScale);
-        if (mesh.material && mesh.material.emissive) {
-          if (isActive) {
-            mesh.material.emissive.setHex(0xef4444); // Active selected landmark glows bright coral-red
-          } else if (mesh.userData.isBack) {
-            mesh.material.emissive.setHex(0xd97706); // Dorsal back landmarks glow warm amber
-          } else {
-            mesh.material.emissive.setHex(0x0284c7); // Anterior abdominal wall landmarks glow sky blue
+
+        // Bù trừ khoảng cách camera (Screen-Space Distance Compensation)
+        const dist = this.camera.position.distanceTo(mesh.position);
+        const distScale = Math.min(1.25, Math.max(0.18, dist / 10.0));
+        const focusMult = isActive ? 1.35 : 1.0;
+        const finalScale = distScale * focusMult;
+        mesh.scale.set(finalScale, finalScale, finalScale);
+
+        // Animation vòng hào quang màu vàng xung quanh & billboarding hướng về camera
+        const ring = mesh.children[0];
+        if (ring) {
+          const ringPulse = isActive ? (1.12 + Math.sin(time * 1.6) * 0.25) : pulse;
+          ring.scale.set(ringPulse, ringPulse, 1.0);
+          ring.lookAt(this.camera.position);
+          if (ring.material) {
+            ring.material.opacity = isActive ? 1.0 : 0.85;
           }
         }
       });

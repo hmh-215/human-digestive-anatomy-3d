@@ -56,8 +56,7 @@ export class UIView {
     this.torsoOpacitySlider = document.getElementById('torso-opacity-slider');
     this.torsoOpacityValue = document.getElementById('torso-opacity-value');
 
-    this.navBtnDissection = document.getElementById('nav-btn-dissection');
-    this.navBtnLandmarks = document.getElementById('nav-btn-landmarks');
+    this.navBtn3D = document.getElementById('nav-btn-3d') || document.getElementById('nav-btn-dissection');
     this.navBtnHelp = document.getElementById('nav-btn-help');
     this.btnHelpGo3D = document.getElementById('btn-help-go-3d');
     this.section3D = document.getElementById('section-3d-model');
@@ -71,28 +70,30 @@ export class UIView {
 
   _setDockTabUI(tabName) {
     const isOrganTab = (tabName === 'organ');
-    if (this.tabBtnSystem) this.tabBtnSystem.classList.toggle('active', !isOrganTab);
-    if (this.tabBtnOrgan) this.tabBtnOrgan.classList.toggle('active', isOrganTab);
+    if (this.tabBtnSystem) {
+      this.tabBtnSystem.classList.toggle('active', !isOrganTab);
+      this.tabBtnSystem.classList.toggle('is-active', !isOrganTab);
+    }
+    if (this.tabBtnOrgan) {
+      this.tabBtnOrgan.classList.toggle('active', isOrganTab);
+      this.tabBtnOrgan.classList.toggle('is-active', isOrganTab);
+    }
     if (this.tabPaneSystem) this.tabPaneSystem.classList.toggle('hidden', isOrganTab);
     if (this.tabPaneOrgan) this.tabPaneOrgan.classList.toggle('hidden', !isOrganTab);
   }
 
   _setNavTab(tabName) {
-    const isDissection = (tabName === 'dissection');
-    const isLandmarks = (tabName === 'pathology');
     const isHelp = (tabName === 'help');
 
-    if (this.navBtnDissection) {
-      this.navBtnDissection.classList.toggle('active', isDissection);
-      this.navBtnDissection.classList.toggle('is-active', isDissection);
-    }
-    if (this.navBtnLandmarks) {
-      this.navBtnLandmarks.classList.toggle('active', isLandmarks);
-      this.navBtnLandmarks.classList.toggle('is-active', isLandmarks);
+    if (this.navBtn3D) {
+      this.navBtn3D.classList.toggle('active', !isHelp);
+      this.navBtn3D.classList.toggle('is-active', !isHelp);
+      this.navBtn3D.setAttribute('aria-selected', !isHelp ? 'true' : 'false');
     }
     if (this.navBtnHelp) {
       this.navBtnHelp.classList.toggle('active', isHelp);
       this.navBtnHelp.classList.toggle('is-active', isHelp);
+      this.navBtnHelp.setAttribute('aria-selected', isHelp ? 'true' : 'false');
     }
 
     if (this.section3D) this.section3D.classList.toggle('hidden', isHelp);
@@ -100,39 +101,19 @@ export class UIView {
 
     if (isHelp) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      if (isLandmarks) {
-        if (window.__DIGESTIVE_APP__?.sceneView?.explosionManager) {
-          window.__DIGESTIVE_APP__.sceneView.explosionManager.stopAnimation();
-        }
-        this.dissectionVM.setExplodeFactor(0.0);
-        this.dissectionVM.setCutawayOpen(false);
-        this.dissectionVM.setState({
-          isIsolateMode: false,
-          visibleLayers: [1, 2, 3],
-          activeWallLayerId: null
-        });
-        this.sceneVM.selectOrgan(null);
-        this.appVM.setMode('pathology');
-      } else {
-        this.appVM.setMode('dissection');
-      }
     }
   }
 
   _bindDOMEvents() {
-    // Nav Tabs: Giải Phẫu - Điểm Mốc Lâm Sàng - Trợ Giúp
-    if (this.navBtnDissection) {
-      this.navBtnDissection.addEventListener('click', () => this._setNavTab('dissection'));
-    }
-    if (this.navBtnLandmarks) {
-      this.navBtnLandmarks.addEventListener('click', () => this._setNavTab('pathology'));
+    // Nav Tabs: Mô hình 3D vs Trợ Giúp
+    if (this.navBtn3D) {
+      this.navBtn3D.addEventListener('click', () => this._setNavTab('3d'));
     }
     if (this.navBtnHelp) {
       this.navBtnHelp.addEventListener('click', () => this._setNavTab('help'));
     }
     if (this.btnHelpGo3D) {
-      this.btnHelpGo3D.addEventListener('click', () => this._setNavTab('dissection'));
+      this.btnHelpGo3D.addEventListener('click', () => this._setNavTab('3d'));
     }
 
     // 0. Task 1: 2-Tab Switcher (Tab 1: Whole System Knolling vs. Tab 2: Isolated Organ)
@@ -158,6 +139,7 @@ export class UIView {
     if (this.explodeSlider) {
       this.explodeSlider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
+        this.explodeSlider.style.setProperty('--progress', `${Math.round(val * 100)}%`);
         this.dissectionVM.setExplodeFactor(val);
       });
     }
@@ -302,6 +284,7 @@ export class UIView {
     if (this.torsoOpacitySlider) {
       this.torsoOpacitySlider.addEventListener('input', (e) => {
         const val = parseFloat(e.target.value);
+        this.torsoOpacitySlider.style.setProperty('--progress', `${Math.round(val * 100)}%`);
         this.dissectionVM.setTorsoSkinOpacity(val);
       });
     }
@@ -414,11 +397,15 @@ export class UIView {
     // 2. Sync Unified Explode Slider & Trigger Button Label
     this.dissectionVM.subscribe('explodeFactor', (factor) => {
       const pct = Math.round((factor || 0) * 100);
-      if (this.explodeSlider) this.explodeSlider.value = factor || 0;
+      if (this.explodeSlider) {
+        this.explodeSlider.value = factor || 0;
+        this.explodeSlider.style.setProperty('--progress', `${pct}%`);
+      }
       if (this.explodeValueBadge) this.explodeValueBadge.textContent = `${pct}%`;
       if (this.animateExplodeBtn) {
         const isExpanded = factor > 0.3;
         this.animateExplodeBtn.classList.toggle('active', isExpanded);
+        this.animateExplodeBtn.classList.toggle('is-active', isExpanded);
         this.animateExplodeBtn.textContent = isExpanded ? 'Thu Gọn' : 'Tách Lớp';
       }
     });
@@ -484,8 +471,12 @@ export class UIView {
 
     // 5. Sync Torso Opacity Slider
     this.dissectionVM.subscribe('torsoSkinOpacity', (val) => {
-      if (this.torsoOpacitySlider) this.torsoOpacitySlider.value = val;
-      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${Math.round(val * 100)}%`;
+      const pct = Math.round((val || 0) * 100);
+      if (this.torsoOpacitySlider) {
+        this.torsoOpacitySlider.value = val;
+        this.torsoOpacitySlider.style.setProperty('--progress', `${pct}%`);
+      }
+      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${pct}%`;
     });
 
     // 6. Theme Toggle (Cố định Light Theme Y Khoa)
@@ -511,7 +502,9 @@ export class UIView {
       }
 
       this.modePills.forEach(p => {
-        p.classList.toggle('active', p.dataset.mode === mode);
+        const isMatch = p.dataset.mode === mode;
+        p.classList.toggle('active', isMatch);
+        p.classList.toggle('is-active', isMatch);
       });
       if (mode === 'pathology') {
         this.landmarksPanel.classList.remove('hidden');
@@ -530,6 +523,7 @@ export class UIView {
       listContainer.querySelectorAll('.landmark-card').forEach(card => {
         const isMatch = (card.dataset.id === activeId);
         card.classList.toggle('active', isMatch);
+        card.classList.toggle('is-active', isMatch);
         if (isMatch) {
           card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
