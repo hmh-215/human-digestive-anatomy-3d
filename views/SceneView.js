@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261109_v28';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261109_v28';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261109_v28';
-import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261109_v28';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261109_v28';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261115_v29';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261115_v29';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261115_v29';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261115_v29';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261115_v29';
+import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261115_v29';
 
 /**
  * SceneView.js
@@ -763,9 +764,8 @@ export class SceneView {
         const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.50;
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
-            const info = this._getTorsoMuscleInfo(child.name);
             const mat = new THREE.MeshStandardMaterial({
-              color: info.color,
+              color: this._getTorsoSkinColor(child.name),
               roughness: 0.44,
               metalness: 0.05,
               transparent: true,
@@ -776,11 +776,7 @@ export class SceneView {
             child.material = mat;
             child.castShadow = true;
             child.receiveShadow = true;
-            child.userData = {
-              isTorsoMuscle: true,
-              muscleName: child.name,
-              info
-            };
+            child.userData = { isTorsoSkin: true };
             this.torsoMuscleMeshes.push(child);
           }
         });
@@ -802,192 +798,21 @@ export class SceneView {
   }
 
   /**
-   * Anatomical PBR styling and clinical annotations for individual muscles
-   * extracted directly from the official Z-Anatomy muscular system.
-   * Rendered in natural human skin tone (màu da) at 50% opacity.
+   * Natural skin tone shader color for the translucent torso reference silhouette.
+   * Deliberately omits musculoskeletal hover labels so the app stays focused on the digestive system.
    */
-  _getTorsoMuscleInfo(rawName) {
+  _getTorsoSkinColor(rawName = '') {
     const low = rawName.toLowerCase();
-
-    // Natural skin tone palette (màu da tự nhiên)
-    const skinToneBase = 0xd4a373;      // Màu da chuẩn
-    const skinToneDeep = 0xcca17c;      // Màu da ấm sâu (khối cơ dựng gai, cơ thành sau)
-    const skinToneMedium = 0xd29d71;    // Màu da cơ trung gian
-    const skinToneFascia = 0xe6d1be;    // Màu cân gân xơ sáng nhẹ
-
-    // 1. Erector spinae (Khối cơ dựng gai lưng - Mốc Mayo-Robson)
-    if (low.includes('iliocostalis')) {
-      return {
-        color: skinToneDeep,
-        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
-        badge: 'Mốc Mayo-Robson',
-        title: low.includes('lumborum')
-          ? 'Cơ Chậu Sườn Thắt Lưng (Iliocostalis Lumborum)'
-          : 'Cơ Chậu Sườn Ngực (Iliocostalis Thoracis)',
-        subtitle: 'Bờ ngoài khối cơ dựng gai lưng trái cắt bờ dưới xương sườn 12 tạo thành Điểm Mayo-Robson (đau trong Viêm tụy cấp).'
-      };
+    if (low.includes('iliocostalis') || low.includes('longissimus') || low.includes('spinalis') || low.includes('quadratus_lumborum')) {
+      return 0xcca17c;
     }
-    if (low.includes('longissimus')) {
-      return {
-        color: skinToneDeep,
-        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
-        badge: 'Erector Spinae',
-        title: 'Cơ Dài Ngực (Longissimus Thoracis)',
-        subtitle: 'Dải cơ trung tâm khỏe nhất của khối cơ dựng gai chạy dọc suốt cột sống ngực và thắt lưng.'
-      };
-    }
-    if (low.includes('spinalis')) {
-      return {
-        color: skinToneDeep,
-        tag: 'CƠ MẶT LƯNG SÂU • KHỐI DỰNG GAI LƯNG',
-        badge: 'Cạnh Gai Sống',
-        title: 'Cơ Gai Ngực (Spinalis Thoracis)',
-        subtitle: 'Dải cơ trong cùng của khối dựng gai, bám sát các mỏm gai đốt sống ngực.'
-      };
-    }
-
-    // 2. Thành bụng sau & sâu (Khoang sau phúc mạc)
-    if (low.includes('quadratus_lumborum')) {
-      return {
-        color: skinToneDeep,
-        tag: 'THÀNH BỤNG SAU • KHOANG SAU PHÚC MẠC',
-        badge: 'Sàn Sau Tụy & Thận',
-        title: 'Cơ Vuông Thắt Lưng (Quadratus Lumborum)',
-        subtitle: 'Cơ dẹt hình tứ giác nối mào chậu lên sườn 12, tạo sàn thành sau ổ bụng ngay sau tụy và thận.'
-      };
-    }
-
-    // 3. Cơ lưng rộng (Latissimus dorsi)
-    if (low.includes('latissimus')) {
-      return {
-        color: skinToneBase,
-        tag: 'CƠ MẶT LƯNG NÔNG',
-        badge: 'Cơ Lưng Rộng',
-        title: 'Cơ Lưng Rộng (Latissimus Dorsi)',
-        subtitle: 'Cơ dẹt rộng nhất cơ thể, bao phủ toàn bộ vùng lưng dưới và mạn sườn thắt lưng.'
-      };
-    }
-
-    // 4. Cơ thang (Trapezius)
-    if (low.includes('trapezius')) {
-      let part = 'Cơ Thang';
-      if (low.includes('ascending')) part = 'Cơ Thang (Phần Lên)';
-      else if (low.includes('transverse')) part = 'Cơ Thang (Phần Ngang)';
-      else if (low.includes('descending')) part = 'Cơ Thang (Phần Xuống)';
-      return {
-        color: skinToneBase,
-        tag: 'CƠ MẶT LƯNG NÔNG',
-        badge: 'Vùng Cổ - Lưng',
-        title: part + ' (Trapezius)',
-        subtitle: 'Cơ nông hình thang phủ rộng từ xương chẩm, gáy xuống tận đốt sống ngực 12 (Th12).'
-      };
-    }
-
-    // 5. Cơ răng sau (Serratus posterior)
-    if (low.includes('serratus_posterior')) {
-      return {
-        color: skinToneMedium,
-        tag: 'CƠ MẶT LƯNG TRUNG GIAN',
-        badge: 'Sườn 9-12',
-        title: low.includes('inferior')
-          ? 'Cơ Răng Sau Dưới (Serratus Posterior Inferior)'
-          : 'Cơ Răng Sau Trên (Serratus Posterior Superior)',
-        subtitle: 'Cơ răng sau dưới bám vào 4 xương sườn cuối (9-12), nằm ngay trên diện chiếu của góc sườn cột sống.'
-      };
-    }
-
-    // 6. Cơ trám & cơ nâng vai (Rhomboids & Levator scapulae)
-    if (low.includes('rhomboid')) {
-      return {
-        color: skinToneMedium,
-        tag: 'CƠ MẶT LƯNG TRUNG GIAN',
-        badge: 'Liên Bả Vai',
-        title: low.includes('minor') ? 'Cơ Trám Bé (Rhomboid Minor)' : 'Cơ Trám Lớn (Rhomboid Major)',
-        subtitle: 'Kéo xương bả vai vào trong và lên trên về phía cột sống ngực.'
-      };
-    }
-    if (low.includes('levator_scapulae')) {
-      return {
-        color: skinToneMedium,
-        tag: 'CƠ VÙNG CỔ - VAI SAU',
-        badge: 'Nâng Bả Vai',
-        title: 'Cơ Nâng Vai (Levator Scapulae)',
-        subtitle: 'Nối từ các mỏm ngang đốt sống cổ trên xuống góc trên xương bả vai.'
-      };
-    }
-
-    // 7. Cơ bả vai sau (Infraspinatus & Teres major)
-    if (low.includes('infraspinatus') || low.includes('teres')) {
-      return {
-        color: skinToneMedium,
-        tag: 'CƠ VÙNG VAI SAU',
-        badge: 'Đai Khớp Vai',
-        title: low.includes('infraspinatus') ? 'Cơ Dưới Gai (Infraspinatus)' : 'Cơ Tròn Lớn (Teres Major)',
-        subtitle: 'Cơ chóp xoay và đai vai bọc mặt sau xương bả vai.'
-      };
-    }
-
-    // 8. Cân mạc & Gân xơ
     if (low.includes('fascia') || low.includes('linea_alba') || low.includes('ligament')) {
-      return {
-        color: skinToneFascia,
-        tag: 'MÀNG CÂN & GÂN XƠ NÔNG',
-        badge: 'Mô Xơ Trắng',
-        title: low.includes('fascia')
-          ? 'Cân Ngực Thắt Lưng (Thoracolumbar Fascia)'
-          : (low.includes('linea_alba') ? 'Đường Trắng Giữa Bụng (Linea Alba)' : 'Dây Chằng Bẹn (Inguinal Ligament)'),
-        subtitle: 'Lớp cân xơ dai chắc, cố định thành ngực bụng và bao bọc các khối cơ.'
-      };
+      return 0xe6d1be;
     }
-
-    // 9. Thành bụng trước
-    if (low.includes('rectus_abdominis')) {
-      return {
-        color: skinToneBase,
-        tag: 'THÀNH BỤNG TRƯỚC',
-        badge: 'Cơ Thẳng Bụng',
-        title: 'Cơ Thẳng Bụng (Rectus Abdominis)',
-        subtitle: 'Bờ ngoài cơ thẳng bụng là mốc xác định điểm túi mật Murphy và điểm ruột thừa McBurney.'
-      };
+    if (low.includes('serratus') || low.includes('rhomboid') || low.includes('levator') || low.includes('infraspinatus') || low.includes('teres')) {
+      return 0xd29d71;
     }
-    if (low.includes('oblique') || low.includes('transversus')) {
-      return {
-        color: skinToneBase,
-        tag: 'THÀNH BỤNG BÊN & TRƯỚC',
-        badge: 'Cơ Thành Bụng',
-        title: low.includes('transversus')
-          ? 'Cơ Ngang Bụng (Transversus Abdominis)'
-          : (low.includes('external') ? 'Cơ Chéo Bụng Ngoài (External Oblique)' : 'Cơ Chéo Bụng Trong (Internal Oblique)'),
-        subtitle: 'Bao bọc thành bên ổ bụng, bảo vệ các tạng tiêu hóa bên trong.'
-      };
-    }
-    if (low.includes('pectoralis')) {
-      return {
-        color: skinToneBase,
-        tag: 'THÀNH NGỰC TRƯỚC',
-        badge: 'Cơ Ngực Lớn',
-        title: 'Cơ Ngực Lớn (Pectoralis Major)',
-        subtitle: 'Cơ dày hình quạt phủ mặt trước lồng ngực.'
-      };
-    }
-    if (low.includes('serratus_anterior')) {
-      return {
-        color: skinToneMedium,
-        tag: 'THÀNH NGỰC BÊN',
-        badge: 'Cơ Răng Trước',
-        title: 'Cơ Răng Trước (Serratus Anterior)',
-        subtitle: 'Các búp cơ hình răng cưa ôm lấy các xương sườn bên sườn.'
-      };
-    }
-
-    // Default skin tone
-    return {
-      color: skinToneBase,
-      tag: 'CƠ THÂN MÌNH (Z-ANATOMY)',
-      badge: 'Cơ Bắp',
-      title: rawName.replace(/_/g, ' '),
-      subtitle: 'Mô cơ giải phẫu chuẩn Z-Anatomy.'
-    };
+    return 0xd4a373;
   }
 
   _updateTorsoSkinOpacity(opacity) {
@@ -1163,39 +988,14 @@ export class SceneView {
    * High lightness (L >= 62%-75%) ensures vivid, clean, museum-quality medical rendering.
    */
   _sampleContinuousThermalColor(s) {
-    const stops = [
-      new THREE.Color(0xff477e), // 0.00: Luminous Coral Rose (#ff477e - Hot Inlet / Nóng nhất)
-      new THREE.Color(0xff8533), // 0.14: Warm Glowing Peach (#ff8533)
-      new THREE.Color(0xffd13b), // 0.28: Sunny Butter Amber (#ffd13b)
-      new THREE.Color(0x7bed9f), // 0.42: Fresh Pastel Lime (#7bed9f)
-      new THREE.Color(0x2fe091), // 0.56: Fresh Mint Emerald (#2fe091)
-      new THREE.Color(0x38e1ff), // 0.70: Luminous Sky Aqua (#38e1ff)
-      new THREE.Color(0x54a0ff), // 0.82: Soft Cornflower Blue (#54a0ff)
-      new THREE.Color(0xa55eea), // 0.92: Pastel Lavender / Royal Orchid (#a55eea)
-      new THREE.Color(0xff78cb)  // 1.00: Radiant Orchid Pink (#ff78cb - Cold Outlet / Lạnh nhất)
-    ];
-    const t = Math.max(0, Math.min(1, s));
-    const scaled = t * (stops.length - 1);
-    const idx = Math.floor(scaled);
-    const frac = scaled - idx;
-    if (idx >= stops.length - 1) return stops[stops.length - 1].clone();
-    return stops[idx].clone().lerp(stops[idx + 1], frac);
+    return sampleContinuousThermalColor(s);
   }
 
   /**
    * Generates n discrete colors sampled evenly along the continuous pastel thermal spectrum.
    */
   _getThermalPalette(n) {
-    if (n === 2) {
-      // 2 Distinct Clinical Thermal Steps for Small Intestine (Jejunum Hot Coral -> Ileum Soft Cornflower Blue)
-      return [new THREE.Color(0xff477e), new THREE.Color(0x54a0ff)];
-    }
-    if (n <= 1) return [new THREE.Color(0xff477e)];
-    const palette = [];
-    for (let i = 0; i < n; i++) {
-      palette.push(this._sampleContinuousThermalColor(i / (n - 1)));
-    }
-    return palette;
+    return getThermalPalette(n);
   }
 
   /**
@@ -1219,474 +1019,96 @@ export class SceneView {
     const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
     const organId = mesh.userData.organId;
 
-    // 1. In Functional Heatmap Mode: Classify hit point into 5 Stomach or 4 Pancreas Functional Regions
-    if (isRegions && (organId === 'stomach' || mesh.userData.isStomachWallLayer)) {
-      this._initHeatmapCenterlines();
+    // 1. Functional Heatmap Regions (reads single source of truth from HEATMAP_CATALOG)
+    if (isRegions) {
+      let catalogOrganId = organId;
+      let regionKey = null;
+      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
       const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
       const localPt = mesh.worldToLocal(hitPt.clone());
-      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._stomachPts);
 
-      let reg = 'corpus';
-      if (s < 0.18) reg = 'fundus';
-      else if (s < 0.32) reg = 'cardia';
-      else if (s < 0.65) reg = 'corpus';
-      else if (s < 0.88) reg = 'antrum';
-      else reg = 'pylorus';
-
-      const palStom = this._getThermalPalette(5);
-      const stomachRegionCards = {
-        fundus: {
-          color: '#' + palStom[0].getHexString(),
-          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
-          badge: 'Túi Hơi Dạ Dày • Nóng Nhất',
-          title: 'Đáy Vị (Fundus Gastricum)',
-          subtitle: 'Vòm cong nằm phía trên mức lỗ tâm vị, thường chứa túi hơi dạ dày (Gastric air bubble) quan sát rõ trên phim X-quang bụng đứng không chuẩn bị.'
-        },
-        cardia: {
-          color: '#' + palStom[1].getHexString(),
-          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
-          badge: 'Chống Trào Ngược',
-          title: 'Tâm Vị & Ấn Tâm Vị (Pars Cardiaca & Incisura Cardiaca)',
-          subtitle: 'Vùng nối tiếp giữa thực quản và dạ dày, tuyến tâm vị tiết chất nhầy kiềm bảo vệ niêm mạc chống trào ngược dịch vị acid.'
-        },
-        corpus: {
-          color: '#' + palStom[2].getHexString(),
-          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
-          badge: 'Tiết Acid & Pepsin',
-          title: 'Thân Vị (Corpus Gastricum)',
-          subtitle: 'Phần lớn nhất của dạ dày, chứa tuyến vị với Tế bào thành (tiết HCl pH 1.5 - 2 và Yếu tố nội sinh hấp thu B12) & Tế bào chính (tiết Pepsinogen tiêu đạm).'
-        },
-        antrum: {
-          color: '#' + palStom[3].getHexString(),
-          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
-          badge: 'Tiết Gastrin (Tế Bào G)',
-          title: 'Hang Môn Vị (Antrum Pyloricum)',
-          subtitle: 'Phần phình trước môn vị, chứa tế bào G tiết hoóc-môn Gastrin kích thích bài tiết acid dịch vị; đây là vị trí phổ biến nhất của viêm loét dạ dày do vi khuẩn H. pylori.'
-        },
-        pylorus: {
-          color: '#' + palStom[4].getHexString(),
-          tag: 'PHÂN VÙNG DẠ DÀY (MÀU NÓNG → LẠNH)',
-          badge: 'Cơ Thắt Môn Vị • Lạnh Nhất',
-          title: 'Ống Môn Vị & Môn Vị (Canalis Pyloricus & Pylorus)',
-          subtitle: 'Đoạn tận cùng hẹp có cơ thắt môn vị tròn rất dày, hoạt động như van đóng mở điều hòa tống từng đợt vị trấp (chyme) xuống tá tràng.'
-        }
-      };
-      const c = stomachRegionCards[reg];
-      return {
-        organId: 'stomach',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    if (isRegions && organId === 'pancreas') {
-      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
-      if (!low.includes('duct')) {
-        const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-        const localPt = mesh.worldToLocal(hitPt.clone());
+      if (organId === 'stomach' || mesh.userData.isStomachWallLayer) {
+        catalogOrganId = 'stomach';
+        this._initHeatmapCenterlines();
+        const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._stomachPts);
+        if (s < 0.18) regionKey = 'fundus';
+        else if (s < 0.32) regionKey = 'cardia';
+        else if (s < 0.65) regionKey = 'corpus';
+        else if (s < 0.88) regionKey = 'antrum';
+        else regionKey = 'pylorus';
+      } else if (organId === 'pancreas' && !low.includes('duct')) {
         const s = THREE.MathUtils.clamp((localPt.x - (-3.8)) / (4.8 - (-3.8)), 0, 1);
-
-        let reg = 'body';
-        if (s < 0.25) reg = 'head';
-        else if (s < 0.45) reg = 'neck';
-        else if (s < 0.80) reg = 'body';
-        else reg = 'tail';
-
-        const palP = this._getThermalPalette(4);
-        const pancRegionCards = {
-          head: {
-            color: '#' + palP[0].getHexString(),
-            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
-            badge: 'Ngoại Tiết 98% • Nóng Nhất',
-            title: 'Đầu Tụy & Mỏm Móc (Caput & Processus Uncinatus)',
-            subtitle: 'Nằm lọt trong khung chữ C tá tràng, chứa các nang tuyến ngoại tiết sản xuất enzym tiêu hóa (Amylase, Lipase, Trypsin) và kiềm NaHCO3.'
-          },
-          neck: {
-            color: '#' + palP[1].getHexString(),
-            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
-            badge: 'Khuyết Tụy & TM Cửa',
-            title: 'Cổ Tụy & Khuyết Tụy (Collum Pancreatis)',
-            subtitle: 'Chỗ thắt hẹp kẹp bó mạch mạc treo tràng trên (SMA/SMV), mốc giải phẫu tối quan trọng tạo thành thân Tĩnh Mạch Cửa ngay phía sau.'
-          },
-          body: {
-            color: '#' + palP[2].getHexString(),
-            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
-            badge: 'Băng Ngang L1-L2',
-            title: 'Thân Tụy (Corpus Pancreatis)',
-            subtitle: 'Chạy vắt ngang trước cột sống thắt lưng L1-L2, đè lên đám rối tạng (Celiac plexus) giải thích cơ chế cơn đau xuyên lưng trong viêm tụy cấp.'
-          },
-          tail: {
-            color: '#' + palP[3].getHexString(),
-            tag: 'PHÂN VÙNG TUYẾN TỤY (MÀU NÓNG → LẠNH)',
-            badge: 'Đảo Langerhans Nội Tiết • Lạnh Nhất',
-            title: 'Đuôi Tụy (Cauda Pancreatis)',
-            subtitle: 'Phần di động chạm rốn lách, tập trung mật độ cao nhất các Đảo tụy Langerhans (tế bào Beta tiết Insulin hạ đường huyết, Alpha tiết Glucagon).'
+        if (s < 0.25) regionKey = 'head';
+        else if (s < 0.45) regionKey = 'neck';
+        else if (s < 0.80) regionKey = 'body';
+        else regionKey = 'tail';
+      } else if (organId === 'duodenum') {
+        this._initHeatmapCenterlines();
+        const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._duodPts);
+        if (s < 0.18) regionKey = 'd1';
+        else if (s < 0.32) regionKey = 'flex_sup';
+        else if (s < 0.58) regionKey = 'd2';
+        else if (s < 0.72) regionKey = 'flex_inf';
+        else if (s < 0.86) regionKey = 'd3';
+        else regionKey = 'd4';
+      } else if (organId === 'large_intestine') {
+        this._initHeatmapCenterlines();
+        const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._colonPts);
+        if (s < 0.18) regionKey = 'cecum';
+        else if (s < 0.38) regionKey = 'ascending';
+        else if (s < 0.65) regionKey = 'transverse';
+        else if (s < 0.85) regionKey = 'descending';
+        else regionKey = 'sigmoid';
+      } else if (organId === 'esophagus') {
+        const s = THREE.MathUtils.clamp((145.0 - localPt.y) / (145.0 - 122.0), 0, 1);
+        if (s < 0.28) regionKey = 'cervical';
+        else if (s >= 0.80) regionKey = 'abdominal';
+        else regionKey = 'thoracic';
+      } else if (organId === 'gallbladder_tree') {
+        if (low.includes('bile') || low.includes('duct')) regionKey = 'bile_duct';
+        else if (localPt.z > 6.0) regionKey = 'fundus';
+        else if (localPt.z <= 4.5) regionKey = 'neck';
+        else regionKey = 'corpus';
+      } else if (organId === 'small_intestine') {
+        let progress = 0.5;
+        if (this.siTubeProgress && this._lastHitIntersection && this._lastHitIntersection.face) {
+          const vIdx = this._lastHitIntersection.face.a;
+          if (this.siTubeProgress[vIdx] !== undefined) {
+            progress = this.siTubeProgress[vIdx];
           }
-        };
-        const c = pancRegionCards[reg];
-        return {
-          organId: 'pancreas',
-          wallLayerId: null,
-          x: screenX,
-          y: screenY,
-          tag: c.tag,
-          badge: c.badge,
-          title: c.title,
-          subtitle: c.subtitle,
-          color: c.color
-        };
-      }
-    }
-
-    // 2. Duodenum Functional Heatmap Regions (Continuous C-Loop progression: D1, Sup Flexure, D2, Inf Flexure, D3, D4 & Treitz)
-    if (isRegions && (organId === 'duodenum' || mesh.userData.organId === 'duodenum')) {
-      this._initHeatmapCenterlines();
-      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-      const localPt = mesh.worldToLocal(hitPt.clone());
-      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._duodPts);
-
-      let reg = 'd3';
-      if (s < 0.18) reg = 'd1';
-      else if (s < 0.32) reg = 'flex_sup';
-      else if (s < 0.58) reg = 'd2';
-      else if (s < 0.72) reg = 'flex_inf';
-      else if (s < 0.86) reg = 'd3';
-      else reg = 'd4';
-
-      const palD = this._getThermalPalette(6);
-      const duodCards = {
-        d1: {
-          color: '#' + palD[0].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Hành Tá Tràng (D1) • Nóng Nhất',
-          title: 'Đoạn Trên - Hành Tá Tràng (Pars Superior / Bulbus Duodeni)',
-          subtitle: 'Đoạn di động duy nhất của tá tràng, tiếp nối ống môn vị tại đốt sống L1. Niêm mạc nhẵn không có nếp van Kerckring; vị trí xuất hiện >90% các ổ loét tá tràng do acid dịch vị (Peptic Ulcer).'
-        },
-        flex_sup: {
-          color: '#' + palD[1].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Góc Tá Trên L1',
-          title: 'Góc Tá Trên (Flexura Duodeni Superior)',
-          subtitle: 'Khúc ngoặt 90 độ giữa D1 và D2 nằm ngay dưới gan và túi mật, ngang mức bờ phải đốt sống thắt lưng L1.'
-        },
-        d2: {
-          color: '#' + palD[2].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Nhú Tá Lớn (Vater) • L2-L3',
-          title: 'Đoạn Xuống & Nhú Tá Lớn (Pars Descendens & Papilla Duodeni Major)',
-          subtitle: 'Chạy thẳng đứng dọc bờ phải cột sống L2-L3. Thành sau trong chứa Nhú tá lớn (Vater) có cơ thắt Oddi điều hòa dịch mật và tụy đổ vào, và Nhú tá bé của ống tụy phụ Santorini.'
-        },
-        flex_inf: {
-          color: '#' + palD[3].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Góc Tá Dưới L3',
-          title: 'Góc Tá Dưới (Flexura Duodeni Inferior)',
-          subtitle: 'Góc gấp khúc chuyển tiếp giữa đoạn xuống D2 và đoạn ngang D3 tại mức đốt sống L3.'
-        },
-        d3: {
-          color: '#' + palD[4].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Bắt Chéo ĐMC & TMC Dưới • L3',
-          title: 'Đoạn Ngang (Pars Horizontalis / Pars Inferior)',
-          subtitle: 'Chạy ngang sang trái băng qua trước IVC và Động mạch chủ bụng tại L3. Bị kẹp phía trước bởi Động mạch mạc treo tràng trên (SMA), có thể gây hội chứng kìm động mạch Wilkie.'
-        },
-        d4: {
-          color: '#' + palD[5].getHexString(),
-          tag: 'PHÂN VÙNG TÁ TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Dây Chằng Treitz • Lạnh Nhất',
-          title: 'Đoạn Lên & Góc Tá Hỗng Tràng (Pars Ascendens & Flexura Treitz)',
-          subtitle: 'Chạy chếch lên trái đến L2 nối tiếp với hỗng tràng. Cố định bởi Cơ treo tá tràng (Dây chằng Treitz) - mốc ngoại khoa phân định ranh giới Xuất huyết tiêu hóa trên và Xuất huyết tiêu hóa dưới.'
+        } else {
+          progress = (localPt.x > 0 || localPt.y > 98.0) ? 0.2 : 0.8;
         }
-      };
-      const c = duodCards[reg];
-      return {
-        organId: 'duodenum',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    // 3. Large Intestine / Colon Functional Heatmap Regions (Continuous U-Frame progression)
-    if (isRegions && (organId === 'large_intestine' || mesh.userData.organId === 'large_intestine')) {
-      this._initHeatmapCenterlines();
-      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-      const localPt = mesh.worldToLocal(hitPt.clone());
-      const s = this._projectToCenterline(localPt.x, localPt.y, localPt.z, this._colonPts);
-
-      let reg = 'transverse';
-      if (s < 0.18) reg = 'cecum';
-      else if (s < 0.38) reg = 'ascending';
-      else if (s < 0.65) reg = 'transverse';
-      else if (s < 0.85) reg = 'descending';
-      else reg = 'sigmoid';
-
-      const palC = this._getThermalPalette(5);
-      const colonCards = {
-        cecum: {
-          color: '#' + palC[0].getHexString(),
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Điểm McBurney • Nóng Nhất',
-          title: 'Manh Tràng & Ruột Thừa (Caecum & Appendix Vermiformis)',
-          subtitle: 'Túi cùng nằm ở hố chậu phải dưới van hồi manh tràng Bauhin. Ruột thừa chứa mô bạch huyết dày đặc, vị trí điểm đau ngoại khoa kinh điển McBurney trong viêm ruột thừa cấp.'
-        },
-        ascending: {
-          color: '#' + palC[1].getHexString(),
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Mạc Dính Toldt P • Góc Gan',
-          title: 'Đại Tràng Lên & Góc Gan (Colon Ascendens & Flexura Coli Dextra)',
-          subtitle: 'Chạy dọc rãnh đại tràng phải lên bờ dưới gan tạo thành Góc gan. Cố định bởi mạc dính Toldt phải; hấp thu chủ yếu nước và điện giải (Na+, Cl-).'
-        },
-        transverse: {
-          color: '#' + palC[2].getHexString(),
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Mạc Treo Di Động • Góc Lách',
-          title: 'Đại Tràng Ngang & Góc Lách (Colon Transversum & Flexura Coli Sinistra)',
-          subtitle: 'Đoạn dài nhất và di động nhất nhờ mạc treo đại tràng ngang. Treo cong hình chữ U từ góc gan sang góc lách; mạc nối lớn phủ mặt trước như tấm rào chắn chống viêm nhiễm ổ bụng.'
-        },
-        descending: {
-          color: '#' + palC[3].getHexString(),
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Mạc Dính Toldt T • Mạn Sườn T',
-          title: 'Đại Tràng Xuống (Colon Descendens)',
-          subtitle: 'Chạy từ góc lách dọc mạn sườn trái xuống mào chậu. Cố định bởi mạc dính Toldt trái, lòng hẹp chứa phân đặc, vị trí thường gặp u dạng vòng nhẫn gây bán tắc ruột.'
-        },
-        sigmoid: {
-          color: '#' + palC[4].getHexString(),
-          tag: 'PHÂN VÙNG ĐẠI TRÀNG (MÀU NÓNG → LẠNH)',
-          badge: 'Mạc Treo Sigma • Lạnh Nhất',
-          title: 'Đại Tràng Sigma (Colon Sigmoideum)',
-          subtitle: 'Quai ruột hình chữ S di động ở hố chậu trái nối tiếp trực tràng ngang mức S3. Có mạc treo riêng hình chữ V; vị trí hay gặp túi thừa đại tràng và xoắn đại tràng sigma.'
-        }
-      };
-      const c = colonCards[reg];
-      return {
-        organId: 'large_intestine',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    // 4. Esophagus Functional Heatmap Regions (Continuous Vertical progression)
-    if (isRegions && (organId === 'esophagus' || mesh.userData.organId === 'esophagus')) {
-      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-      const localPt = mesh.worldToLocal(hitPt.clone());
-      const s = THREE.MathUtils.clamp((145.0 - localPt.y) / (145.0 - 122.0), 0, 1);
-
-      let reg = 'thoracic';
-      if (s < 0.28) reg = 'cervical';
-      else if (s >= 0.80) reg = 'abdominal';
-
-      const palE = this._getThermalPalette(3);
-      const esophCards = {
-        cervical: {
-          color: '#' + palE[0].getHexString(),
-          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
-          badge: 'Miệng Thực Quản C6 • Nóng Nhất',
-          title: 'Đoạn Cổ Thực Quản (Pars Cervicalis Oesophagi)',
-          subtitle: 'Khởi đầu từ bờ dưới sụn nhẫn C6 (chỗ hẹp trên cùng ~15cm từ cung răng), đi sau khí quản và trước cột sống cổ.'
-        },
-        thoracic: {
-          color: '#' + palE[1].getHexString(),
-          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
-          badge: 'Chỗ Hẹp Quai ĐMC T4-T5',
-          title: 'Đoạn Ngực Thực Quản (Pars Thoracica Oesophagi)',
-          subtitle: 'Nằm trong trung thất sau, áp sát mặt sau tâm nhĩ trái và phế quản chính trái (chỗ hẹp thứ hai ~22.5cm và 27.5cm từ cung răng).'
-        },
-        abdominal: {
-          color: '#' + palE[2].getHexString(),
-          tag: 'PHÂN VÙNG THỰC QUẢN (MÀU NÓNG → LẠNH)',
-          badge: 'Lỗ Cơ Hoành T10 • Lạnh Nhất',
-          title: 'Đoạn Bụng Thực Quản (Pars Abdominalis Oesophagi)',
-          subtitle: 'Chui qua lỗ cơ hoành T10 (chỗ hẹp thứ ba ~40cm từ cung răng) dài khoảng 2-3cm trước khi đổ vào tâm vị dạ dày tại góc His; cơ thắt thực quản dưới (LES) ngăn trào ngược dạ dày thực quản (GERD).'
-        }
-      };
-      const c = esophCards[reg];
-      return {
-        organId: 'esophagus',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    // 5. Gallbladder & Biliary Tree Functional Heatmap Regions
-    if (isRegions && (organId === 'gallbladder_tree' || mesh.userData.organId === 'gallbladder_tree')) {
-      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
-      const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-      const localPt = mesh.worldToLocal(hitPt.clone());
-      const z = localPt.z;
-
-      let reg = 'corpus';
-      if (low.includes('bile') || low.includes('duct')) reg = 'bile_duct';
-      else if (z > 6.0) reg = 'fundus';
-      else if (z <= 4.5) reg = 'neck';
-
-      const palG = this._getThermalPalette(4);
-      const gbCards = {
-        fundus: {
-          color: '#' + palG[0].getHexString(),
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
-          badge: 'Điểm Đau Murphy • Nóng Nhất',
-          title: 'Đáy Túi Mật (Fundus Vesicae Biliaris)',
-          subtitle: 'Phần nhô ra khỏi bờ dưới gan tại khuyết túi mật, tiếp xúc trực tiếp thành bụng trước tại giao điểm bờ ngoài cơ thẳng bụng phải và bờ sườn 9 (Điểm Murphy kinh điển).'
-        },
-        corpus: {
-          color: '#' + palG[1].getHexString(),
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
-          badge: 'Dự Trữ & Cô Đặc Dịch Mật',
-          title: 'Thân Túi Mật (Corpus Vesicae Biliaris)',
-          subtitle: 'Nằm áp sát vào hố túi mật ở mặt tạng của gan, có mô liên kết lỏng lẻo gắn chặt vào bao Glisson gan; niêm mạc tổ ong cô đặc dịch mật 5-10 lần bằng cách tái hấp thu nước.'
-        },
-        neck: {
-          color: '#' + palG[2].getHexString(),
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
-          badge: 'Túi Cùng Hartmann • Kẹt Sỏi Mật',
-          title: 'Cổ Túi Mật & Túi Cùng Hartmann (Collum & Infundibulum)',
-          subtitle: 'Hình chữ S uốn lượn nối vào ống túi mật; phần phình Hartmann là nơi sỏi mật hay bị kẹt gây ứ nước túi mật và viêm túi mật cấp.'
-        },
-        bile_duct: {
-          color: '#' + palG[3].getHexString(),
-          tag: 'PHÂN VÙNG ĐƯỜNG DẪN MẬT (MÀU NÓNG → LẠNH)',
-          badge: 'Tam Giác Calot • Lạnh Nhất',
-          title: 'Ống Mật Chủ (Ductus Choledochus)',
-          subtitle: 'Dẫn mật từ hợp lưu ống gan chung và ống túi mật đi trong cuống gan (phía trước tĩnh mạch cửa, bên phải động mạch gan riêng) chui sau đầu tụy cắm vào nhú tá lớn D2 tá tràng.'
-        }
-      };
-      const c = gbCards[reg];
-      return {
-        organId: 'gallbladder_tree',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    // 6. Small Intestine Functional Heatmap Regions (Geodesic Tube Progress along jejunoileal loop trajectory)
-    if (isRegions && (organId === 'small_intestine' || mesh.userData.organId === 'small_intestine')) {
-      let progress = 0.5;
-      if (this.siTubeProgress && this._lastHitIntersection && this._lastHitIntersection.face) {
-        const vIdx = this._lastHitIntersection.face.a;
-        if (this.siTubeProgress[vIdx] !== undefined) {
-          progress = this.siTubeProgress[vIdx];
-        }
-      } else {
-        const hitPt = this._lastIntersectionPoint ? this._lastIntersectionPoint.clone() : new THREE.Vector3();
-        const localPt = mesh.worldToLocal(hitPt.clone());
-        progress = (localPt.x > 0 || localPt.y > 98.0) ? 0.2 : 0.8;
+        regionKey = (progress <= 0.40) ? 'jejunum' : 'ileum';
+      } else if (organId === 'liver') {
+        const segMatch = low.match(/\((i|ii|iii|iv|v|vi|vii|viii)\)/i);
+        const roman = segMatch ? segMatch[1].toUpperCase() : 'I';
+        const romanMap = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8 };
+        regionKey = `seg_${romanMap[roman] || 1}`;
+      } else if (organId === 'peritoneum_omentum') {
+        if (low.includes('lesser') || low.includes('minor') || low.includes('minus')) regionKey = 'lesser_omentum';
+        else if (low.includes('mesocolon')) regionKey = 'mesocolon';
+        else if (low.includes('appendix') || low.includes('meso')) regionKey = 'meso_appendix';
+        else regionKey = 'greater_omentum';
       }
 
-      const reg = (progress <= 0.40) ? 'jejunum' : 'ileum';
-      const palS = this._getThermalPalette(2);
-      const siCards = {
-        jejunum: {
-          color: '#' + palS[0].getHexString(),
-          tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
-          badge: 'Hấp Thu Đường Đạm • 2/5 Trên Ruột Non',
-          title: 'Hỗng Tràng (Jejunum)',
-          subtitle: 'Chiếm 2/5 trên ruột non, quai ruột xếp nằm ngang ở ô bụng trên trái. Thành dày, đỏ hồng do mạch máu dồi dào, quai cung động mạch thưa (1-2 bậc) với động mạch thẳng dài; nếp gấp vòng Kerckring và nhung mao dày đặc tối ưu hấp thu carbohydrate và amino acid.'
-        },
-        ileum: {
-          color: '#' + palS[1].getHexString(),
-          tag: 'PHÂN VÙNG RUỘT NON (MÀU NÓNG → LẠNH)',
-          badge: 'Hấp Thu Muối Mật & B12 • 3/5 Dưới Ruột Non',
-          title: 'Hồi Tràng (Ileum)',
-          subtitle: 'Chiếm 3/5 dưới ruột non, quai ruột xếp thẳng đứng ở ô bụng dưới phải đổ vào manh tràng tại van Bauhin. Cung mạch phức tạp (3-5 tầng) với động mạch thẳng ngắn; tập trung các nang bạch huyết mảng Peyer miễn dịch và thụ thể tái hấp thu muối mật chu trình gan ruột và vitamin B12.'
+      if (regionKey && HEATMAP_CATALOG[catalogOrganId]) {
+        const c = HEATMAP_CATALOG[catalogOrganId].find(r => r.key === regionKey);
+        if (c) {
+          return {
+            organId: catalogOrganId,
+            regionKey: c.key,
+            wallLayerId: null,
+            x: screenX,
+            y: screenY,
+            tag: c.tag,
+            badge: c.badge,
+            title: c.title,
+            subtitle: c.subtitle,
+            color: c.color
+          };
         }
-      };
-      const c = siCards[reg];
-      return {
-        organId: 'small_intestine',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
-    }
-
-    // 7. Peritoneum & Omentum Functional Heatmap Regions
-    if (isRegions && (organId === 'peritoneum_omentum' || mesh.userData.organId === 'peritoneum_omentum')) {
-      const low = (mesh.userData.rawName || mesh.name || '').toLowerCase();
-      let reg = 'greater_omentum';
-      if (low.includes('lesser') || low.includes('minor') || low.includes('minus')) reg = 'lesser_omentum';
-      else if (low.includes('mesocolon')) reg = 'mesocolon';
-      else if (low.includes('appendix') || low.includes('meso')) reg = 'meso_appendix';
-      else reg = 'greater_omentum';
-
-      const palP = this._getThermalPalette(4);
-      const peritCards = {
-        lesser_omentum: {
-          color: '#' + palP[0].getHexString(),
-          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
-          badge: 'Cuống Gan & Lỗ Winslow • Nóng Nhất',
-          title: 'Mạc Nối Nhỏ (Omentum Minus / Lesser Omentum)',
-          subtitle: 'Nếp phúc mạc căng từ rốn gan và khe dây chằng tĩnh mạch đến bờ cong nhỏ dạ dày và tá tràng (Dây chằng Gan - Vị & Dây chằng Gan - Tá tràng). Bờ tự do bên phải chứa Cuống gan (TM Cửa, ĐM Gan riêng, Ống mật chủ) và giới hạn bờ trước Lỗ Winslow dẫn vào hậu cung mạc nối.'
-        },
-        mesocolon: {
-          color: '#' + palP[1].getHexString(),
-          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
-          badge: 'Ranh Giới Tầng Trên - Dưới Ổ Bụng',
-          title: 'Mạc Treo Đại Tràng Ngang (Mesocolon Transversum)',
-          subtitle: 'Bản phúc mạc rộng treo đại tràng ngang vào thành bụng sau (băng ngang mặt trước tụy và tá tràng). Ranh giới giải phẫu chia ổ phúc mạc thành 2 tầng: Tầng trên mạc treo (chứa gan, dạ dày, lách) và Tầng dưới mạc treo (chứa ruột non, đại tràng).'
-        },
-        greater_omentum: {
-          color: '#' + palP[2].getHexString(),
-          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
-          badge: 'Người Cảnh Sát Ổ Bụng • 4 Lá Phúc Mạc',
-          title: 'Mạc Nối Lớn (Omentum Majus / Greater Omentum)',
-          subtitle: 'Tấm "tạp dề" mỡ kép gồm 4 lá phúc mạc rủ xuống từ bờ cong lớn dạ dày phủ lên trước các quai ruột non. Rất giàu mạch máu, tế bào mỡ và đám tế bào lympho ("vết sữa" - milky spots), có khả năng di chuyển bao vây khu trú ổ nhiễm trùng hoặc lỗ thủng tạng ("Người cảnh sát ổ bụng").'
-        },
-        meso_appendix: {
-          color: '#' + palP[3].getHexString(),
-          tag: 'PHÂN VÙNG PHÚC MẠC (MÀU NÓNG → LẠNH)',
-          badge: 'Động Mạch Ruột Thừa • Lạnh Nhất',
-          title: 'Mạc Treo Ruột Thừa & Hố Chậu Phải (Meso-appendix)',
-          subtitle: 'Nếp phúc mạc hình tam giác bắt nguồn từ mặt sau mạc treo đoạn cuối hồi tràng đến ruột thừa. Bờ tự do chứa Động mạch ruột thừa (nhánh tận của ĐM hồi đại tràng) - mốc kẹp thắt mạch máu then chốt trong phẫu thuật cắt ruột thừa nội soi.'
-        }
-      };
-      const c = peritCards[reg];
-      return {
-        organId: 'peritoneum_omentum',
-        wallLayerId: null,
-        x: screenX,
-        y: screenY,
-        tag: c.tag,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle,
-        color: c.color
-      };
+      }
     }
 
     if (mesh.userData.isWallLayer || mesh.userData.isStomachWallLayer) {
@@ -2035,6 +1457,9 @@ export class SceneView {
     };
 
     this.renderer.domElement.addEventListener('pointermove', (e) => {
+      // Touch interactions rely on tap/click pinning rather than hover-move
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+
       // If user is dragging OrbitControls with mouse button down, hide callout
       if (e.buttons !== 0) {
         this.hoverCallout.update(null);
@@ -2045,9 +1470,9 @@ export class SceneView {
       this.mouse.set(x, y);
       this.raycaster.setFromCamera(this.mouse, this.camera);
 
-      // In Pathology mode, check landmark pin intersections first
+      // In Pathology mode, check landmark pin intersections only (no musculoskeletal hover labels)
       if (this.appVM.state.activeMode === 'pathology' && this.landmarksRoot && this.landmarksRoot.visible) {
-        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, false);
+        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, true);
         if (landmarkHits.length > 0) {
           const hitPin = landmarkHits[0].object;
           this.renderer.domElement.style.cursor = 'pointer';
@@ -2058,29 +1483,9 @@ export class SceneView {
             badge: hitPin.userData.isBack ? 'MẶT LƯNG' : 'THÀNH BỤNG',
             title: hitPin.userData.name,
             subtitle: hitPin.userData.description,
-            color: hitPin.userData.isBack ? '#f59e0b' : '#0284c7'
+            color: hitPin.userData.isBack ? '#ef4444' : '#c8102e'
           });
           return;
-        }
-
-        // Also check if any torso or back muscle is hovered
-        if (this.torsoMuscleMeshes && this.torsoMuscleMeshes.length > 0) {
-          const muscleHits = this.raycaster.intersectObjects(this.torsoMuscleMeshes, false);
-          if (muscleHits.length > 0) {
-            const hitMuscle = muscleHits[0].object;
-            const info = hitMuscle.userData.info || this._getTorsoMuscleInfo(hitMuscle.name);
-            this.renderer.domElement.style.cursor = 'pointer';
-            this.hoverCallout.update({
-              x: screenX,
-              y: screenY,
-              tag: info.tag,
-              badge: info.badge,
-              title: info.title,
-              subtitle: info.subtitle,
-              color: '#' + info.color.toString(16).padStart(6, '0')
-            });
-            return;
-          }
         }
       }
 
@@ -2101,34 +1506,39 @@ export class SceneView {
       } else {
         this.renderer.domElement.style.cursor = 'default';
         this._setHoverHighlight(null);
-        this.hoverCallout.update(null);
+        if (!this._pinnedCallout) {
+          this.hoverCallout.update(null);
+        }
         this.sceneVM.setHoveredPart(null);
       }
     });
 
     this.renderer.domElement.addEventListener('pointerleave', () => {
       this._setHoverHighlight(null);
-      this.hoverCallout.update(null);
+      if (!this._pinnedCallout) {
+        this.hoverCallout.update(null);
+      }
       this.sceneVM.setHoveredPart(null);
     });
 
-    // Distinguish clean click from orbit drag
-    let downX = 0, downY = 0;
+    // Distinguish clean click/tap from orbit drag
+    let downX = 0, downY = 0, downPointerType = 'mouse';
     this.renderer.domElement.addEventListener('pointerdown', (e) => {
       downX = e.clientX;
       downY = e.clientY;
+      downPointerType = e.pointerType || 'mouse';
     });
 
     this.renderer.domElement.addEventListener('click', (e) => {
       if (Math.hypot(e.clientX - downX, e.clientY - downY) > 6) return;
 
-      const { x, y } = getCoords(e);
+      const { x, y, screenX, screenY } = getCoords(e);
       this.mouse.set(x, y);
       this.raycaster.setFromCamera(this.mouse, this.camera);
 
       // In Pathology mode, clicking a landmark pin activates it
       if (this.appVM.state.activeMode === 'pathology' && this.landmarksRoot && this.landmarksRoot.visible) {
-        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, false);
+        const landmarkHits = this.raycaster.intersectObjects(this.landmarksRoot.children, true);
         if (landmarkHits.length > 0) {
           const hitPin = landmarkHits[0].object;
           if (hitPin.userData && hitPin.userData.landmarkId && this.appVM.landmarksVM) {
@@ -2143,12 +1553,39 @@ export class SceneView {
 
       if (validHit) {
         const topHit = validHit.object;
+        this._lastIntersectionPoint = validHit.point.clone();
+        this._lastHitMesh = topHit;
+        this._lastHitIntersection = validHit;
+
+        const payload = this._buildHoverPayload(topHit, screenX, screenY);
+        const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
+
         if (topHit.userData.isWallLayer || topHit.userData.isStomachWallLayer) {
           this.sceneVM.selectOrgan(topHit.userData.organId);
           this.dissectionVM.setActiveWallLayer(topHit.userData.wallLayerId);
         } else {
           this.sceneVM.selectOrgan(topHit.userData.organId);
         }
+
+        this.sceneVM.setHoveredPart(payload);
+
+        // Pin circular marker + callout on touch taps or in Functional Heatmap mode
+        if (downPointerType !== 'mouse' || isRegions) {
+          this._pinnedCallout = {
+            worldPoint: validHit.point.clone(),
+            payload,
+            organId: topHit.userData.organId
+          };
+          this.hoverCallout.update(payload);
+        } else {
+          this._pinnedCallout = null;
+        }
+      } else {
+        // Clicking empty space clears any pinned pin and dismisses the right drawer
+        this._pinnedCallout = null;
+        this.hoverCallout.update(null);
+        this.sceneVM.setHoveredPart(null);
+        this.container.dispatchEvent(new CustomEvent('canvas:empty-click'));
       }
     });
   }
@@ -2186,6 +1623,10 @@ export class SceneView {
 
   _bindViewModel() {
     this.sceneVM.subscribe('selectedOrganId', (selectedId) => {
+      if (this._pinnedCallout && (!selectedId || this._pinnedCallout.organId !== selectedId)) {
+        this._pinnedCallout = null;
+        if (this.hoverCallout) this.hoverCallout.update(null);
+      }
       this._updateOrganVisuals(selectedId);
       this._syncExplosion();
       if (selectedId === 'stomach') {
@@ -2247,6 +1688,8 @@ export class SceneView {
     });
 
     this.dissectionVM.subscribe('organDisplayMode', () => {
+      this._pinnedCallout = null;
+      if (this.hoverCallout) this.hoverCallout.update(null);
       this._applyFunctionalHeatmaps();
       this._updateOrganVisuals(this.sceneVM.state.selectedOrganId);
     });
@@ -2256,6 +1699,8 @@ export class SceneView {
     });
 
     this.appVM.subscribe('activeMode', (mode) => {
+      this._pinnedCallout = null;
+      if (this.hoverCallout) this.hoverCallout.update(null);
       this.landmarksRoot.visible = (mode === 'pathology');
       if (mode === 'pathology') {
         if (this.explosionManager) {
@@ -3094,9 +2539,81 @@ export class SceneView {
     return this.stomachBuilder ? this.stomachBuilder.getOrganCutSide(organId) : 1.0;
   }
 
+  /**
+   * Drops a circular pin & callout onto a specific heatmap region of an organ
+   * (used both on mobile tap and when selecting a region card from the right drawer).
+   */
+  pinHeatmapRegion(organId, regionKey) {
+    const regions = HEATMAP_CATALOG[organId];
+    if (!regions) return;
+    const region = regions.find(r => r.key === regionKey);
+    if (!region) return;
+
+    let worldPoint = null;
+    if (organId === 'liver' && region.couinaudRoman) {
+      const targetMesh = this.clickableMeshes.find(m => {
+        if (m.userData.organId !== 'liver' || m.userData.isLigament) return false;
+        const low = (m.userData.rawName || m.name || '').toLowerCase();
+        const match = low.match(/\((i|ii|iii|iv|v|vi|vii|viii)\)/i);
+        return match && match[1].toUpperCase() === region.couinaudRoman;
+      });
+      if (targetMesh) {
+        worldPoint = new THREE.Box3().setFromObject(targetMesh).getCenter(new THREE.Vector3());
+      }
+    } else if (region.centerLocal) {
+      const refMesh = this.clickableMeshes.find(m => m.visible && m.userData.organId === organId)
+        || this.clickableMeshes.find(m => m.userData.organId === organId);
+      if (refMesh) {
+        refMesh.updateWorldMatrix(true, false);
+        worldPoint = new THREE.Vector3(...region.centerLocal).applyMatrix4(refMesh.matrixWorld);
+      }
+    }
+
+    if (!worldPoint) return;
+
+    const screenPos = this._projectWorldToScreen(worldPoint);
+    const payload = {
+      organId,
+      regionKey: region.key,
+      wallLayerId: null,
+      x: screenPos.x,
+      y: screenPos.y,
+      tag: region.tag,
+      badge: region.badge,
+      title: region.title,
+      subtitle: region.subtitle,
+      color: region.color
+    };
+    this._pinnedCallout = { worldPoint, payload, organId };
+    this.hoverCallout.update(payload);
+    this.sceneVM.setHoveredPart(payload);
+  }
+
+  _projectWorldToScreen(worldVec) {
+    const projected = worldVec.clone().project(this.camera);
+    const w = this.container.clientWidth || window.innerWidth;
+    const h = this.container.clientHeight || window.innerHeight;
+    return {
+      x: (projected.x * 0.5 + 0.5) * w,
+      y: (-projected.y * 0.5 + 0.5) * h,
+      visible: projected.z < 1
+    };
+  }
+
   _animate() {
     requestAnimationFrame(this._animate);
     this.controls.update();
+
+    if (this._pinnedCallout && this.hoverCallout) {
+      const pos = this._projectWorldToScreen(this._pinnedCallout.worldPoint);
+      if (pos.visible) {
+        const prev = this._pinnedCallout.payload;
+        if (Math.abs(pos.x - prev.x) > 0.5 || Math.abs(pos.y - prev.y) > 0.5) {
+          this._pinnedCallout.payload = { ...prev, x: pos.x, y: pos.y };
+          this.hoverCallout.update(this._pinnedCallout.payload);
+        }
+      }
+    }
 
     if (this.landmarksRoot && this.landmarksRoot.visible) {
       const time = Date.now() * 0.005;

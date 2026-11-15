@@ -475,6 +475,9 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-2);
+}
+
+.panel-right {
   animation: panel-in var(--med) var(--ease) both;
 }
 
@@ -619,8 +622,11 @@ body {
 #torso-opacity-slider {
   -webkit-appearance: none;
   appearance: none;
+  box-sizing: border-box;
   width: 100%;
   height: 22px;
+  margin: 0;
+  padding: 0;
   background: transparent;
   cursor: pointer;
 }
@@ -766,7 +772,7 @@ body {
 .hover-callout-card {
   /* floating label next to the 3D model */
   position: absolute;
-  transform: translate(-50%, -100%);
+  transform: none;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(8px);
@@ -774,7 +780,6 @@ body {
   border-top: 3px solid var(--red);
   border-radius: var(--r-md);
   box-shadow: var(--shadow-2);
-  animation: panel-in var(--med) var(--ease) both;
   min-width: 220px;
   max-width: 320px;
   display: flex;
@@ -1081,13 +1086,20 @@ body {
   z-index: 25;
   display: flex;
   flex-direction: column;
-  transform: translateX(calc(100% + 40px));
-  transition: transform 0.35s var(--ease);
+  transform: translateX(calc(100% + 48px));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.32s var(--ease), opacity 0.25s var(--ease), visibility 0s linear 0.32s;
   overflow: hidden;
 }
 
 .organ-drawer.open {
   transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.32s var(--ease), opacity 0.25s var(--ease), visibility 0s linear 0s;
 }
 
 .drawer-header {
@@ -1554,58 +1566,303 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1024px) {
-  :root { --header-h: 60px; }
-  .app-header, .site-header { padding: 10px 16px; gap: 14px; }
-  .brand-title { font-size: 14px; }
-  .nav-list { gap: 16px; }
-  .input, .search-input { width: 150px; }
-  .input:focus, .search-input:focus { width: 200px; }
-  .dissection-dock { width: 300px; }
-  .organ-drawer { width: 380px; }
+/* ---------- Layer Tabs & Heatmap Region Cards in Drawer ---------- */
+.mobile-layer-pills {
+  display: none;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
 }
 
-@media (max-width: 768px) {
+.mobile-layer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  font: 600 10.5px var(--font-ui);
+  cursor: pointer;
+  transition: all var(--fast);
+}
+
+.mobile-layer-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mobile-layer-pill.is-active,
+.mobile-layer-pill.active {
+  background: var(--blush);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.drawer-overview-toggle {
+  display: none;
+  width: 100%;
+  padding: 6px 10px;
+  margin-top: 4px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink-soft);
+  font: 600 11px var(--font-ui);
+  text-align: center;
+  cursor: pointer;
+}
+
+.heatmap-region-card {
+  position: relative;
+  padding: 10px 12px 10px 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--fast), box-shadow var(--fast), transform var(--fast), background var(--fast);
+}
+
+.heatmap-region-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 0 3px 3px 0;
+  background: var(--region-color, var(--red));
+}
+
+.heatmap-region-card:hover,
+.heatmap-region-card.is-active,
+.heatmap-region-card.active {
+  border-color: var(--red);
+  background: #fffbfb;
+  box-shadow: var(--shadow-1);
+}
+
+.heatmap-region-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.heatmap-region-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.heatmap-region-desc {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  :root { --header-h: 56px; }
+  .app-header, .site-header { padding: 8px 14px; gap: 10px; }
+  .brand-title { font-size: 13.5px; }
+  .nav-list { gap: 14px; }
+  .input, .search-input { width: 145px; }
+  .input:focus, .search-input:focus { width: 185px; }
+  .dissection-dock { width: 270px; }
+  .organ-drawer { width: 330px; }
+}
+
+/* Compact Phones (both Landscape max-height: 540px and Small Widths <= 960px) */
+@media (max-width: 960px), (max-height: 540px) {
+  :root { --header-h: 44px; }
   .app-header, .site-header {
     height: auto;
-    flex-wrap: wrap;
-    padding: 10px 14px;
-    gap: 10px;
+    min-height: 42px;
+    padding: 4px 10px;
+    gap: 8px;
   }
+  .brand-sub { display: none; }
+  .brand-title { font-size: 12px; }
+  .header-inner { gap: 8px; }
+  .nav-list { gap: 10px; }
+  .nav-link, .nav-tab { font-size: 11.5px; padding: 8px 0; }
+  .mode-switcher, .btn-segment-group { padding: 2px; }
+  .mode-pill, .btn-segment { padding: 5px 8px; font-size: 10.5px; }
+  .input, .search-input { width: 115px; padding: 5px 8px; font-size: 11px; }
+  .input:focus, .search-input:focus { width: 145px; }
+  .btn, .action-btn, .btn-reset { padding: 5px 9px; font-size: 11px; }
+
+  .dissection-dock,
+  .landmarks-panel {
+    top: 8px;
+    left: 8px;
+    bottom: 8px;
+    width: 215px;
+    max-width: 34vw;
+  }
+  .dock-tab { padding: 7px 6px; font-size: 11px; }
+  .dock-body,
+  .landmarks-scroll { padding: 8px 10px; gap: 7px; }
+  .dock-context-header { flex-wrap: wrap; gap: 4px; padding: 8px 10px 6px; }
+  .dock-context-header .organ-title { font-size: 13.5px; }
+  .dock-context-label { font-size: 9px; }
+  #btn-back-system { padding: 3px 6px; font-size: 9.5px; white-space: nowrap; flex-shrink: 0; }
+  .anatomical-body-map-card { padding: 4px; margin: 4px 8px; }
+  .body-silhouette-svg { max-height: 112px; }
+  .organ-display-mode-row { padding: 5px 10px; }
+  .explode-control-card { margin: 4px 8px; padding: 7px 9px; gap: 5px; }
+  .explode-label-title { font-size: 10.5px; }
+  .explode-slider-row { gap: 6px; }
+  .explode-trigger-btn { padding: 5px 8px; font-size: 10px; flex-shrink: 0; }
+  .explode-helper-text { font-size: 10px; line-height: 1.3; }
+  .dock-button-row { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 5px; padding: 6px 8px 8px; }
+  .dock-button-row .action-btn { padding: 5px 4px; font-size: 9.5px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .landmark-card { padding: 8px 10px 8px 13px; }
+  .landmark-card h5 { font-size: 11.5px !important; }
+  .landmark-card p { font-size: 10.5px !important; }
+
+  .organ-drawer {
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: 255px;
+    max-width: 38vw;
+  }
+  .drawer-header { padding: 7px 10px; gap: 6px; }
+  .drawer-header h2 { font-size: 13.5px; }
+  .drawer-latin { font-size: 10px; }
+  .drawer-close-btn { width: 25px; height: 25px; font-size: 12px; }
+  .drawer-scroll-body { padding: 8px 10px; gap: 8px; font-size: 11px; }
+
+  /* Focused Single-Layer / Single-Region Card immediately visible without excess header prose */
+  .drawer-badge { display: none; }
+  .drawer-section h4 { font-size: 11.5px; margin-bottom: 4px; }
+  .drawer-section > p { display: none; }
+  .mobile-layer-pills { display: flex; margin-bottom: 6px; }
+  .mobile-layer-pill { padding: 3px 7px; font-size: 10px; }
+  .drawer-focused-layers .wall-layer-card:not(.is-active):not(.highlight),
+  .drawer-focused-regions .heatmap-region-card:not(.is-active) {
+    display: none;
+  }
+  .drawer-overview-toggle { display: block; }
+  .drawer-overview-group.is-collapsed-mobile { display: none; }
+  .wall-layer-card,
+  .heatmap-region-card { padding: 8px 9px 8px 13px; }
+  .wall-layer-card-title,
+  .heatmap-region-title { font-size: 11.5px; }
+  .wall-sub-block, .wall-clinical-sub,
+  .heatmap-region-desc { font-size: 10.5px; line-height: 1.38; }
+
+  .hover-callout-card {
+    min-width: 135px;
+    max-width: 175px;
+    padding: 6px 8px;
+    gap: 2px;
+  }
+  .hover-callout-card.is-drawer-compact .hover-callout-desc,
+  .hover-callout-card.is-drawer-compact .hover-callout-badge {
+    display: none !important;
+  }
+  .hover-callout-tag { font-size: 9px; }
+  .hover-callout-badge { font-size: 9px; }
+  .hover-callout-title { font-size: 11px; }
+  .hover-callout-desc {
+    font-size: 10px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hover-callout-hint { display: none; }
+
+  .disclaimer-bar {
+    padding: 3px 10px;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  .interaction-hint { display: none; }
+}
+
+@media (max-width: 680px) and (orientation: portrait) {
+  .app-header, .site-header {
+    height: auto;
+    padding: 6px 10px;
+  }
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+  }
+  .main-nav {
+    margin-left: auto;
+  }
+  .nav-list { gap: 10px; }
+  .nav-link, .nav-tab { padding: 4px 0; font-size: 11px; }
   .header-actions {
     width: 100%;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 5px;
+  }
+  .mode-switcher, .btn-segment-group {
+    width: 100%;
+    display: flex;
+  }
+  .mode-pill, .btn-segment {
+    flex: 1;
+    padding: 5px 6px;
+    font-size: 10.5px;
+    text-align: center;
+  }
+  .expandable-search {
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .input, .search-input,
   .input:focus, .search-input:focus {
     width: 100%;
   }
   .dissection-dock {
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    max-height: 48vh;
-  }
-  .panel-right, .organ-drawer {
-    top: 10px;
-    right: 10px;
-    left: 10px;
-    bottom: 10px;
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
     width: auto;
     max-width: none;
-    border-radius: var(--r-lg);
+    max-height: 30vh;
   }
   .landmarks-panel {
-    top: 10px;
-    left: 10px;
-    right: 10px;
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
     width: auto;
-    max-height: 50vh;
+    max-width: none;
+    max-height: 32vh;
   }
-  .interaction-hint { display: none; }
-  .help-title { font-size: 1.8rem; }
+  .organ-drawer {
+    top: auto;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    height: 36vh;
+    transform: translateY(calc(100% + 40px));
+  }
+  .organ-drawer.open {
+    transform: translateY(0);
+  }
+  .help-title { font-size: 1.6rem; }
   .help-grid { grid-template-columns: 1fr; }
 }
 

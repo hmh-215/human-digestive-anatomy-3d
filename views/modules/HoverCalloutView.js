@@ -19,8 +19,8 @@ export class HoverCalloutView {
     this.overlayEl.innerHTML = `
       <svg class="hover-leader-svg" width="100%" height="100%">
         <polyline id="hover-leader-line" class="hover-leader-line" points="0,0 0,0 0,0" />
-        <circle id="hover-anchor-pulse" class="hover-anchor-pulse" cx="0" cy="0" r="8" />
-        <circle id="hover-anchor-dot" class="hover-anchor-dot" cx="0" cy="0" r="4.5" />
+        <circle id="hover-anchor-pulse" class="hover-anchor-pulse" cx="0" cy="0" r="10" />
+        <circle id="hover-anchor-dot" class="hover-anchor-dot" cx="0" cy="0" r="6" stroke="#ffffff" stroke-width="2" />
         <circle id="hover-card-pin" class="hover-card-pin" cx="0" cy="0" r="3.5" />
       </svg>
       <div id="hover-callout-card" class="hover-callout-card callout">
@@ -88,43 +88,90 @@ export class HoverCalloutView {
 
     this.cardEl.style.borderColor = accentColor;
 
+    const isCompact = vw <= 960 || vh <= 540;
+    const drawerEl = document.getElementById('organ-drawer');
+    const isDrawerOpen = !!(drawerEl && drawerEl.classList.contains('open') && drawerEl.offsetWidth > 0);
+    this.cardEl.classList.toggle('is-drawer-compact', isCompact && isDrawerOpen);
+
     // Show overlay first so cardEl has layout dimensions
     this.overlayEl.classList.remove('hidden');
 
-    const cardWidth = Math.min(310, Math.max(260, this.cardEl.offsetWidth || 290));
-    const cardHeight = Math.max(100, this.cardEl.offsetHeight || 130);
+    const cardWidth = Math.min(isCompact ? 175 : 310, Math.max(isCompact ? 135 : 240, this.cardEl.offsetWidth || (isCompact ? 160 : 285)));
+    const cardHeight = Math.max(36, this.cardEl.offsetHeight || (isCompact && isDrawerOpen ? 44 : 105));
 
-    // Collision boundaries
-    const isDockHidden = document.getElementById('dock-panel')?.classList.contains('hidden');
-    const minSafeLeft = isDockHidden ? 20 : 330;
-    const isDrawerOpen = document.getElementById('organ-drawer')?.classList.contains('open');
-    const maxSafeRight = isDrawerOpen ? vw - 470 : vw - 24;
+    // Measure actual open panels so the callout adapts dynamically on both desktop & mobile
+    const containerRect = this.container.getBoundingClientRect();
+    let minSafeLeft = 12;
+    const leftPanelEl = ['dissection-dock', 'landmarks-panel']
+      .map(id => document.getElementById(id))
+      .find(el => el && !el.classList.contains('hidden') && el.offsetWidth > 0);
+    if (leftPanelEl) {
+      const r = leftPanelEl.getBoundingClientRect();
+      if (r.width < vw * 0.5 && r.bottom > containerRect.top + 80) {
+        minSafeLeft = Math.max(12, Math.round(r.right - containerRect.left + 10));
+      }
+    }
 
-    const availableLeft = x - minSafeLeft;
-    const availableRight = maxSafeRight - x;
-
-    // Decide placement side: prefer side with ample room
-    let placeLeft = (availableLeft >= availableRight);
-    if (availableLeft < cardWidth + 50 && availableRight >= cardWidth + 50) {
-      placeLeft = false;
-    } else if (availableRight < cardWidth + 50 && availableLeft >= cardWidth + 50) {
-      placeLeft = true;
+    let maxSafeRight = vw - 12;
+    if (isDrawerOpen) {
+      const r = drawerEl.getBoundingClientRect();
+      if (r.width < vw * 0.5 && r.left > containerRect.left + vw * 0.4) {
+        maxSafeRight = Math.min(vw - 12, Math.round(r.left - containerRect.left - 10));
+      }
     }
 
     let cardLeft;
+    let cardTop;
     let attachX;
-    if (placeLeft) {
-      cardLeft = Math.max(minSafeLeft, x - cardWidth - 60);
-      attachX = cardLeft + cardWidth; // Line touches the right border of the card
-    } else {
-      cardLeft = Math.min(maxSafeRight - cardWidth, x + 60);
-      attachX = cardLeft; // Line touches the left border of the card
-    }
+    let attachY;
+    let elbowX;
+    let elbowY;
 
-    // Vertical placement
-    let cardTop = y - 26;
-    cardTop = Math.max(76, Math.min(vh - cardHeight - 50, cardTop));
-    const attachY = cardTop + 24; // Points directly to the header line of the card
+    if (isCompact && isDrawerOpen) {
+      // On compact screens with an open drawer, dock badge cleanly above/below the organ so 3D anatomy & pin stay clear
+      const centerLane = (minSafeLeft + maxSafeRight) * 0.5;
+      cardLeft = Math.max(minSafeLeft, Math.min(maxSafeRight - cardWidth, Math.round(centerLane - cardWidth * 0.5)));
+      const placeAbove = y > vh * 0.45;
+      cardTop = placeAbove ? 10 : Math.max(10, vh - cardHeight - 10);
+      attachX = Math.max(cardLeft + 12, Math.min(cardLeft + cardWidth - 12, x));
+      attachY = placeAbove ? (cardTop + cardHeight) : cardTop;
+      elbowX = x;
+      elbowY = Math.round((y + attachY) * 0.5);
+    } else {
+      const offsetGap = isCompact ? 18 : 54;
+      const availableLeft = x - minSafeLeft;
+      const availableRight = maxSafeRight - x;
+
+      // Decide placement side: prefer side with ample room
+      let placeLeft = (availableLeft >= availableRight);
+      if (availableLeft < cardWidth + offsetGap && availableRight >= cardWidth + offsetGap) {
+        placeLeft = false;
+      } else if (availableRight < cardWidth + offsetGap && availableLeft >= cardWidth + offsetGap) {
+        placeLeft = true;
+      }
+
+      if (placeLeft) {
+        cardLeft = Math.max(8, Math.max(minSafeLeft, x - cardWidth - offsetGap));
+        cardLeft = Math.min(vw - cardWidth - 8, cardLeft);
+        attachX = cardLeft + cardWidth; // Line touches the right border of the card
+      } else {
+        cardLeft = Math.min(vw - cardWidth - 8, Math.min(maxSafeRight - cardWidth, x + offsetGap));
+        cardLeft = Math.max(8, cardLeft);
+        attachX = cardLeft; // Line touches the left border of the card
+      }
+
+      // Vertical placement clamped safely inside canvas container
+      cardTop = y - (isCompact ? 18 : 26);
+      cardTop = Math.max(8, Math.min(Math.max(8, vh - cardHeight - 10), cardTop));
+      attachY = Math.min(vh - 14, cardTop + 22); // Points directly to the header line of the card
+
+      if (placeLeft) {
+        elbowX = attachX + Math.min(32, Math.max(16, (x - attachX) * 0.45));
+      } else {
+        elbowX = attachX - Math.min(32, Math.max(16, (attachX - x) * 0.45));
+      }
+      elbowY = attachY;
+    }
 
     // Compute Leader Line Points
     // 1. Anchor Dot on Organ: (x, y)
@@ -133,16 +180,7 @@ export class HoverCalloutView {
     this.pulseEl.setAttribute('cx', x);
     this.pulseEl.setAttribute('cy', y);
 
-    // 2. Elbow turn:
-    let elbowX;
-    if (placeLeft) {
-      elbowX = attachX + Math.min(32, Math.max(16, (x - attachX) * 0.45));
-    } else {
-      elbowX = attachX - Math.min(32, Math.max(16, (attachX - x) * 0.45));
-    }
-    const elbowY = attachY;
-
-    // 3. Connect line flush to card border
+    // 2. Connect line flush to card border
     this.lineEl.setAttribute('points', `${x},${y} ${elbowX},${elbowY} ${attachX},${attachY}`);
 
     if (this.pinEl) {

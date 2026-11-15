@@ -1,3 +1,5 @@
+import { getOrganHeatmapRegions } from '../data/heatmapCatalog.js?v=20261115_v29';
+
 /**
  * UIView.js
  * 2-Tab Context-Aware DOM UI Controller for Human Digestive Anatomy 3D.
@@ -66,6 +68,24 @@ export class UIView {
     this._bindDOMEvents();
     this._bindViewModelEvents();
     this._renderLandmarksList();
+    this._syncInitialSliders();
+  }
+
+  _syncInitialSliders() {
+    if (this.torsoOpacitySlider) {
+      const val = this.dissectionVM.state.torsoSkinOpacity ?? 0.5;
+      const pct = Math.round(val * 100);
+      this.torsoOpacitySlider.value = val;
+      this.torsoOpacitySlider.style.setProperty('--progress', `${pct}%`);
+      if (this.torsoOpacityValue) this.torsoOpacityValue.textContent = `${pct}%`;
+    }
+    if (this.explodeSlider) {
+      const val = this.dissectionVM.state.explodeFactor ?? 0;
+      const pct = Math.round(val * 100);
+      this.explodeSlider.value = val;
+      this.explodeSlider.style.setProperty('--progress', `${pct}%`);
+      if (this.explodeValueBadge) this.explodeValueBadge.textContent = `${pct}%`;
+    }
   }
 
   _setDockTabUI(tabName) {
@@ -228,12 +248,24 @@ export class UIView {
       });
     }
 
-    // 10. Close Drawer
+    // 10. Close Drawer via X button, empty canvas tap/click, or Escape key
     if (this.drawerCloseBtn) {
-      this.drawerCloseBtn.addEventListener('click', () => {
-        this.drawerEl.classList.remove('open');
+      this.drawerCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._hideOrganDrawer();
       });
     }
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+      canvasContainer.addEventListener('canvas:empty-click', () => {
+        this._hideOrganDrawer();
+      });
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.drawerEl && this.drawerEl.classList.contains('open')) {
+        this._hideOrganDrawer();
+      }
+    });
 
     // 11. Search Bar & Clear Button
     if (this.searchInput) {
@@ -452,21 +484,42 @@ export class UIView {
 
       if (this.explodeHelperText) {
         if (!isLayers) {
-          this.explodeHelperText.textContent = 'Chế độ Phân Vùng Chức Năng: Rê chuột để xem tên và chức năng sinh lý/bệnh học từng phân vùng giải phẫu';
+          this.explodeHelperText.textContent = 'Chế độ Phân Vùng: Chạm hoặc rê chuột lên cơ quan để ghim điểm mô tả phân vùng chức năng';
         }
+      }
+
+      // Refresh right drawer immediately so toggling Mô Học <-> Phân Vùng switches layer vs heatmap sections
+      const selectedId = this.sceneVM.state.selectedOrganId;
+      if (selectedId && this.drawerEl && this.drawerEl.classList.contains('open')) {
+        const organ = this.appVM.organsData.find(o => o.id === selectedId);
+        if (organ) this._showOrganDrawer(organ);
       }
     });
 
-    // 4. Sync Active Wall Layer Card in Right Drawer when clicked
+    // 4. Sync Active Wall Layer Card & Compact Pills in Right Drawer
     this.dissectionVM.subscribe('activeWallLayerId', (layerId) => {
       if (!layerId) return;
       const targetCard = document.getElementById(`card-${layerId}`);
       document.querySelectorAll('.wall-layer-card').forEach(card => {
-        card.classList.toggle('highlight', card.id === `card-${layerId}`);
+        const isMatch = (card.id === `card-${layerId}`);
+        card.classList.toggle('highlight', isMatch);
+        card.classList.toggle('is-active', isMatch);
+      });
+      document.querySelectorAll('.mobile-layer-pill[data-layer-id]').forEach(pill => {
+        const isMatch = (pill.dataset.layerId === layerId);
+        pill.classList.toggle('is-active', isMatch);
+        pill.classList.toggle('active', isMatch);
       });
       if (targetCard) {
         targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+    });
+
+    // 4b. Sync Active Heatmap Region Card in Right Drawer when hovering/tapping 3D heatmap
+    this.sceneVM.subscribe('hoveredPart', (payload) => {
+      if (!payload || !payload.regionKey) return;
+      if (this.dissectionVM.state.organDisplayMode !== 'regions') return;
+      this._setActiveHeatmapRegionCard(payload.regionKey);
     });
 
     // 5. Sync Torso Opacity Slider
@@ -531,9 +584,26 @@ export class UIView {
     });
   }
 
+  _setActiveHeatmapRegionCard(regionKey) {
+    if (!this.drawerContentEl || !regionKey) return;
+    this.drawerContentEl.querySelectorAll('.heatmap-region-card').forEach(card => {
+      const isMatch = (card.dataset.regionKey === regionKey);
+      card.classList.toggle('is-active', isMatch);
+      card.classList.toggle('active', isMatch);
+    });
+    this.drawerContentEl.querySelectorAll('.mobile-layer-pill[data-region-key]').forEach(pill => {
+      const isMatch = (pill.dataset.regionKey === regionKey);
+      pill.classList.toggle('is-active', isMatch);
+      pill.classList.toggle('active', isMatch);
+    });
+  }
+
   _showOrganDrawer(organ) {
     this.drawerTitleEl.textContent = organ.vietnameseName;
     this.drawerLatinEl.textContent = `${organ.latinName} • ${organ.englishName}`;
+
+    const isRegionsMode = (this.dissectionVM.state.organDisplayMode === 'regions');
+    const heatmapRegions = isRegionsMode ? getOrganHeatmapRegions(organ.id) : null;
 
     let subListHtml = '';
     if (organ.subComponents && organ.subComponents.length > 0) {
@@ -547,25 +617,90 @@ export class UIView {
       `;
     }
 
-    let wallLayersHtml = '';
-    if (organ.wallLayers && organ.wallLayers.length > 0) {
+    let primarySectionHtml = '';
+    let hasFocusedCards = false;
+    this.drawerContentEl.classList.remove('drawer-focused-layers', 'drawer-focused-regions');
+
+    if (isRegionsMode && heatmapRegions && heatmapRegions.length > 0) {
+      hasFocusedCards = true;
+      this.drawerContentEl.classList.add('drawer-focused-regions');
+      const hoveredKey = this.sceneVM.state.hoveredPart && this.sceneVM.state.hoveredPart.organId === organ.id
+        ? this.sceneVM.state.hoveredPart.regionKey
+        : null;
+      const activeRegionKey = hoveredKey || heatmapRegions[0].key;
+
+      primarySectionHtml = `
+        <div class="drawer-section">
+          <h4 style="color: #c8102e;">Phân Vùng Chức Năng (${heatmapRegions.length} vùng):</h4>
+          <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
+            Màu sắc từng phân đoạn trùng khớp 100% với mô hình 3D. Bấm vào vùng để ghim mốc trên 3D:
+          </p>
+          <div class="mobile-layer-pills">
+            ${heatmapRegions.map((r, idx) => {
+              const shortLabel = r.title.split('(')[0].trim();
+              const isAct = (r.key === activeRegionKey);
+              return `
+                <button type="button" class="mobile-layer-pill ${isAct ? 'is-active' : ''}" data-region-key="${r.key}">
+                  <span class="mobile-layer-pill-dot" style="background: ${r.color};"></span>
+                  <span>${idx + 1}. ${shortLabel}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${heatmapRegions.map((r) => {
+              const isAct = (r.key === activeRegionKey);
+              return `
+                <div class="heatmap-region-card ${isAct ? 'is-active' : ''}" data-region-key="${r.key}" style="--region-color: ${r.color};">
+                  <div class="heatmap-region-header">
+                    <span class="heatmap-region-title">
+                      <span class="layer-dot" style="background: ${r.color};"></span>
+                      ${r.title}
+                    </span>
+                    <span class="wall-layer-thickness-badge">${r.badge}</span>
+                  </div>
+                  <div class="heatmap-region-desc">${r.subtitle}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    } else if (organ.wallLayers && organ.wallLayers.length > 0) {
+      hasFocusedCards = true;
+      this.drawerContentEl.classList.add('drawer-focused-layers');
       // Display wall layers ordered from INSIDE to OUTSIDE (Mucosa > Submucosa > Stratum > Serosa)
       const orderedLayers = [...organ.wallLayers].reverse();
-      wallLayersHtml = `
+      const activeLayerId = this.dissectionVM.state.activeWallLayerId || orderedLayers[0].id;
+
+      primarySectionHtml = `
         <div class="drawer-section">
           <h4 style="color: #e11d48; display: flex; align-items: center; gap: 6px;">
             Cấu Tạo Mô Học Thành ${organ.vietnameseName} (Trong → Ngoài: ${organ.wallLayers.length} Lớp):
           </h4>
           <p style="font-size: 11px; margin-bottom: 8px; color: var(--text-muted);">
-            Thứ tự từ <strong>Trong ra Ngoài</strong> (Mucosa &gt; Submucosa &gt; Stratum &gt; Serosa). Bấm vào từng tầng để làm sáng lớp 3D:
+            Thứ tự từ <strong>Trong ra Ngoài</strong>. Bấm vào từng tầng để làm sáng lớp 3D:
           </p>
+          <div class="mobile-layer-pills">
+            ${orderedLayers.map((l, idx) => {
+              const isAct = (l.id === activeLayerId);
+              const shortPrefix = l.name.includes(':') ? l.name.split(':')[0].trim() : `Lớp ${idx + 1}`;
+              return `
+                <button type="button" class="mobile-layer-pill ${isAct ? 'is-active' : ''}" data-layer-id="${l.id}">
+                  <span class="mobile-layer-pill-dot" style="background: ${l.color};"></span>
+                  <span>${shortPrefix}</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             ${orderedLayers.map((l, idx) => {
+              const isAct = (l.id === activeLayerId);
               const posBadge = idx === 0
-                ? 'Trong cùng (Lòng ống)'
-                : (idx === orderedLayers.length - 1 ? 'Ngoài cùng (Bề mặt)' : `Tầng giữa (${idx + 1}/${orderedLayers.length})`);
+                ? 'Trong cùng'
+                : (idx === orderedLayers.length - 1 ? 'Ngoài cùng' : `Tầng ${idx + 1}/${orderedLayers.length}`);
               return `
-              <div class="wall-layer-card" id="card-${l.id}" data-layer-id="${l.id}">
+              <div class="wall-layer-card ${isAct ? 'is-active highlight' : ''}" id="card-${l.id}" data-layer-id="${l.id}">
                 <div class="wall-layer-card-header">
                   <span class="wall-layer-card-title">
                     <span class="layer-dot" style="background: ${l.color};"></span>
@@ -595,38 +730,68 @@ export class UIView {
 
     this.drawerContentEl.innerHTML = `
       <div class="drawer-badge">Tầng Giải Phẫu: ${organ.layer}</div>
-      <div class="drawer-section">
-        <h4>Vị Trí & Liên Quan Giải Phẫu:</h4>
-        <p>${organ.location}</p>
-      </div>
-      <div class="drawer-section">
-        <h4>Hình Thể Ngoài & Cấu Trúc Trong:</h4>
-        <p>${organ.structure}</p>
-      </div>
-      ${wallLayersHtml}
-      ${subListHtml}
-      <div class="drawer-section">
-        <h4>Mạch Máu & Thần Kinh Chi Phối:</h4>
-        <p>${organ.vasculature}</p>
-      </div>
-      <div class="drawer-section">
-        <h4>Chức Năng Tiêu Hóa Sinh Lý:</h4>
-        <p>${organ.physiology}</p>
-      </div>
-      <div class="drawer-section highlight-box">
-        <h4>Ý Nghĩa Ngoại Khoa & Lâm Sàng (ĐHYHN):</h4>
-        <p>${organ.clinicalNotes}</p>
+      ${primarySectionHtml}
+      ${hasFocusedCards ? '<button type="button" class="drawer-overview-toggle">Xem Tổng Quan Cơ Quan</button>' : ''}
+      <div class="drawer-overview-group ${hasFocusedCards ? 'is-collapsed-mobile' : ''}">
+        <div class="drawer-section">
+          <h4>Vị Trí & Liên Quan Giải Phẫu:</h4>
+          <p>${organ.location}</p>
+        </div>
+        <div class="drawer-section">
+          <h4>Hình Thể Ngoài & Cấu Trúc Trong:</h4>
+          <p>${organ.structure}</p>
+        </div>
+        ${subListHtml}
+        <div class="drawer-section">
+          <h4>Mạch Máu & Thần Kinh Chi Phối:</h4>
+          <p>${organ.vasculature}</p>
+        </div>
+        <div class="drawer-section">
+          <h4>Chức Năng Tiêu Hóa Sinh Lý:</h4>
+          <p>${organ.physiology}</p>
+        </div>
+        <div class="drawer-section highlight-box">
+          <h4>Ý Nghĩa Ngoại Khoa & Lâm Sàng (ĐHYHN):</h4>
+          <p>${organ.clinicalNotes}</p>
+        </div>
       </div>
     `;
 
-    this.drawerContentEl.querySelectorAll('.wall-layer-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const layerId = card.dataset.layerId;
-        if ((this.dissectionVM.state.explodeFactor || 0) < 0.01 && !this.dissectionVM.state.isCutawayOpen) {
-          this.dissectionVM.setCutawayOpen(true);
-        }
-        this.dissectionVM.setActiveWallLayer(layerId);
+    const overviewToggle = this.drawerContentEl.querySelector('.drawer-overview-toggle');
+    const overviewGroup = this.drawerContentEl.querySelector('.drawer-overview-group');
+    if (overviewToggle && overviewGroup) {
+      overviewToggle.addEventListener('click', () => {
+        const collapsed = overviewGroup.classList.toggle('is-collapsed-mobile');
+        overviewToggle.textContent = collapsed ? 'Xem Tổng Quan Cơ Quan' : 'Thu Gọn Tổng Quan';
       });
+    }
+
+    const selectLayerHandler = (layerId) => {
+      if ((this.dissectionVM.state.explodeFactor || 0) < 0.01 && !this.dissectionVM.state.isCutawayOpen) {
+        this.dissectionVM.setCutawayOpen(true);
+      }
+      this.dissectionVM.setActiveWallLayer(layerId);
+    };
+
+    this.drawerContentEl.querySelectorAll('.wall-layer-card').forEach(card => {
+      card.addEventListener('click', () => selectLayerHandler(card.dataset.layerId));
+    });
+    this.drawerContentEl.querySelectorAll('.mobile-layer-pill[data-layer-id]').forEach(pill => {
+      pill.addEventListener('click', () => selectLayerHandler(pill.dataset.layerId));
+    });
+
+    const selectRegionHandler = (regionKey) => {
+      this._setActiveHeatmapRegionCard(regionKey);
+      if (window.__DIGESTIVE_APP__ && window.__DIGESTIVE_APP__.sceneView) {
+        window.__DIGESTIVE_APP__.sceneView.pinHeatmapRegion(organ.id, regionKey);
+      }
+    };
+
+    this.drawerContentEl.querySelectorAll('.heatmap-region-card').forEach(card => {
+      card.addEventListener('click', () => selectRegionHandler(card.dataset.regionKey));
+    });
+    this.drawerContentEl.querySelectorAll('.mobile-layer-pill[data-region-key]').forEach(pill => {
+      pill.addEventListener('click', () => selectRegionHandler(pill.dataset.regionKey));
     });
 
     this.drawerEl.classList.add('open');
