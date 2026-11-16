@@ -759,7 +759,7 @@ export class SceneView {
     this.torsoMuscleMeshes = [];
 
     gltfLoader.load(
-      './assets/models/TorsoAbdominalWall.glb?v=20261115_v33',
+      './assets/models/TorsoAbdominalWall.glb?v=20261115_v34',
       (gltf) => {
         const curOpacity = this.dissectionVM.state.torsoSkinOpacity !== undefined ? this.dissectionVM.state.torsoSkinOpacity : 0.50;
         gltf.scene.traverse((child) => {

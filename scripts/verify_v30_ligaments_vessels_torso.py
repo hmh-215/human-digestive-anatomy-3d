@@ -13,7 +13,7 @@ if sys.stdout and hasattr(sys.stdout, "reconfigure"):
 
 EDGE_PATH = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 PORT = 9318
-URL = "http://localhost:8086/index.html?v=20261115_v33"
+URL = "http://localhost:8087/index.html?v=20261115_v34"
 OUT_DIR = r"C:\Users\proto\.gemini\antigravity\brain\032716ed-4938-4dcf-a8c3-035bc613e5a6\scratch"
 
 SHOT_1 = os.path.join(OUT_DIR, "v30_1_anterior_viscera_overview.png")
@@ -236,6 +236,14 @@ async def main():
             )
             await asyncio.sleep(0.5)
             await snap(os.path.join(OUT_DIR, "v30_7_torso_85pct_sculpted.png"))
+            await send_cmd(
+                "Runtime.evaluate",
+                {
+                    "expression": "window.__DIGESTIVE_APP__.dissectionVM.setTorsoSkinOpacity(1.00);"
+                },
+            )
+            await asyncio.sleep(0.5)
+            await snap(os.path.join(OUT_DIR, "v30_8_torso_100pct_opaque.png"))
             await send_cmd(
                 "Runtime.evaluate",
                 {

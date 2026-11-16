@@ -119,7 +119,7 @@ def build_colored_single_mesh_glb(path, pos, norms, colors, idx, node_name="Tors
     off3 = off2 + len(col_b)
 
     gltf = {
-        "asset": {"version": "2.0", "generator": "Antigravity High-Res Sculpted Torso Merger"},
+        "asset": {"version": "2.0", "generator": "Antigravity High-Res Sculpted Torso Merger v2"},
         "scene": 0,
         "scenes": [{"nodes": [0]}],
         "nodes": [{"name": node_name, "mesh": 0}],
@@ -169,13 +169,47 @@ def build_colored_single_mesh_glb(path, pos, norms, colors, idx, node_name="Tors
     save_glb(path, gltf, bin_blob)
 
 
+def clamp_shoulder_contour(pos):
+    """
+    Smoothly fold/tuck any protruding humeral/clavicular tendon tips back onto a smooth
+    anatomical shoulder & collarbone contour (no triangle cutting -> zero saw-tooth 'gai'!).
+    """
+    p = pos.copy()
+    Y_TOP = 14.24
+    # Smoothly cap Y at open collarbone collar (Y <= 14.24, zero neck/jaw overlap!)
+    over_y = p[:, 1] > Y_TOP
+    if np.any(over_y):
+        p[over_y, 1] = Y_TOP - 0.015 * np.tanh((p[over_y, 1] - Y_TOP) * 3.0)
+
+    # Smooth lateral shoulder width curve: max half-width rx(y) tapers gently from 1.62 at Y=13.5 to 1.38 at Y=14.24
+    hi = p[:, 1] > 12.90
+    if np.any(hi):
+        t = np.clip((p[hi, 1] - 12.90) / (Y_TOP - 12.90), 0.0, 1.0)
+        rx_lim = 1.64 - 0.28 * (t * t)
+        rz_lim = 1.24 - 0.30 * (t * t)
+        zc_sh = -0.02 - 0.10 * t
+        px = p[hi, 0]
+        pz = p[hi, 2] - zc_sh
+        norm_r = np.hypot(px / rx_lim, pz / rz_lim)
+        out = norm_r > 1.0
+        if np.any(out):
+            # Smoothly compress excess protrusion instead of hard slicing
+            scale = (1.0 + 0.04 * np.tanh(norm_r[out] - 1.0)) / norm_r[out]
+            p_sub = p[hi]
+            p_sub[out, 0] *= scale
+            p_sub[out, 2] = zc_sh[out] + pz[out] * scale
+            p[hi] = p_sub
+    return p
+
+
 def main():
     tg, tb = load_glb(ORIG_TORSO)
     dg, db = load_glb(DIGESTIVE_PATH)
 
-    # Keep ALL superficial anatomical reliefs (abs, obliques, pectorals, serratus, linea alba, inguinal, latissimus, trapezius)
-    # Exclude deep hidden posterior/inner stack layers that cause muddy triple-alpha blotches and detached scapular wings
-    deep_keywords = [
+    # Exclude deep stacked layers AND upper-neck/arm-girdle spike muscles (Trapezius upper parts,
+    # Clavicular head of pectoralis, Teres major, Infraspinatus) so the torso ends cleanly
+    # at the open collarbone rim (Y <= 14.24) with ZERO neck/jaw clipping and ZERO shoulder spikes!
+    exclude_keywords = [
         "transversus_abdominis",
         "internal_abdominal_oblique",
         "iliocostalis",
@@ -185,144 +219,197 @@ def main():
         "rhomboid",
         "levator_scapulae",
         "serratus_posterior",
+        "ascending_part_of_trapezius",
+        "transverse_part_of_trapezius",
+        "clavicular_head_of_pectoralis_major",
+        "teres_major",
+        "infraspinatus",
     ]
 
-    col_muscle = srgb_to_linear(0xD49D6A)
-    col_fascia = srgb_to_linear(0xEAD8C4)
-    col_back = srgb_to_linear(0xC99669)
-    col_patch = srgb_to_linear(0xDFC4AA)
+    # Harmonized warm anatomical skin-muscle palette (no jarring gray-vs-brown clashes!)
+    col_muscle = srgb_to_linear(0xD6A374)
+    col_fascia_lm = srgb_to_linear(0xE8CEB3)  # Linea alba & Inguinal ligament
+    col_back = srgb_to_linear(0xCE9B6E)
+    col_patch = srgb_to_linear(0xCFA177)      # Seamless warm fascia liner tone
 
     merged_pos = []
-    merged_nrm = []
     merged_col = []
     merged_idx = []
     vert_offset = 0
-
     surf_sample_pts = []
 
     for n in tg["nodes"]:
         if "mesh" not in n:
             continue
         nm = n["name"].lower()
-        if any(k in nm for k in deep_keywords):
+        if any(k in nm for k in exclude_keywords):
             continue
 
         prim = tg["meshes"][n["mesh"]]["primitives"][0]
-        pos = get_buf(tg, tb, prim["attributes"]["POSITION"]).astype(np.float32)
-        nrm = get_buf(tg, tb, prim["attributes"]["NORMAL"]).astype(np.float32)
+        pos_raw = get_buf(tg, tb, prim["attributes"]["POSITION"]).astype(np.float32)
         idx = get_buf(tg, tb, prim["indices"]).astype(np.uint32).flatten()
 
-        # Trim stray floating deltoid/clavicle lateral tendon horn tips at top shoulders
-        tris = idx.reshape(-1, 3)
-        tri_pts = pos[tris]  # (T, 3, 3)
-        max_y = tri_pts[:, :, 1].max(axis=1)
-        max_abs_x = np.abs(tri_pts[:, :, 0]).max(axis=1)
-        drop_horns = (
-            ((max_y > 14.42) & (max_abs_x > 1.22))
-            | ((max_y > 14.12) & (max_abs_x > 1.46))
-            | ((max_y > 13.70) & (max_abs_x > 1.66))
-        )
-        if np.any(drop_horns):
-            tris = tris[~drop_horns]
-            idx = tris.flatten()
+        # Smoothly fold any upper/lateral tendon tips onto the clean shoulder/collarbone contour
+        pos = clamp_shoulder_contour(pos_raw)
 
         if "linea_alba" in nm or "ligament" in nm or "fascia" in nm:
-            c = col_fascia
-        elif "trapezius" in nm or "latissimus" in nm or "infraspinatus" in nm or "teres" in nm:
+            c = col_fascia_lm
+        elif "trapezius" in nm or "latissimus" in nm:
             c = col_back
         else:
             c = col_muscle
 
         merged_pos.append(pos)
-        merged_nrm.append(nrm)
         merged_col.append(np.tile(c, (len(pos), 1)))
         merged_idx.append(idx + vert_offset)
         vert_offset += len(pos)
 
+        tris = idx.reshape(-1, 3)
+        surf_sample_pts.append(pos)
         surf_sample_pts.append((pos[tris[:, 0]] + pos[tris[:, 1]] + pos[tris[:, 2]]) / 3.0)
 
     muscle_pos = np.vstack(merged_pos)
-    muscle_nrm = np.vstack(merged_nrm)
     muscle_col = np.vstack(merged_col)
     muscle_idx = np.concatenate(merged_idx)
     surf_pts = np.vstack(surf_sample_pts)
 
-    print(f"Preserved original superficial meshes: {len(muscle_pos)} verts, {len(muscle_idx)//3} tris")
+    print(f"Preserved clean superficial trunk muscles: {len(muscle_pos)} verts, {len(muscle_idx)//3} tris")
 
-    # Build targeted high-resolution Fascia/Aponeurosis Patch ONLY for open gaps
-    # (sternal midline cleft, anterior lower-neck notch, costal/aponeurotic windows)
-    om_node = next(x for x in dg["nodes"] if x["name"] == "Greater_omentum")
-    om_pos = get_buf(dg, db, dg["meshes"][om_node["mesh"]]["primitives"][0]["attributes"]["POSITION"]) * 0.1
+    # Gather ALL lower abdominal & pelvic GI viscera (0.1x scale) so hips/pelvis NEVER clip colon/intestines!
+    visc_names = [
+        "Ascending_colon",
+        "Descending_colon",
+        "Transverse_colon",
+        "Sigmoid_colon",
+        "Vermiform_appendix",
+        "Jejunum",
+        "Greater_omentum",
+        "Duodenum",
+        "Stomach",
+        "Liver",
+    ]
+    visc_chunks = []
+    for vn in visc_names:
+        node = next((x for x in dg["nodes"] if x["name"] == vn), None)
+        if node:
+            vp = get_buf(dg, db, dg["meshes"][node["mesh"]]["primitives"][0]["attributes"]["POSITION"]) * 0.1
+            visc_chunks.append(vp)
+    visc_all = np.vstack(visc_chunks)
 
-    # Symmetrize sample points for balanced sternum & neck gap bridging
+    # Polar fascia/aponeurosis liner spanning Y = [8.45 .. 14.24] (full pelvic bowl up to open collarbone)
     pts_sym = np.vstack([surf_pts, surf_pts * np.array([-1.0, 1.0, 1.0], dtype=np.float32)])
-    # Filter extreme shoulder wing tips only for polar patch fitting
-    m_patch_src = ~((pts_sym[:, 1] > 14.35) & (np.abs(pts_sym[:, 0]) > 1.70))
-    m_patch_src &= ~((pts_sym[:, 1] > 14.70) & (np.abs(pts_sym[:, 0]) > 1.38))
-    pts_src = pts_sym[m_patch_src]
 
-    Ny, Nt = 96, 108
-    ys = np.linspace(9.05, 15.62, Ny)
+    Ny, Nt = 104, 112
+    ys = np.linspace(8.45, 14.22, Ny)
     dy = (ys[-1] - ys[0]) / (Ny - 1)
     thetas = np.linspace(0.0, 2.0 * np.pi, Nt, endpoint=False)
     dtheta = 2.0 * np.pi / Nt
-    zc = np.where(ys < 13.8, 0.06, 0.06 - 0.29 * np.clip((ys - 13.8) / (15.35 - 13.8), 0.0, 1.0))
+    zc = np.where(ys < 13.4, 0.04, 0.04 - 0.14 * np.clip((ys - 13.4) / (14.22 - 13.4), 0.0, 1.0))
 
     R_patch = np.zeros((Ny, Nt), dtype=np.float32)
-    valid = np.zeros((Ny, Nt), dtype=bool)
+    R_mus_min = np.full((Ny, Nt), 99.0, dtype=np.float32)
+    has_mus = np.zeros((Ny, Nt), dtype=bool)
 
     for iy, y in enumerate(ys):
-        if y >= 15.05:
-            t_neck = np.clip((y - 15.05) / (15.62 - 15.05), 0.0, 1.0)
-            rx = 0.52 - 0.05 * t_neck
-            rz = 0.46 - 0.04 * t_neck
-            R_patch[iy] = (rx * rz) / np.sqrt((rz * np.cos(thetas)) ** 2 + (rx * np.sin(thetas)) ** 2)
-            valid[iy] = True
-            continue
-        slab = np.abs(pts_src[:, 1] - y) <= max(dy * 1.3, 0.12)
-        s = pts_src[slab]
+        slab = np.abs(pts_sym[:, 1] - y) <= max(dy * 1.4, 0.13)
+        s = pts_sym[slab]
         if len(s) < 12:
             continue
         ang = np.mod(np.arctan2(s[:, 2] - zc[iy], s[:, 0]), 2.0 * np.pi)
         rad = np.hypot(s[:, 0], s[:, 2] - zc[iy])
         for it, th in enumerate(thetas):
             da = np.abs(np.mod(ang - th + np.pi, 2.0 * np.pi) - np.pi)
-            m = da <= dtheta * 0.9
+            m = da <= dtheta * 0.95
             if np.sum(m) >= 2:
-                # Tuck cleanly -0.028 (-2.8 mm) behind outer muscle bellies so muscles sculpt in relief in front
-                # without ANY saw-tooth z-fighting or intersecting cutouts!
-                R_patch[iy, it] = float(np.percentile(rad[m], 72)) - 0.026
-                valid[iy, it] = True
-        if np.any(valid[iy]):
-            R_patch[iy] = circular_interp_1d(R_patch[iy], valid[iy])
-            valid[iy] = True
+                # Track inner/recessed muscle envelope so fascia stays STRICTLY behind muscles
+                r_low = float(np.percentile(rad[m], 25))
+                r_high = float(np.percentile(rad[m], 85))
+                R_mus_min[iy, it] = r_low
+                R_patch[iy, it] = min(r_low - 0.015, r_high - 0.042)
+                has_mus[iy, it] = True
+        if np.any(has_mus[iy]):
+            R_patch[iy] = circular_interp_1d(R_patch[iy], has_mus[iy])
 
-    R_patch = smooth_polar_grid(R_patch, sigma_y=1.2, sigma_t=1.6)
-    for iy, y in enumerate(ys):
-        if 14.42 <= y < 15.05:
-            t = (y - 14.42) / (15.05 - 14.42)
-            st = t * t * (3.0 - 2.0 * t)
-            rx, rz = 0.53, 0.47
-            r_neck = (rx * rz) / np.sqrt((rz * np.cos(thetas)) ** 2 + (rx * np.sin(thetas)) ** 2)
-            R_patch[iy] = (1.0 - st) * R_patch[iy] + st * r_neck
+    # Fill bottom pelvic slices (Y in [8.45 .. 9.08]) smoothly tapering from Y~9.15 down into pelvic floor
+    valid_rows = np.where(np.any(has_mus, axis=1))[0]
+    first_valid = int(valid_rows[0])
+    for iy in range(first_valid):
+        t = (ys[iy] - ys[0]) / max(ys[first_valid] - ys[0], 1e-4)
+        # Smooth rounded pelvic cup (keeps enough room for sigmoid & descending colon)
+        scale = 0.58 + 0.42 * np.sqrt(np.clip(t, 0.0, 1.0))
+        R_patch[iy] = R_patch[first_valid] * scale
 
-    # Ensure patch liner stays strictly outside Greater_omentum (>= +0.35 cm)
+    R_patch = smooth_polar_grid(R_patch, sigma_y=1.4, sigma_t=1.8)
+
+    # INVARIANT 1: Enforce strict >= +0.48 cm (0.048 raw) clearance outside ALL GI viscera (colon, jejunum, omentum)
     for iy, y in enumerate(ys):
-        slab = np.abs(om_pos[:, 1] - y) <= dy * 1.5
-        osub = om_pos[slab]
-        if len(osub) == 0:
+        slab = np.abs(visc_all[:, 1] - y) <= dy * 1.6
+        vs = visc_all[slab]
+        if len(vs) == 0:
             continue
-        ang = np.mod(np.arctan2(osub[:, 2] - zc[iy], osub[:, 0]), 2.0 * np.pi)
-        rad = np.hypot(osub[:, 0], osub[:, 2] - zc[iy])
+        ang = np.mod(np.arctan2(vs[:, 2] - zc[iy], vs[:, 0]), 2.0 * np.pi)
+        rad = np.hypot(vs[:, 0], vs[:, 2] - zc[iy])
         for it, th in enumerate(thetas):
             da = np.abs(np.mod(ang - th + np.pi, 2.0 * np.pi) - np.pi)
-            m = da <= dtheta * 1.1
+            m = da <= dtheta * 1.15
             if np.any(m):
-                R_patch[iy, it] = max(R_patch[iy, it], float(rad[m].max()) + 0.038)
+                floor_r = float(rad[m].max()) + 0.052  # >= 5.2 mm outside colon/jejunum/omentum!
+                if R_patch[iy, it] < floor_r:
+                    R_patch[iy, it] = floor_r
 
-    R_patch = smooth_polar_grid(R_patch, sigma_y=1.0, sigma_t=1.2)
+    R_patch = smooth_polar_grid(R_patch, sigma_y=1.1, sigma_t=1.4)
 
-    # Generate grid vertices and filter triangles ONLY to open anatomical gap zones + 1-ring seam overlap!
+    # Re-verify hard viscera floor after smoothing (guaranteed 0 colon/hip/omentum protrusions)
+    for iy, y in enumerate(ys):
+        slab = np.abs(visc_all[:, 1] - y) <= dy * 1.4
+        vs = visc_all[slab]
+        if len(vs) == 0:
+            continue
+        ang = np.mod(np.arctan2(vs[:, 2] - zc[iy], vs[:, 0]), 2.0 * np.pi)
+        rad = np.hypot(vs[:, 0], vs[:, 2] - zc[iy])
+        for it, th in enumerate(thetas):
+            da = np.abs(np.mod(ang - th + np.pi, 2.0 * np.pi) - np.pi)
+            m = da <= dtheta * 1.05
+            if np.any(m):
+                floor_r = float(rad[m].max()) + 0.048
+                if R_patch[iy, it] < floor_r:
+                    R_patch[iy, it] = floor_r
+
+    # INVARIANT 2: Ensure EVERY superficial muscle vertex stays STRICTLY OUTSIDE R_patch (+0.025 = +2.5 mm)
+    # whenever it covers the fascia liner, so fascia NEVER pokes through Pectoralis/Abs/Obliques at 100% opacity
+    # AND muscles expand harmoniously with the hip/pelvis over Ascending/Descending colon!
+    nudged_mus = 0
+    for vi in range(len(muscle_pos)):
+        vx, vy, vz = muscle_pos[vi]
+        fy = np.clip((vy - ys[0]) / dy, 0.0, Ny - 1.0001)
+        iy0 = int(np.floor(fy))
+        ay = fy - iy0
+        zc_v = (1.0 - ay) * zc[iy0] + ay * zc[iy0 + 1]
+        dx = vx
+        dz = vz - zc_v
+        r_v = float(np.hypot(dx, dz))
+        if r_v < 1e-5:
+            continue
+        ang = float(np.mod(np.arctan2(dz, dx), 2.0 * np.pi))
+        ft = (ang / dtheta) % Nt
+        it0 = int(np.floor(ft)) % Nt
+        it1 = (it0 + 1) % Nt
+        at = ft - np.floor(ft)
+        r_f = (
+            (1.0 - ay) * ((1.0 - at) * R_patch[iy0, it0] + at * R_patch[iy0, it1])
+            + ay * ((1.0 - at) * R_patch[iy0 + 1, it0] + at * R_patch[iy0 + 1, it1])
+        )
+        # Keep muscle outer surface cleanly proud of fascia liner by at least +0.025 (2.5 mm)
+        min_mus_r = r_f + 0.025
+        if r_v < min_mus_r:
+            scale = min_mus_r / r_v
+            muscle_pos[vi, 0] = dx * scale
+            muscle_pos[vi, 2] = zc_v + dz * scale
+            nudged_mus += 1
+
+    print(f"Adjusted {nudged_mus}/{len(muscle_pos)} muscle verts cleanly outside fascia/colon envelope.")
+
+    # Build OPEN-TOP (collarbone aperture Y=14.22) & CLOSED-BOTTOM (pelvic floor cap Y=8.32) fascia liner
     cos_t, sin_t = np.cos(thetas), np.sin(thetas)
     grid_v = np.zeros((Ny, Nt, 3), dtype=np.float32)
     for iy in range(Ny):
@@ -331,7 +418,6 @@ def main():
         grid_v[iy, :, 2] = zc[iy] + R_patch[iy] * sin_t
 
     cand_tris = []
-    cand_centroids = []
     for iy in range(Ny - 1):
         for it in range(Nt):
             it_n = (it + 1) % Nt
@@ -339,40 +425,23 @@ def main():
             v01 = iy * Nt + it_n
             v10 = (iy + 1) * Nt + it
             v11 = (iy + 1) * Nt + it_n
-            p00, p01, p10, p11 = grid_v[iy, it], grid_v[iy, it_n], grid_v[iy + 1, it], grid_v[iy + 1, it_n]
             cand_tris.append([v00, v10, v11])
-            cand_centroids.append((p00 + p10 + p11) / 3.0)
             cand_tris.append([v00, v11, v01])
-            cand_centroids.append((p00 + p11 + p01) / 3.0)
 
-    cand_tris = np.array(cand_tris, dtype=np.uint32)
-    cand_centroids = np.array(cand_centroids, dtype=np.float32)
-
-    # Keep the smooth continuous inner Fascia/Aponeurosis liner unbroken (with smooth bottom/top caps)
-    # so there are ZERO jagged cutout triangles anywhere on the chest or abdomen!
     flat_grid_v = grid_v.reshape(-1, 3)
-    # Add bottom & top cap vertices so the inner liner has clean smooth silhouettes at pelvis & neck
-    bot_c = np.array([[0.0, ys[0] - 0.14, zc[0]]], dtype=np.float32)
-    top_c = np.array([[0.0, ys[-1] + 0.02, zc[-1]]], dtype=np.float32)
-    all_patch_v = np.vstack([flat_grid_v, bot_c, top_c])
+    bot_c = np.array([[0.0, ys[0] - 0.12, zc[0]]], dtype=np.float32)
+    patch_pos = np.vstack([flat_grid_v, bot_c])
     bot_i = len(flat_grid_v)
-    top_i = bot_i + 1
-    cap_tris = []
-    for it in range(Nt):
-        it_n = (it + 1) % Nt
-        cap_tris.append([bot_i, it, it_n])
-        top_b = (Ny - 1) * Nt
-        cap_tris.append([top_b + it, top_i, top_b + it_n])
-    patch_tris = np.vstack([cand_tris, np.array(cap_tris, dtype=np.uint32)])
-
-    patch_pos = all_patch_v
-    patch_nrm = recompute_vertex_normals(patch_pos, patch_tris.flatten())
-    patch_col = np.tile(col_patch, (len(patch_pos), 1))
+    cap_tris = [[bot_i, it, (it + 1) % Nt] for it in range(Nt)]
+    patch_tris = np.vstack([np.array(cand_tris, dtype=np.uint32), np.array(cap_tris, dtype=np.uint32)])
     patch_idx = patch_tris.flatten().astype(np.uint32)
+    patch_col = np.tile(col_patch, (len(patch_pos), 1))
 
-    print(f"Added seamless continuous inner fascia/aponeurosis liner: {len(patch_pos)} verts, {len(patch_idx)//3} tris")
+    # Recompute clean normals for BOTH muscles and fascia liner
+    muscle_nrm = recompute_vertex_normals(muscle_pos, muscle_idx)
+    patch_nrm = recompute_vertex_normals(patch_pos, patch_idx)
 
-    # Combine superficial muscles + gap-patch fascia into 1 SINGLE UNIFIED MESH
+    # Combine into 1 SINGLE UNIFIED MESH
     all_pos = np.vstack([muscle_pos, patch_pos]).astype(np.float32)
     all_nrm = np.vstack([muscle_nrm, patch_nrm]).astype(np.float32)
     all_col = np.vstack([muscle_col, patch_col]).astype(np.float32)
@@ -381,10 +450,38 @@ def main():
     build_colored_single_mesh_glb(
         TORSO_OUT, all_pos, all_nrm, all_col, all_idx, node_name="Torso_Sculpted_Unified"
     )
-    print(
-        f"Saved unified high-res sculpted {TORSO_OUT}: "
-        f"1 node, {len(all_pos)} verts, {len(all_idx)//3} tris"
-    )
+    print(f"Saved {TORSO_OUT}: 1 node, {len(all_pos)} verts, {len(all_idx)//3} tris")
+
+    # Strict post-build audit against ALL GI viscera (colon, jejunum, omentum, stomach, liver)
+    print("\n=== POST-BUILD VISCERA VS TORSO HIP/PELVIS CLEARANCE AUDIT ===")
+    for vn in visc_names:
+        node = next((x for x in dg["nodes"] if x["name"] == vn), None)
+        if not node:
+            continue
+        op = get_buf(dg, db, dg["meshes"][node["mesh"]]["primitives"][0]["attributes"]["POSITION"]) * 0.1
+        worst = -999.0
+        out_cnt = 0
+        for pt in op:
+            fy = np.clip((pt[1] - ys[0]) / dy, 0.0, Ny - 1.0001)
+            iy0 = int(np.floor(fy))
+            ay = fy - iy0
+            zc_v = (1.0 - ay) * zc[iy0] + ay * zc[iy0 + 1]
+            r_v = float(np.hypot(pt[0], pt[2] - zc_v))
+            ang = float(np.mod(np.arctan2(pt[2] - zc_v, pt[0]), 2.0 * np.pi))
+            ft = (ang / dtheta) % Nt
+            it0 = int(np.floor(ft)) % Nt
+            it1 = (it0 + 1) % Nt
+            at = ft - np.floor(ft)
+            r_f = (
+                (1.0 - ay) * ((1.0 - at) * R_patch[iy0, it0] + at * R_patch[iy0, it1])
+                + ay * ((1.0 - at) * R_patch[iy0 + 1, it0] + at * R_patch[iy0 + 1, it1])
+            )
+            ex = (r_v - r_f) * 10.0
+            if ex > worst:
+                worst = ex
+            if ex > -0.10:
+                out_cnt += 1
+        print(f"  {vn:22s} | worst_excess={worst:+6.3f} cm | protruding={out_cnt}/{len(op)}")
 
 
 if __name__ == "__main__":
