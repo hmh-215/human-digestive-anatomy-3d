@@ -272,60 +272,111 @@ async def main():
             print("Mobile heatmap pin & drawer check:", mob_heatmap_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_LAND_HEATMAP)
 
-            # Shot 8: Mobile Portrait (390x844) — Dedicated Portrait Template (Info sheet)
+            # Shot 8: Mobile Portrait (390x844) — Red Tap Dot + 1/3 Single-Layer Bottom Popup
             print("Testing Mobile Portrait Template (390x844)...", flush=True)
             await send_cmd("Emulation.setDeviceMetricsOverride", {
                 "width": 390, "height": 844, "deviceScaleFactor": 2, "mobile": True
             })
             await send_cmd("Runtime.evaluate", {
-                "expression": "window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('layers'); window.dispatchEvent(new Event('resize')); window.__DIGESTIVE_APP__.sceneVM.selectOrgan('stomach');"
+                "expression": """(() => {
+                    window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('layers');
+                    window.dispatchEvent(new Event('resize'));
+                    window.__DIGESTIVE_APP__.sceneVM.selectOrgan('stomach');
+                    window.__DIGESTIVE_APP__.dissectionVM.setExplodeFactor(0.8);
+                })()"""
             })
             await asyncio.sleep(1.5)
+            # Helper to dispatch genuine CDP mouse click at exact projected stomach surface point
+            async def cdp_tap_organ_center(offset_x=0, offset_y=0):
+                pt_res = await send_cmd("Runtime.evaluate", {
+                    "expression": """(() => {
+                        const sv = window.__DIGESTIVE_APP__.sceneView;
+                        const target = sv.controls.target;
+                        const p = sv._projectWorldToScreen(target);
+                        const r = sv.container.getBoundingClientRect();
+                        return JSON.stringify({ x: r.left + p.x, y: r.top + p.y });
+                    })()"""
+                })
+                pt = json.loads(pt_res["result"]["value"])
+                tx = pt["x"] + offset_x
+                ty = pt["y"] + offset_y
+                await send_cmd("Input.dispatchMouseEvent", {
+                    "type": "mousePressed", "x": tx, "y": ty, "button": "left", "clickCount": 1
+                })
+                await send_cmd("Input.dispatchMouseEvent", {
+                    "type": "mouseReleased", "x": tx, "y": ty, "button": "left", "clickCount": 1
+                })
+
+            # Tap right on the Stomach Corpus/Antrum body (slightly down-right of target notch)
+            await cdp_tap_organ_center(25, 25)
+            await asyncio.sleep(0.8)
             portrait_info = await send_cmd("Runtime.evaluate", {
                 "expression": """(() => {
                     const c = document.getElementById('canvas-container').getBoundingClientRect();
                     const d = document.getElementById('organ-drawer').getBoundingClientRect();
-                    const dockVis = getComputedStyle(document.getElementById('dissection-dock')).display;
+                    const layerCards = document.querySelectorAll('#organ-drawer .wall-layer-card').length;
+                    const pills = document.querySelectorAll('#organ-drawer .mobile-layer-pill').length;
+                    const calloutCardDisp = getComputedStyle(document.getElementById('hover-callout-card')).display;
+                    const dotHidden = document.getElementById('hover-callout-overlay').classList.contains('hidden');
                     return JSON.stringify({
                         layoutClass: document.body.className,
-                        portraitSheet: document.body.dataset.portraitSheet,
+                        portraitView: document.body.dataset.portraitView,
+                        portraitPopup: document.body.dataset.portraitPopup,
                         canvasH: Math.round(c.height),
-                        drawerTop: Math.round(d.top),
-                        dockDisplayInInfo: dockVis
+                        drawerH: Math.round(d.height),
+                        layerCards,
+                        pills,
+                        calloutCardDisp,
+                        dotHidden
                     });
                 })()"""
             })
-            print("Mobile portrait info sheet check:", portrait_info.get("result", {}).get("value"), flush=True)
+            print("Mobile portrait single-layer popup check:", portrait_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_PORTRAIT)
 
-            # Shot 9: Mobile Portrait — Controls Sheet (Body Map + Sliders below upper 3D canvas)
+            # Shot 9: Mobile Portrait — Tap Circular Double-Chevron Button -> Fullscreen Control Panel
             await send_cmd("Runtime.evaluate", {
-                "expression": "document.getElementById('portrait-btn-controls').click();"
+                "expression": "document.getElementById('portrait-panel-toggle').click();"
             })
             await asyncio.sleep(0.8)
+            panel_full_info = await send_cmd("Runtime.evaluate", {
+                "expression": """(() => {
+                    const dock = document.getElementById('dissection-dock').getBoundingClientRect();
+                    return JSON.stringify({
+                        portraitView: document.body.dataset.portraitView,
+                        dockW: Math.round(dock.width),
+                        dockH: Math.round(dock.height)
+                    });
+                })()"""
+            })
+            print("Mobile portrait fullscreen panel check:", panel_full_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_PORTRAIT_CONTROLS)
 
-            # Shot 10: Mobile Portrait — Heatmap Collapsed Fullscreen 3D + Pin Callout
+            # Shot 10: Mobile Portrait — Collapse Panel via Double-Chevron Down -> Switch Heatmap -> Tap 3D for Red Dot + 1/3 Region Popup
             await send_cmd("Runtime.evaluate", {
-                "expression": "window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('regions'); document.getElementById('portrait-btn-collapse').click();"
-            })
-            await asyncio.sleep(0.8)
-            await send_cmd("Runtime.evaluate", {
-                "expression": "window.__DIGESTIVE_APP__.sceneView.pinHeatmapRegion('stomach', 'antrum');"
-            })
-            await asyncio.sleep(0.8)
-            portrait_collapse_info = await send_cmd("Runtime.evaluate", {
                 "expression": """(() => {
-                    const c = document.getElementById('canvas-container').getBoundingClientRect();
+                    document.getElementById('portrait-panel-toggle').click();
+                    window.__DIGESTIVE_APP__.dissectionVM.setExplodeFactor(0.0);
+                    window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('regions');
+                })()"""
+            })
+            await asyncio.sleep(0.9)
+            # Tap right on the Stomach Corpus/Antrum body (slightly down-right of target notch)
+            await cdp_tap_organ_center(25, 25)
+            await asyncio.sleep(0.8)
+            portrait_heatmap_info = await send_cmd("Runtime.evaluate", {
+                "expression": """(() => {
+                    const regionCards = document.querySelectorAll('#organ-drawer .heatmap-region-card').length;
                     const overlayHidden = document.getElementById('hover-callout-overlay').classList.contains('hidden');
                     return JSON.stringify({
-                        portraitSheet: document.body.dataset.portraitSheet,
-                        collapsedCanvasH: Math.round(c.height),
+                        portraitView: document.body.dataset.portraitView,
+                        portraitPopup: document.body.dataset.portraitPopup,
+                        regionCards,
                         overlayHidden
                     });
                 })()"""
             })
-            print("Mobile portrait collapsed heatmap check:", portrait_collapse_info.get("result", {}).get("value"), flush=True)
+            print("Mobile portrait heatmap red dot + 1/3 popup check:", portrait_heatmap_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_PORTRAIT_HEATMAP)
 
             listen_task.cancel()

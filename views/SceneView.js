@@ -1444,6 +1444,14 @@ export class SceneView {
     const h = this.container.clientHeight;
     if (w > 0 && h > 0) {
       this.camera.aspect = w / h;
+      const isPortraitPopupOpen = document.body.classList.contains('layout-portrait')
+        && document.body.dataset.portraitPopup === 'open';
+      if (isPortraitPopupOpen) {
+        // Shift 3D projection upward so tapped organ & red pin sit cleanly above the 1/3 bottom popup
+        this.camera.setViewOffset(w, h, 0, Math.round(h * 0.16), w, h);
+      } else {
+        this.camera.clearViewOffset();
+      }
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(w, h);
     }
@@ -1455,6 +1463,16 @@ export class SceneView {
       this._resizeObserver = new ResizeObserver(() => this._handleContainerResize());
       this._resizeObserver.observe(this.container);
     }
+
+    this.container.addEventListener('canvas:clear-pin', () => {
+      this._pinnedCallout = null;
+      if (this.hoverCallout) this.hoverCallout.update(null);
+      this._handleContainerResize();
+    });
+
+    this.container.addEventListener('portrait:popup-change', () => {
+      this._handleContainerResize();
+    });
 
     const getCoords = (e) => {
       const rect = this.renderer.domElement.getBoundingClientRect();
@@ -1551,7 +1569,26 @@ export class SceneView {
         if (landmarkHits.length > 0) {
           const hitPin = landmarkHits[0].object;
           if (hitPin.userData && hitPin.userData.landmarkId && this.appVM.landmarksVM) {
-            this.appVM.landmarksVM.selectLandmark(hitPin.userData.landmarkId);
+            const lmId = hitPin.userData.landmarkId;
+            this.appVM.landmarksVM.selectLandmark(lmId);
+            const lm = this.appVM.landmarksData.find(item => item.id === lmId);
+            if (lm) {
+              const marker = this.landmarkMarkers.get(lmId);
+              const worldPt = marker ? marker.position.clone() : landmarkHits[0].point.clone();
+              const pos = this._projectWorldToScreen(worldPt);
+              const payload = {
+                x: pos.x,
+                y: pos.y,
+                tag: lm.category || 'ĐIỂM MỐC LÂM SÀNG',
+                badge: hitPin.userData.isBack ? 'Mặt lưng' : 'Thành bụng',
+                title: lm.name,
+                subtitle: lm.description,
+                color: '#ef4444'
+              };
+              this._pinnedCallout = { worldPoint: worldPt, payload, organId: null };
+              this.hoverCallout.update(payload);
+              this.container.dispatchEvent(new CustomEvent('canvas:landmark-tap', { detail: lm }));
+            }
             return;
           }
         }
@@ -1568,18 +1605,10 @@ export class SceneView {
 
         const payload = this._buildHoverPayload(topHit, screenX, screenY);
         const isRegions = (this.dissectionVM && this.dissectionVM.state.organDisplayMode === 'regions');
+        const isPortrait = document.body.classList.contains('layout-portrait');
 
-        if (topHit.userData.isWallLayer || topHit.userData.isStomachWallLayer) {
-          this.sceneVM.selectOrgan(topHit.userData.organId);
-          this.dissectionVM.setActiveWallLayer(topHit.userData.wallLayerId);
-        } else {
-          this.sceneVM.selectOrgan(topHit.userData.organId);
-        }
-
-        this.sceneVM.setHoveredPart(payload);
-
-        // Pin circular marker + callout on touch taps or in Functional Heatmap mode
-        if (downPointerType !== 'mouse' || isRegions) {
+        // Pin red/colored dot on touch taps, Functional Heatmap mode, or Portrait mode
+        if (downPointerType !== 'mouse' || isRegions || isPortrait) {
           this._pinnedCallout = {
             worldPoint: validHit.point.clone(),
             payload,
@@ -1589,8 +1618,18 @@ export class SceneView {
         } else {
           this._pinnedCallout = null;
         }
+
+        if (topHit.userData.isWallLayer || topHit.userData.isStomachWallLayer) {
+          this.sceneVM.selectOrgan(topHit.userData.organId);
+          this.dissectionVM.setActiveWallLayer(topHit.userData.wallLayerId);
+        } else {
+          this.sceneVM.selectOrgan(topHit.userData.organId);
+        }
+
+        this.sceneVM.setHoveredPart(payload);
+        this.container.dispatchEvent(new CustomEvent('canvas:part-tap', { detail: payload }));
       } else {
-        // Clicking empty space clears any pinned pin and dismisses the right drawer
+        // Clicking empty space clears any pinned pin and dismisses the popup/drawer
         this._pinnedCallout = null;
         this.hoverCallout.update(null);
         this.sceneVM.setHoveredPart(null);

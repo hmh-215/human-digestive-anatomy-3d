@@ -81,12 +81,17 @@
       <!-- 3D WEBGL VIEWPORT CANVAS -->
       <div id="canvas-container"></div>
 
-      <!-- MOBILE PORTRAIT BOTTOM SHEET SWITCHER BAR (Chỉ hiển thị ở Portrait Mobile) -->
-      <nav id="portrait-sheet-bar" class="portrait-sheet-bar" aria-label="Bảng điều khiển dọc">
-        <button type="button" id="portrait-btn-controls" class="portrait-sheet-pill is-active" data-sheet="controls">Điều Khiển</button>
-        <button type="button" id="portrait-btn-info" class="portrait-sheet-pill is-disabled" data-sheet="info">Chi Tiết</button>
-        <button type="button" id="portrait-btn-collapse" class="portrait-sheet-pill" data-sheet="collapsed">Thu Gọn</button>
-      </nav>
+      <!-- MOBILE PORTRAIT PANEL TOGGLE BUTTON (Double Chevron Circle - Chỉ hiển thị ở Portrait Mobile) -->
+      <button type="button" id="portrait-panel-toggle" class="portrait-panel-toggle" aria-label="Mở bảng điều khiển" aria-expanded="false">
+        <svg class="portrait-toggle-icon icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="17 16 12 11 7 16"></polyline>
+          <polyline points="17 10 12 5 7 10"></polyline>
+        </svg>
+        <svg class="portrait-toggle-icon icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="7 8 12 13 17 8"></polyline>
+          <polyline points="7 14 12 19 17 14"></polyline>
+        </svg>
+      </button>
 
       <!-- CLINICAL LANDMARKS PANEL (CHỈ HIỆN Ở CHẾ ĐỘ LÂM SÀNG) -->
       <aside id="landmarks-panel" class="landmarks-panel panel panel-left hidden">

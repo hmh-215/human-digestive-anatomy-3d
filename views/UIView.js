@@ -65,9 +65,7 @@ export class UIView {
     this.sectionHelp = document.getElementById('section-help');
     this.searchClearBtn = document.getElementById('btn-search-clear');
 
-    this.portraitControlsBtn = document.getElementById('portrait-btn-controls');
-    this.portraitInfoBtn = document.getElementById('portrait-btn-info');
-    this.portraitCollapseBtn = document.getElementById('portrait-btn-collapse');
+    this.portraitPanelToggleBtn = document.getElementById('portrait-panel-toggle');
 
     this._bindDOMEvents();
     this._bindViewModelEvents();
@@ -93,47 +91,57 @@ export class UIView {
     }
     window.addEventListener('resize', applyOrientationClass);
 
-    this._setPortraitSheet('controls');
+    this._setPortraitView('canvas');
+    this._setPortraitPopupOpen(false);
 
-    if (this.portraitControlsBtn) {
-      this.portraitControlsBtn.addEventListener('click', () => this._setPortraitSheet('controls'));
-    }
-    if (this.portraitInfoBtn) {
-      this.portraitInfoBtn.addEventListener('click', () => {
-        const organId = this.sceneVM.state.selectedOrganId;
-        if (!organId) return;
-        if (!this.drawerEl.classList.contains('open')) {
-          const organ = this.appVM.organsData.find(o => o.id === organId);
-          if (organ) this._showOrganDrawer(organ);
-        }
-        this._setPortraitSheet('info');
+    if (this.portraitPanelToggleBtn) {
+      this.portraitPanelToggleBtn.addEventListener('click', () => {
+        const isExpanded = (document.body.dataset.portraitView === 'panel');
+        this._setPortraitView(isExpanded ? 'canvas' : 'panel');
       });
     }
-    if (this.portraitCollapseBtn) {
-      this.portraitCollapseBtn.addEventListener('click', () => this._setPortraitSheet('collapsed'));
+
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+      canvasContainer.addEventListener('canvas:part-tap', (e) => {
+        if (!document.body.classList.contains('layout-portrait')) return;
+        const payload = e.detail;
+        if (!payload || !payload.organId) return;
+        const organ = this.appVM.organsData.find(o => o.id === payload.organId);
+        if (organ) {
+          this._setPortraitView('canvas');
+          this._showPortraitSinglePopup(organ, payload);
+        }
+      });
+
+      canvasContainer.addEventListener('canvas:landmark-tap', (e) => {
+        if (!document.body.classList.contains('layout-portrait')) return;
+        const lm = e.detail;
+        if (lm) {
+          this._setPortraitView('canvas');
+          this._showPortraitLandmarkPopup(lm);
+        }
+      });
     }
   }
 
-  _setPortraitSheet(sheetName) {
-    document.body.dataset.portraitSheet = sheetName;
-    const mode = this.appVM.state.activeMode || 'dissection';
-    const isPathology = (mode === 'pathology');
-    const hasOrgan = Boolean(this.sceneVM.state.selectedOrganId);
+  _setPortraitView(viewName) {
+    const isPanel = (viewName === 'panel');
+    document.body.dataset.portraitView = isPanel ? 'panel' : 'canvas';
+    if (this.portraitPanelToggleBtn) {
+      this.portraitPanelToggleBtn.setAttribute('aria-expanded', isPanel ? 'true' : 'false');
+      this.portraitPanelToggleBtn.setAttribute('aria-label', isPanel ? 'Thu gọn bảng điều khiển' : 'Mở bảng điều khiển');
+    }
+    if (isPanel) {
+      this._setPortraitPopupOpen(false);
+    }
+  }
 
-    if (this.portraitControlsBtn) {
-      this.portraitControlsBtn.textContent = isPathology ? 'Điểm Mốc' : 'Điều Khiển';
-      this.portraitControlsBtn.classList.toggle('is-active', sheetName === 'controls');
-      this.portraitControlsBtn.classList.toggle('active', sheetName === 'controls');
-    }
-    if (this.portraitInfoBtn) {
-      this.portraitInfoBtn.style.display = isPathology ? 'none' : '';
-      this.portraitInfoBtn.classList.toggle('is-disabled', !hasOrgan);
-      this.portraitInfoBtn.classList.toggle('is-active', sheetName === 'info');
-      this.portraitInfoBtn.classList.toggle('active', sheetName === 'info');
-    }
-    if (this.portraitCollapseBtn) {
-      this.portraitCollapseBtn.classList.toggle('is-active', sheetName === 'collapsed');
-      this.portraitCollapseBtn.classList.toggle('active', sheetName === 'collapsed');
+  _setPortraitPopupOpen(isOpen) {
+    document.body.dataset.portraitPopup = isOpen ? 'open' : 'closed';
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+      canvasContainer.dispatchEvent(new CustomEvent('portrait:popup-change', { detail: { isOpen } }));
     }
   }
 
@@ -479,7 +487,13 @@ export class UIView {
             this.explodeHelperText.textContent = 'Tách rời các cấu trúc con để rê chuột xem nhãn giải phẫu chi tiết';
           }
 
-          this._showOrganDrawer(organ);
+          if (document.body.classList.contains('layout-portrait')) {
+            // In Portrait mode, selecting via Body Map/Search collapses the panel to reveal full 3D organ;
+            // tapping directly on the 3D organ drops the red dot and opens the 1/3 single-item popup.
+            this._setPortraitView('canvas');
+          } else {
+            this._showOrganDrawer(organ);
+          }
         }
       } else {
         this._setDockTabUI('system');
@@ -489,6 +503,9 @@ export class UIView {
         this.explodeModeLabel.textContent = 'Xếp Hàng Toàn Hệ Thống:';
         this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang';
         this._hideOrganDrawer();
+        if (document.body.classList.contains('layout-portrait')) {
+          this._setPortraitView('canvas');
+        }
       }
     });
 
@@ -576,7 +593,7 @@ export class UIView {
         pill.classList.toggle('is-active', isMatch);
         pill.classList.toggle('active', isMatch);
       });
-      if (targetCard) {
+      if (targetCard && !this.drawerContentEl.classList.contains('portrait-single-popup')) {
         targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     });
@@ -634,7 +651,8 @@ export class UIView {
         if (this.dissectionDockEl) this.dissectionDockEl.classList.remove('hidden');
       }
       document.body.dataset.activeMode = mode;
-      this._setPortraitSheet('controls');
+      this._setPortraitView('canvas');
+      this._setPortraitPopupOpen(false);
     });
 
     // 8. Sync Active Landmark in Left List when selected (from list or direct 3D pin click)
@@ -666,7 +684,105 @@ export class UIView {
     });
   }
 
+  _showPortraitSinglePopup(organ, payload) {
+    this.drawerTitleEl.textContent = organ.vietnameseName;
+    this.drawerLatinEl.textContent = `${organ.latinName} • ${organ.englishName}`;
+    this.drawerContentEl.classList.remove('drawer-focused-layers', 'drawer-focused-regions');
+    this.drawerContentEl.classList.add('portrait-single-popup');
+
+    // 1. Tapped a Functional Heatmap region -> render ONLY that 1 region
+    if (payload.regionKey) {
+      const regions = getOrganHeatmapRegions(organ.id) || [];
+      const reg = regions.find(r => r.key === payload.regionKey);
+      if (reg) {
+        this.drawerContentEl.innerHTML = `
+          <div class="heatmap-region-card is-active" style="--region-color: ${reg.color};">
+            <div class="heatmap-region-header">
+              <span class="heatmap-region-title">
+                <span class="layer-dot" style="background: ${reg.color};"></span>
+                ${reg.title}
+              </span>
+              <span class="wall-layer-thickness-badge">${reg.badge}</span>
+            </div>
+            <div class="heatmap-region-desc">${reg.subtitle}</div>
+          </div>
+        `;
+        this.drawerEl.classList.add('open');
+        this.drawerContentEl.scrollTop = 0;
+        this._setPortraitPopupOpen(true);
+        return;
+      }
+    }
+
+    // 2. Tapped a Histological Wall Layer -> render ONLY that 1 tapped layer (no stacked Lớp 2, Lớp 3...)
+    if (payload.wallLayerId && organ.wallLayers && organ.wallLayers.length > 0) {
+      const orderedLayers = [...organ.wallLayers].reverse();
+      const idx = orderedLayers.findIndex(l => l.id === payload.wallLayerId);
+      const layer = idx >= 0 ? orderedLayers[idx] : orderedLayers[0];
+      const posBadge = idx === 0
+        ? 'Trong cùng'
+        : (idx === orderedLayers.length - 1 ? 'Ngoài cùng' : `Tầng ${idx + 1}/${orderedLayers.length}`);
+      this.drawerContentEl.innerHTML = `
+        <div class="wall-layer-card is-active highlight" id="card-${layer.id}" data-layer-id="${layer.id}">
+          <div class="wall-layer-card-header">
+            <span class="wall-layer-card-title">
+              <span class="layer-dot" style="background: ${layer.color};"></span>
+              ${layer.name}
+            </span>
+            <span class="wall-layer-thickness-badge">${posBadge} • ${layer.thickness}</span>
+          </div>
+          <div class="wall-sub-block"><strong>Đại thể:</strong> ${layer.description}</div>
+          <div class="wall-sub-block"><strong>Mô học vi thể:</strong> ${layer.histology}</div>
+          <div class="wall-sub-block"><strong>Sinh lý:</strong> ${layer.physiology}</div>
+          <div class="wall-clinical-sub"><strong>Lâm sàng ĐHYHN:</strong> ${layer.clinicalNotes}</div>
+        </div>
+      `;
+      this.drawerEl.classList.add('open');
+      this.drawerContentEl.scrollTop = 0;
+      this._setPortraitPopupOpen(true);
+      return;
+    }
+
+    // 3. Tapped an Organ or Sub-Part directly -> render ONLY 1 focused card for that tapped part
+    this.drawerContentEl.innerHTML = `
+      <div class="heatmap-region-card is-active" style="--region-color: ${payload.color || '#c8102e'};">
+        <div class="heatmap-region-header">
+          <span class="heatmap-region-title">
+            <span class="layer-dot" style="background: ${payload.color || '#c8102e'};"></span>
+            ${payload.title || organ.vietnameseName}
+          </span>
+          ${payload.badge ? `<span class="wall-layer-thickness-badge">${payload.badge}</span>` : ''}
+        </div>
+        <div class="heatmap-region-desc">${organ.structure || payload.subtitle || ''}</div>
+        ${organ.clinicalNotes ? `<div class="wall-clinical-sub" style="margin-top:6px;"><strong>Lâm sàng ĐHYHN:</strong> ${organ.clinicalNotes}</div>` : ''}
+      </div>
+    `;
+    this.drawerEl.classList.add('open');
+    this.drawerContentEl.scrollTop = 0;
+    this._setPortraitPopupOpen(true);
+  }
+
+  _showPortraitLandmarkPopup(lm) {
+    this.drawerTitleEl.textContent = lm.name;
+    this.drawerLatinEl.textContent = lm.category || 'ĐIỂM MỐC LÂM SÀNG';
+    this.drawerContentEl.classList.remove('drawer-focused-layers', 'drawer-focused-regions');
+    this.drawerContentEl.classList.add('portrait-single-popup');
+    this.drawerContentEl.innerHTML = `
+      <div class="landmark-card is-active">
+        <p style="font-size: 12px; line-height: 1.45; color: var(--ink-soft); margin-bottom: 6px;">${lm.description}</p>
+        ${lm.clinicalSignificance ? `
+          <div class="wall-clinical-sub">
+            <strong>Ý Nghĩa Khám & Dấu Hiệu:</strong> ${lm.clinicalSignificance}
+          </div>
+        ` : ''}
+      </div>
+    `;
+    this.drawerEl.classList.add('open');
+    this._setPortraitPopupOpen(true);
+  }
+
   _showOrganDrawer(organ) {
+    this.drawerContentEl.classList.remove('portrait-single-popup');
     this.drawerTitleEl.textContent = organ.vietnameseName;
     this.drawerLatinEl.textContent = `${organ.latinName} • ${organ.englishName}`;
 
@@ -863,21 +979,15 @@ export class UIView {
     });
 
     this.drawerEl.classList.add('open');
-    if (document.body.classList.contains('layout-portrait')) {
-      this._setPortraitSheet('info');
-    } else {
-      this._setPortraitSheet(document.body.dataset.portraitSheet || 'controls');
-    }
+    this._setPortraitPopupOpen(true);
   }
 
   _hideOrganDrawer() {
     this.drawerEl.classList.remove('open');
-    if (document.body.classList.contains('layout-portrait')) {
-      if (document.body.dataset.portraitSheet === 'info') {
-        this._setPortraitSheet(this.sceneVM.state.selectedOrganId ? 'collapsed' : 'controls');
-      } else {
-        this._setPortraitSheet(document.body.dataset.portraitSheet || 'controls');
-      }
+    this._setPortraitPopupOpen(false);
+    const canvasContainer = document.getElementById('canvas-container');
+    if (canvasContainer) {
+      canvasContainer.dispatchEvent(new CustomEvent('canvas:clear-pin'));
     }
   }
 
@@ -946,6 +1056,11 @@ export class UIView {
       card.addEventListener('click', () => {
         const id = card.dataset.id;
         this.landmarksVM.selectLandmark(id);
+        if (document.body.classList.contains('layout-portrait')) {
+          this._setPortraitView('canvas');
+          const lm = this.appVM.landmarksData.find(item => item.id === id);
+          if (lm) this._showPortraitLandmarkPopup(lm);
+        }
       });
     });
   }
