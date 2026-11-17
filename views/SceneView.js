@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261115_v29';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261115_v29';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261115_v29';
-import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261115_v29';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261115_v30';
-import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261115_v29';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261117_v35';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261117_v35';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261117_v35';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261117_v35';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261117_v35';
+import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261117_v35';
 
 /**
  * SceneView.js
@@ -1439,16 +1439,22 @@ export class SceneView {
     }
   }
 
+  _handleContainerResize() {
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
+    if (w > 0 && h > 0) {
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(w, h);
+    }
+  }
+
   _bindEvents() {
-    window.addEventListener('resize', () => {
-      const w = this.container.clientWidth;
-      const h = this.container.clientHeight;
-      if (w > 0 && h > 0) {
-        this.camera.aspect = w / h;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(w, h);
-      }
-    });
+    window.addEventListener('resize', () => this._handleContainerResize());
+    if (typeof ResizeObserver !== 'undefined') {
+      this._resizeObserver = new ResizeObserver(() => this._handleContainerResize());
+      this._resizeObserver.observe(this.container);
+    }
 
     const getCoords = (e) => {
       const rect = this.renderer.domElement.getBoundingClientRect();
@@ -2515,7 +2521,13 @@ export class SceneView {
     const target = new THREE.Vector3(...targetCoords);
     const startTarget = this.controls.target.clone();
     const startPos = this.camera.position.clone();
-    const endPos = posCoords ? new THREE.Vector3(...posCoords) : null;
+    let endPos = posCoords ? new THREE.Vector3(...posCoords) : null;
+    if (endPos && this.camera.aspect < 0.95) {
+      // Compensate narrower horizontal FOV in portrait mobile views so organs fit cleanly side-to-side
+      const portraitDistScale = Math.min(1.5, 0.98 / Math.max(0.58, this.camera.aspect));
+      const offset = endPos.clone().sub(target).multiplyScalar(portraitDistScale);
+      endPos = target.clone().add(offset);
+    }
 
     let progress = 0;
     const animateFocus = () => {

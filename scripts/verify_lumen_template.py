@@ -31,6 +31,8 @@ SHOT_MOB_LAND_INIT = os.path.join(SCREENSHOT_DIR, '58_mobile_landscape_init.png'
 SHOT_MOB_LAND_LAYERS = os.path.join(SCREENSHOT_DIR, '59_mobile_landscape_layers.png')
 SHOT_MOB_LAND_HEATMAP = os.path.join(SCREENSHOT_DIR, '60_mobile_landscape_heatmap_pin.png')
 SHOT_MOB_PORTRAIT = os.path.join(SCREENSHOT_DIR, '61_mobile_portrait_layers.png')
+SHOT_MOB_PORTRAIT_CONTROLS = os.path.join(SCREENSHOT_DIR, '62_mobile_portrait_controls.png')
+SHOT_MOB_PORTRAIT_HEATMAP = os.path.join(SCREENSHOT_DIR, '63_mobile_portrait_heatmap_pin.png')
 
 async def main():
     print(f"Starting HTTP server on port {HTTP_PORT}...", flush=True)
@@ -270,17 +272,61 @@ async def main():
             print("Mobile heatmap pin & drawer check:", mob_heatmap_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_LAND_HEATMAP)
 
-            # Shot 8: Mobile Portrait (390x844) Layers Mode
-            print("Testing Mobile Portrait (390x844)...", flush=True)
-            await send_cmd("Runtime.evaluate", {
-                "expression": "window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('layers');"
-            })
+            # Shot 8: Mobile Portrait (390x844) — Dedicated Portrait Template (Info sheet)
+            print("Testing Mobile Portrait Template (390x844)...", flush=True)
             await send_cmd("Emulation.setDeviceMetricsOverride", {
                 "width": 390, "height": 844, "deviceScaleFactor": 2, "mobile": True
             })
-            await send_cmd("Runtime.evaluate", {"expression": "window.dispatchEvent(new Event('resize'));"})
-            await asyncio.sleep(1.2)
+            await send_cmd("Runtime.evaluate", {
+                "expression": "window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('layers'); window.dispatchEvent(new Event('resize')); window.__DIGESTIVE_APP__.sceneVM.selectOrgan('stomach');"
+            })
+            await asyncio.sleep(1.5)
+            portrait_info = await send_cmd("Runtime.evaluate", {
+                "expression": """(() => {
+                    const c = document.getElementById('canvas-container').getBoundingClientRect();
+                    const d = document.getElementById('organ-drawer').getBoundingClientRect();
+                    const dockVis = getComputedStyle(document.getElementById('dissection-dock')).display;
+                    return JSON.stringify({
+                        layoutClass: document.body.className,
+                        portraitSheet: document.body.dataset.portraitSheet,
+                        canvasH: Math.round(c.height),
+                        drawerTop: Math.round(d.top),
+                        dockDisplayInInfo: dockVis
+                    });
+                })()"""
+            })
+            print("Mobile portrait info sheet check:", portrait_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_PORTRAIT)
+
+            # Shot 9: Mobile Portrait — Controls Sheet (Body Map + Sliders below upper 3D canvas)
+            await send_cmd("Runtime.evaluate", {
+                "expression": "document.getElementById('portrait-btn-controls').click();"
+            })
+            await asyncio.sleep(0.8)
+            await save_shot(SHOT_MOB_PORTRAIT_CONTROLS)
+
+            # Shot 10: Mobile Portrait — Heatmap Collapsed Fullscreen 3D + Pin Callout
+            await send_cmd("Runtime.evaluate", {
+                "expression": "window.__DIGESTIVE_APP__.dissectionVM.setOrganDisplayMode('regions'); document.getElementById('portrait-btn-collapse').click();"
+            })
+            await asyncio.sleep(0.8)
+            await send_cmd("Runtime.evaluate", {
+                "expression": "window.__DIGESTIVE_APP__.sceneView.pinHeatmapRegion('stomach', 'antrum');"
+            })
+            await asyncio.sleep(0.8)
+            portrait_collapse_info = await send_cmd("Runtime.evaluate", {
+                "expression": """(() => {
+                    const c = document.getElementById('canvas-container').getBoundingClientRect();
+                    const overlayHidden = document.getElementById('hover-callout-overlay').classList.contains('hidden');
+                    return JSON.stringify({
+                        portraitSheet: document.body.dataset.portraitSheet,
+                        collapsedCanvasH: Math.round(c.height),
+                        overlayHidden
+                    });
+                })()"""
+            })
+            print("Mobile portrait collapsed heatmap check:", portrait_collapse_info.get("result", {}).get("value"), flush=True)
+            await save_shot(SHOT_MOB_PORTRAIT_HEATMAP)
 
             listen_task.cancel()
 

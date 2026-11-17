@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Newsreader:ital,wght@1,400;1,500&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="./assets/css/theme.css?v=20261115_v29">
+  <link rel="stylesheet" href="./assets/css/theme.css?v=20261117_v35">
+  <link rel="stylesheet" href="./assets/css/layout-portrait.css?v=20261117_v35">
   <link rel="icon" href="data:,">
 
   <!-- ES Module Import Map (Three.js 100% Offline Local Bundle) -->
@@ -79,6 +80,13 @@
     <main class="app-layout" id="section-3d-model">
       <!-- 3D WEBGL VIEWPORT CANVAS -->
       <div id="canvas-container"></div>
+
+      <!-- MOBILE PORTRAIT BOTTOM SHEET SWITCHER BAR (Chỉ hiển thị ở Portrait Mobile) -->
+      <nav id="portrait-sheet-bar" class="portrait-sheet-bar" aria-label="Bảng điều khiển dọc">
+        <button type="button" id="portrait-btn-controls" class="portrait-sheet-pill is-active" data-sheet="controls">Điều Khiển</button>
+        <button type="button" id="portrait-btn-info" class="portrait-sheet-pill is-disabled" data-sheet="info">Chi Tiết</button>
+        <button type="button" id="portrait-btn-collapse" class="portrait-sheet-pill" data-sheet="collapsed">Thu Gọn</button>
+      </nav>
 
       <!-- CLINICAL LANDMARKS PANEL (CHỈ HIỆN Ở CHẾ ĐỘ LÂM SÀNG) -->
       <aside id="landmarks-panel" class="landmarks-panel panel panel-left hidden">
@@ -403,6 +411,6 @@
   </div>
 
   <!-- SCRIPT BOOTSTRAP -->
-  <script type="module" src="./app.js?v=20261115_v34"></script>
+  <script type="module" src="./app.js?v=20261117_v35"></script>
 </body>
 </html>

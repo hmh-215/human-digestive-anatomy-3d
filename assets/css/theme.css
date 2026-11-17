@@ -1680,8 +1680,8 @@ body {
   .organ-drawer { width: 330px; }
 }
 
-/* Compact Phones (both Landscape max-height: 540px and Small Widths <= 960px) */
-@media (max-width: 960px), (max-height: 540px) {
+/* Compact Landscape Phones & Short Viewports (Dedicated Portrait lives in layout-portrait.css) */
+@media (max-width: 960px) and (orientation: landscape), (max-height: 540px) and (orientation: landscape) {
   :root { --header-h: 44px; }
   .app-header, .site-header {
     height: auto;
@@ -1790,80 +1790,6 @@ body {
     line-height: 1.2;
   }
   .interaction-hint { display: none; }
-}
-
-@media (max-width: 680px) and (orientation: portrait) {
-  .app-header, .site-header {
-    height: auto;
-    padding: 6px 10px;
-  }
-  .header-inner {
-    flex-wrap: wrap;
-    gap: 5px;
-    width: 100%;
-  }
-  .main-nav {
-    margin-left: auto;
-  }
-  .nav-list { gap: 10px; }
-  .nav-link, .nav-tab { padding: 4px 0; font-size: 11px; }
-  .header-actions {
-    width: 100%;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 5px;
-  }
-  .mode-switcher, .btn-segment-group {
-    width: 100%;
-    display: flex;
-  }
-  .mode-pill, .btn-segment {
-    flex: 1;
-    padding: 5px 6px;
-    font-size: 10.5px;
-    text-align: center;
-  }
-  .expandable-search {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-  .input, .search-input,
-  .input:focus, .search-input:focus {
-    width: 100%;
-  }
-  .dissection-dock {
-    top: auto;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
-    width: auto;
-    max-width: none;
-    max-height: 30vh;
-  }
-  .landmarks-panel {
-    top: auto;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
-    width: auto;
-    max-width: none;
-    max-height: 32vh;
-  }
-  .organ-drawer {
-    top: auto;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
-    width: auto;
-    max-width: none;
-    height: 36vh;
-    transform: translateY(calc(100% + 40px));
-  }
-  .organ-drawer.open {
-    transform: translateY(0);
-  }
-  .help-title { font-size: 1.6rem; }
-  .help-grid { grid-template-columns: 1fr; }
 }
 
 /* ---------- Reduced motion ---------- */

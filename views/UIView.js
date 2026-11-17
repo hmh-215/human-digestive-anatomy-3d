@@ -1,4 +1,4 @@
-import { getOrganHeatmapRegions } from '../data/heatmapCatalog.js?v=20261115_v29';
+import { getOrganHeatmapRegions } from '../data/heatmapCatalog.js?v=20261117_v35';
 
 /**
  * UIView.js
@@ -65,10 +65,76 @@ export class UIView {
     this.sectionHelp = document.getElementById('section-help');
     this.searchClearBtn = document.getElementById('btn-search-clear');
 
+    this.portraitControlsBtn = document.getElementById('portrait-btn-controls');
+    this.portraitInfoBtn = document.getElementById('portrait-btn-info');
+    this.portraitCollapseBtn = document.getElementById('portrait-btn-collapse');
+
     this._bindDOMEvents();
     this._bindViewModelEvents();
     this._renderLandmarksList();
     this._syncInitialSliders();
+    this._initPortraitLayout();
+  }
+
+  _initPortraitLayout() {
+    const mq = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
+    const applyOrientationClass = () => {
+      const isPortrait = mq.matches;
+      document.body.classList.toggle('layout-portrait', isPortrait);
+      document.body.classList.toggle('layout-landscape', !isPortrait);
+      document.body.dataset.activeMode = this.appVM.state.activeMode || 'dissection';
+    };
+
+    applyOrientationClass();
+    if (mq.addEventListener) {
+      mq.addEventListener('change', applyOrientationClass);
+    } else if (mq.addListener) {
+      mq.addListener(applyOrientationClass);
+    }
+    window.addEventListener('resize', applyOrientationClass);
+
+    this._setPortraitSheet('controls');
+
+    if (this.portraitControlsBtn) {
+      this.portraitControlsBtn.addEventListener('click', () => this._setPortraitSheet('controls'));
+    }
+    if (this.portraitInfoBtn) {
+      this.portraitInfoBtn.addEventListener('click', () => {
+        const organId = this.sceneVM.state.selectedOrganId;
+        if (!organId) return;
+        if (!this.drawerEl.classList.contains('open')) {
+          const organ = this.appVM.organsData.find(o => o.id === organId);
+          if (organ) this._showOrganDrawer(organ);
+        }
+        this._setPortraitSheet('info');
+      });
+    }
+    if (this.portraitCollapseBtn) {
+      this.portraitCollapseBtn.addEventListener('click', () => this._setPortraitSheet('collapsed'));
+    }
+  }
+
+  _setPortraitSheet(sheetName) {
+    document.body.dataset.portraitSheet = sheetName;
+    const mode = this.appVM.state.activeMode || 'dissection';
+    const isPathology = (mode === 'pathology');
+    const hasOrgan = Boolean(this.sceneVM.state.selectedOrganId);
+
+    if (this.portraitControlsBtn) {
+      this.portraitControlsBtn.textContent = isPathology ? 'Điểm Mốc' : 'Điều Khiển';
+      this.portraitControlsBtn.classList.toggle('is-active', sheetName === 'controls');
+      this.portraitControlsBtn.classList.toggle('active', sheetName === 'controls');
+    }
+    if (this.portraitInfoBtn) {
+      this.portraitInfoBtn.style.display = isPathology ? 'none' : '';
+      this.portraitInfoBtn.classList.toggle('is-disabled', !hasOrgan);
+      this.portraitInfoBtn.classList.toggle('is-active', sheetName === 'info');
+      this.portraitInfoBtn.classList.toggle('active', sheetName === 'info');
+    }
+    if (this.portraitCollapseBtn) {
+      this.portraitCollapseBtn.classList.toggle('is-active', sheetName === 'collapsed');
+      this.portraitCollapseBtn.classList.toggle('active', sheetName === 'collapsed');
+    }
   }
 
   _syncInitialSliders() {
@@ -567,6 +633,8 @@ export class UIView {
         this.landmarksPanel.classList.add('hidden');
         if (this.dissectionDockEl) this.dissectionDockEl.classList.remove('hidden');
       }
+      document.body.dataset.activeMode = mode;
+      this._setPortraitSheet('controls');
     });
 
     // 8. Sync Active Landmark in Left List when selected (from list or direct 3D pin click)
@@ -795,10 +863,22 @@ export class UIView {
     });
 
     this.drawerEl.classList.add('open');
+    if (document.body.classList.contains('layout-portrait')) {
+      this._setPortraitSheet('info');
+    } else {
+      this._setPortraitSheet(document.body.dataset.portraitSheet || 'controls');
+    }
   }
 
   _hideOrganDrawer() {
     this.drawerEl.classList.remove('open');
+    if (document.body.classList.contains('layout-portrait')) {
+      if (document.body.dataset.portraitSheet === 'info') {
+        this._setPortraitSheet(this.sceneVM.state.selectedOrganId ? 'collapsed' : 'controls');
+      } else {
+        this._setPortraitSheet(document.body.dataset.portraitSheet || 'controls');
+      }
+    }
   }
 
   _handleSearch(query) {
