@@ -109,7 +109,7 @@
     display: none;
   }
 
-  /* 3. Circular Double-Chevron Panel Toggle Button */
+  /* 3. Circular Double-Chevron Panel Toggle Button (Red-White Theme) */
   .portrait-panel-toggle {
     position: absolute;
     bottom: 14px;
@@ -118,15 +118,15 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: 0;
-    background: #1f1c1d;
-    color: #ffffff;
+    border: 2px solid var(--white);
+    background: var(--red);
+    color: var(--white);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
-    transition: transform 0.2s var(--ease), background 0.2s var(--ease), top 0.2s, bottom 0.2s;
+    box-shadow: 0 6px 18px var(--red-glow);
+    transition: transform 0.2s var(--ease), background 0.2s var(--ease), color 0.2s var(--ease), top 0.2s, bottom 0.2s;
   }
 
   .portrait-panel-toggle:active {

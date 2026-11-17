@@ -334,18 +334,25 @@ async def main():
             print("Mobile portrait single-layer popup check:", portrait_info.get("result", {}).get("value"), flush=True)
             await save_shot(SHOT_MOB_PORTRAIT)
 
-            # Shot 9: Mobile Portrait — Tap Circular Double-Chevron Button -> Fullscreen Control Panel
+            # Shot 9: Mobile Portrait — Tap Circular Double-Chevron Button -> Fullscreen Control Panel + verify selecting organ keeps panel open
             await send_cmd("Runtime.evaluate", {
-                "expression": "document.getElementById('portrait-panel-toggle').click();"
+                "expression": """(() => {
+                    document.getElementById('portrait-panel-toggle').click();
+                    document.querySelector('.body-pin[data-organ="liver"]').click();
+                })()"""
             })
             await asyncio.sleep(0.8)
             panel_full_info = await send_cmd("Runtime.evaluate", {
                 "expression": """(() => {
                     const dock = document.getElementById('dissection-dock').getBoundingClientRect();
+                    const toggleBg = getComputedStyle(document.getElementById('portrait-panel-toggle')).backgroundColor;
+                    const viewAfterSelect = document.body.dataset.portraitView;
+                    document.querySelector('.body-pin[data-organ="stomach"]').click();
                     return JSON.stringify({
-                        portraitView: document.body.dataset.portraitView,
+                        portraitView: viewAfterSelect,
                         dockW: Math.round(dock.width),
-                        dockH: Math.round(dock.height)
+                        dockH: Math.round(dock.height),
+                        toggleBg
                     });
                 })()"""
             })

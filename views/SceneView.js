@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261117_v35';
-import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261117_v35';
-import { ExplosionManager } from './modules/ExplosionManager.js?v=20261117_v35';
-import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261117_v35';
-import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261117_v35';
-import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261117_v35';
+import { ProceduralTextures } from './modules/ProceduralTextures.js?v=20261117_v36';
+import { StomachLayersBuilder } from './modules/StomachLayersBuilder.js?v=20261117_v36';
+import { ExplosionManager } from './modules/ExplosionManager.js?v=20261117_v36';
+import { HoverCalloutView } from './modules/HoverCalloutView.js?v=20261117_v36';
+import { LiverLigamentsBuilder } from './modules/LiverLigamentsBuilder.js?v=20261117_v36';
+import { HEATMAP_CATALOG, getThermalPalette, sampleContinuousThermalColor } from '../data/heatmapCatalog.js?v=20261117_v36';
 
 /**
  * SceneView.js

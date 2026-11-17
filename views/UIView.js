@@ -1,4 +1,4 @@
-import { getOrganHeatmapRegions } from '../data/heatmapCatalog.js?v=20261117_v35';
+import { getOrganHeatmapRegions } from '../data/heatmapCatalog.js?v=20261117_v36';
 
 /**
  * UIView.js
@@ -487,11 +487,7 @@ export class UIView {
             this.explodeHelperText.textContent = 'Tách rời các cấu trúc con để rê chuột xem nhãn giải phẫu chi tiết';
           }
 
-          if (document.body.classList.contains('layout-portrait')) {
-            // In Portrait mode, selecting via Body Map/Search collapses the panel to reveal full 3D organ;
-            // tapping directly on the 3D organ drops the red dot and opens the 1/3 single-item popup.
-            this._setPortraitView('canvas');
-          } else {
+          if (!document.body.classList.contains('layout-portrait')) {
             this._showOrganDrawer(organ);
           }
         }
@@ -503,9 +499,6 @@ export class UIView {
         this.explodeModeLabel.textContent = 'Xếp Hàng Toàn Hệ Thống:';
         this.explodeHelperText.textContent = 'Kéo thanh trượt hoặc bấm nút để xếp toàn bộ cơ quan & lớp mô học theo 4 hàng ngang';
         this._hideOrganDrawer();
-        if (document.body.classList.contains('layout-portrait')) {
-          this._setPortraitView('canvas');
-        }
       }
     });
 
